@@ -8,6 +8,7 @@ OptionsVariations::OptionsVariations(Options const* const options, Subjects cons
 {
 	numberOfVariations.clear();
 	numberOfVariations[Option::NoConsecutiveColles][0] = 2;
+	numberOfVariations[Option::OnlyOneCollePerDay][0] = 2;
 
 	for (int idSubject = 0; idSubject < subjects->size(); ++idSubject) {
 		auto subject = subjects->at(idSubject);

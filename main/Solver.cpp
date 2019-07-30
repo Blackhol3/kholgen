@@ -175,7 +175,15 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 			for (auto const &timeslot1: timeslots) {
 				LinearExpr nbCollesWithGroupInWeekAtExtendedTimeslot(0);
 				for (auto const &timeslot2: timeslots) {
-					if (timeslot1 == timeslot2 || (optionsVariations.shouldEnforce(Option::NoConsecutiveColles) && timeslot1.isAdjacentTo(timeslot2)))
+					bool condition = timeslot1 == timeslot2;
+					if (optionsVariations.shouldEnforce(Option::NoConsecutiveColles)) {
+						condition = condition || timeslot1.isAdjacentTo(timeslot2);
+					}
+					if (optionsVariations.shouldEnforce(Option::OnlyOneCollePerDay)) {
+						condition = condition || timeslot1.getDay() == timeslot2.getDay();
+					}
+
+					if (condition)
 					{
 						for (auto const &teacher: *teachers) {
 							if (teacher->getAvailableTimeslots().contains(timeslot2)) {
