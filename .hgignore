@@ -1,0 +1,8 @@
+syntax: glob
+
+**.old
+**.user
+
+syntax: regexp
+
+^build
