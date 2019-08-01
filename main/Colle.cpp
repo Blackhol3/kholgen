@@ -1,17 +1,11 @@
 #include "Colle.h"
 
-#include "Group.h"
 #include "Teacher.h"
 #include "Timeslot.h"
 
-Colle::Colle(Timeslot const* const timeslot, Teacher const* const teacher, Group const* const group): timeslot(timeslot), teacher(teacher), group(group)
+Colle::Colle(Teacher const* const teacher, Timeslot const &timeslot, Group const &group, Week const &week): teacher(teacher), timeslot(timeslot), group(group), week(week)
 {
 
-}
-
-Timeslot const* Colle::getTimeslot() const
-{
-	return timeslot;
 }
 
 Teacher const* Colle::getTeacher() const
@@ -19,15 +13,17 @@ Teacher const* Colle::getTeacher() const
 	return teacher;
 }
 
-Group const* Colle::getGroup() const
+const Timeslot &Colle::getTimeslot() const
 {
-	return group;
+	return timeslot;
 }
 
-bool operator==(const Colle &a, const Colle &b)
+const Week &Colle::getWeek() const
 {
-	return a.getTimeslot() == b.getTimeslot()
-		&& a.getTeacher() == b.getTeacher()
-		&& a.getGroup() == b.getGroup()
-	;
+	return week;
+}
+
+const Group &Colle::getGroup() const
+{
+	return group;
 }

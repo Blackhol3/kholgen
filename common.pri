@@ -5,11 +5,14 @@ QT += widgets concurrent
 CONFIG += c++17 qt
 
 SOURCES += \
+        $$MAIN_PATH/Colle.cpp \
+        $$MAIN_PATH/ExcelExporter.cpp \
         $$MAIN_PATH/Group.cpp \
         $$MAIN_PATH/MainWindow.cpp \
         $$MAIN_PATH/Options.cpp \
         $$MAIN_PATH/OptionsTab.cpp \
         $$MAIN_PATH/OptionsVariations.cpp \
+        $$MAIN_PATH/Slot.cpp \
         $$MAIN_PATH/Solver.cpp \
         $$MAIN_PATH/Subject.cpp \
         $$MAIN_PATH/Subjects.cpp \
@@ -22,11 +25,14 @@ SOURCES += \
         $$MAIN_PATH/Week.cpp \
 
 HEADERS += \
+    $$MAIN_PATH/Colle.h \
+    $$MAIN_PATH/ExcelExporter.h \
     $$MAIN_PATH/Group.h \
     $$MAIN_PATH/MainWindow.h \
     $$MAIN_PATH/Options.h \
     $$MAIN_PATH/OptionsTab.h \
     $$MAIN_PATH/OptionsVariations.h \
+    $$MAIN_PATH/Slot.h \
     $$MAIN_PATH/Solver.h \
     $$MAIN_PATH/Subject.h \
     $$MAIN_PATH/Subjects.h \
@@ -51,7 +57,15 @@ INCLUDEPATH += \
 ORTOOLS = $$PWD/../../../../../Qt/Libraries/or-tools
 
 win32:CONFIG(release, debug|release): LIBS += -L$$ORTOOLS/lib/ -lortools
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$ORTOOLS/lib/ -lortools
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$ORTOOLS/lib/ -lortoolsd
 
 INCLUDEPATH += $$ORTOOLS/include
 DEPENDPATH += $$ORTOOLS/include
+
+XLNT = $$PWD/../../../../../Qt/Libraries/xlnt
+
+win32:CONFIG(release, debug|release): LIBS += -L$$XLNT/lib/ -lxlnt
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$XLNT/lib/ -lxlntd
+
+INCLUDEPATH += $$XLNT/include
+DEPENDPATH += $$XLNT/include

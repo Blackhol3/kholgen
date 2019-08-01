@@ -34,6 +34,11 @@ bool Timeslot::isAdjacentTo(const Timeslot &timeslot) const
 	return day == timeslot.day && abs(hour - timeslot.hour) == 1;
 }
 
+QString Timeslot::getDayName() const
+{
+	return dayNames[day];
+}
+
 bool operator==(const Timeslot &a, const Timeslot &b)
 {
 	return a.getDay() == b.getDay() && a.getHour() == b.getHour();
@@ -42,6 +47,26 @@ bool operator==(const Timeslot &a, const Timeslot &b)
 bool operator!=(const Timeslot &a, const Timeslot &b)
 {
 	return !(a == b);
+}
+
+bool operator<(Timeslot const &a, Timeslot const &b)
+{
+	return a.getDay() != b.getDay() ? a.getDay() < b.getDay() : a.getHour() < b.getHour();
+}
+
+bool operator<=(Timeslot const &a, Timeslot const &b)
+{
+	return a < b || a == b;
+}
+
+bool operator>(Timeslot const &a, Timeslot const &b)
+{
+	return !(a <= b);
+}
+
+bool operator>=(Timeslot const &a, Timeslot const &b)
+{
+	return !(a < b);
 }
 
 unsigned int qHash(Timeslot const &key, unsigned int seed)

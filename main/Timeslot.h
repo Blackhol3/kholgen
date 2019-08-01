@@ -15,6 +15,7 @@ class Timeslot
 		Day getDay() const;
 		int getHour() const;
 		bool isAdjacentTo(Timeslot const& timeslot) const;
+		QString getDayName() const;
 
 		static int const firstHour;
 		static int const lastHour;
@@ -27,5 +28,9 @@ class Timeslot
 
 bool operator==(Timeslot const &a, Timeslot const &b);
 bool operator!=(Timeslot const &a, Timeslot const &b);
+bool operator<(Timeslot const &a, Timeslot const &b);
+bool operator<=(Timeslot const &a, Timeslot const &b);
+bool operator>(Timeslot const &a, Timeslot const &b);
+bool operator>=(Timeslot const &a, Timeslot const &b);
 unsigned int qHash(Timeslot const &key, unsigned int seed);
 

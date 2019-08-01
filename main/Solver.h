@@ -4,6 +4,7 @@
 #include <ortools/sat/cp_model.h>
 #include <QHash>
 #include <QVector>
+#include "Colle.h"
 #include "Group.h"
 #include "Teacher.h"
 #include "Timeslot.h"
@@ -21,6 +22,8 @@ class Solver
 		Solver(Subjects const* const subjects, Teachers const* const teachers, int nbGroups, int nbWeeks, Options const* const options);
 		bool compute();
 		void stopComputation();
+
+		QVector<Colle> getColles() const;
 		void print(QTableWidget* const table) const;
 
 	protected:

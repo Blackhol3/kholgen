@@ -6,6 +6,7 @@
 #include <QTableWidget>
 #include "Options.h"
 #include "OptionsVariations.h"
+#include "Slot.h"
 #include "Subjects.h"
 #include "Teachers.h"
 
@@ -320,42 +321,41 @@ void Solver::stopComputation()
 	shouldComputationBeStopped = true;
 }
 
+QVector<Colle> Solver::getColles() const
+{
+	QVector<Colle> colles;
+	for (auto const &week: weeks) {
+		for (auto const &group: groups) {
+			for (auto const &teacher: *teachers) {
+				for (auto const &timeslot: teacher->getAvailableTimeslots()) {
+					if (SolutionBooleanValue(response, isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot])) {
+						colles << Colle(teacher, timeslot, group, week);
+					}
+				}
+			}
+		}
+	}
+
+	return colles;
+}
+
 void Solver::print(QTableWidget* const table) const
 {
-	struct Creneau {
-		Teacher const *teacher;
-		Timeslot timeslot;
-	};
-
-	QVector<Creneau> creneaux;
+	QVector<Slot> creneaux;
 	for (auto it1 = doesTeacherUseTimeslot.cbegin(); it1 != doesTeacherUseTimeslot.cend(); ++it1)
 	{
 		for (auto it2 = it1.value().cbegin(); it2 != it1.value().cend(); ++it2)
 		{
 			if (SolutionBooleanValue(response, it2.value())) {
-				creneaux << Creneau{it1.key(), it2.key()};
+				creneaux << Slot(it1.key(), it2.key());
 			}
 		}
 	}
 
-	std::sort(creneaux.begin(), creneaux.end(), [](auto const &a, auto const &b) {
-		if (a.teacher->getSubject()->getFrequency() != b.teacher->getSubject()->getFrequency()) {
-			return a.teacher->getSubject()->getFrequency() < b.teacher->getSubject()->getFrequency();
-		}
-
-		if (a.teacher->getSubject()->getName() != b.teacher->getSubject()->getName()) {
-			return a.teacher->getSubject()->getName() < b.teacher->getSubject()->getName();
-		}
-
-		if (a.teacher->getName() != b.teacher->getName()) {
-			return a.teacher->getName() < b.teacher->getName();
-		}
-
-		if (a.timeslot.getDay() != b.timeslot.getDay()) {
-			return a.timeslot.getDay() < b.timeslot.getDay();
-		}
-
-		return a.timeslot.getHour() < b.timeslot.getHour();
+	std::sort(creneaux.begin(), creneaux.end(), [&](auto const &a, auto const &b) {
+		if (a.getTeacher()->getSubject() != b.getTeacher()->getSubject()) { return subjects->indexOf(a.getTeacher()->getSubject()) < subjects->indexOf(b.getTeacher()->getSubject()); }
+		if (a.getTeacher() != b.getTeacher()) { return teachers->indexOf(a.getTeacher()) < teachers->indexOf(b.getTeacher()); }
+		return a.getTimeslot() < b.getTimeslot();
 	});
 
 	table->clear();
@@ -376,16 +376,16 @@ void Solver::print(QTableWidget* const table) const
 		auto &creneau = creneaux[idCreneau];
 
 		auto pixmap = QPixmap(100, 100);
-		pixmap.fill(creneau.teacher->getSubject()->getColor());
+		pixmap.fill(creneau.getTeacher()->getSubject()->getColor());
 
 		auto headerItem = new QTableWidgetItem();
-		headerItem->setText(QObject::tr("%1, %2 à %3h00").arg(creneau.teacher->getName(), Timeslot::dayNames[creneau.timeslot.getDay()].toLower(), QString::number(creneau.timeslot.getHour())));
+		headerItem->setText(QObject::tr("%1, %2 à %3h00").arg(creneau.getTeacher()->getName(), creneau.getTimeslot().getDayName().toLower(), QString::number(creneau.getTimeslot().getHour())));
 		headerItem->setIcon(pixmap);
 		table->setVerticalHeaderItem(idCreneau, headerItem);
 
 		for (auto const &week: weeks)
 		{
-			int idGroup = static_cast<int>(SolutionIntegerValue(response, idGroupWithTeacherAtTimeslotInWeek[week][creneau.teacher][creneau.timeslot]));
+			int idGroup = static_cast<int>(SolutionIntegerValue(response, idGroupWithTeacherAtTimeslotInWeek[week][creneau.getTeacher()][creneau.getTimeslot()]));
 			if (idGroup != -1) {
 				auto item = new QTableWidgetItem(QString::number(idGroup + 1));
 				item->setBackground(QColor::fromHsv(360 * idGroup / groups.size(), 70, 255));

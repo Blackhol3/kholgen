@@ -1,23 +1,24 @@
 #pragma once
 
 #include <QString>
+#include "Group.h"
+#include "Timeslot.h"
+#include "Week.h"
 
-class Group;
 class Teacher;
-class Timeslot;
 
 class Colle
 {
 	public:
-		Colle(Timeslot const* const timeslot, Teacher const* const teacher, Group const* const group);
-		Timeslot const* getTimeslot() const;
+		Colle(Teacher const* const teacher, Timeslot const &timeslot, Group const &group, Week const &week);
 		Teacher const* getTeacher() const;
-		Group const* getGroup() const;
+		Timeslot const &getTimeslot() const;
+		Group const &getGroup() const;
+		Week const &getWeek() const;
 
 	protected:
-		Timeslot const* timeslot;
 		Teacher const* teacher;
-		Group const* group;
+		Timeslot timeslot;
+		Group group;
+		Week week;
 };
-
-bool operator==(const Colle &a, const Colle &b);

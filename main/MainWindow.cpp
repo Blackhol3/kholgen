@@ -2,11 +2,11 @@
 #include "ui_MainWindow.h"
 
 #include <QtConcurrent>
-#include <QLineEdit>
-#include <QMessageBox>
-#include <QTableWidget>
-#include <QVBoxLayout>
+#include <QFileDialog>
 #include <QVector>
+#include "ExcelExporter.h"
+
+#include <QDesktopServices>
 
 template<typename T>
 QSet<T> extract(QVector<T> const &list, QVector<int> const &indexes)
@@ -73,9 +73,9 @@ MainWindow::MainWindow() : QMainWindow(), ui(new Ui::MainWindow)
 
 MainWindow::~MainWindow()
 {
-	if (timetable)
+	if (solver)
 	{
-		timetable->stopComputation();
+		solver->stopComputation();
 		computationWatcher.waitForFinished();
 	}
 
@@ -86,15 +86,35 @@ void MainWindow::on_startButton_clicked()
 {
 	ui->startButton->hide();
 	ui->stopButton->show();
+	ui->exportButton->setDisabled(true);
 	ui->progressBar->setMaximum(0);
 
-	timetable = std::make_unique<Solver>(&subjects, &teachers, ui->numberOfGroupsSpinBox->value(), ui->numberOfWeeksSpinBox->value(), &options);
-	computationWatcher.setFuture(QtConcurrent::run([&]() { return timetable->compute(); }));
+	solver = std::make_unique<Solver>(&subjects, &teachers, ui->numberOfGroupsSpinBox->value(), ui->numberOfWeeksSpinBox->value(), &options);
+	computationWatcher.setFuture(QtConcurrent::run([&]() { return solver->compute(); }));
 }
 
 void MainWindow::on_stopButton_clicked()
 {
-	timetable->stopComputation();
+	solver->stopComputation();
+}
+
+void MainWindow::on_exportButton_clicked()
+{
+	QString filePath = QFileDialog::getSaveFileName(
+		this,
+		tr("Exporter"),
+		"",
+		tr("Classeur Microsoft Excel (*.xlsx)")
+	);
+
+	if (filePath.isEmpty()) {
+		return;
+	}
+
+	ExcelExporter excelExporter(&subjects, &teachers, solver.get());
+	excelExporter.save(filePath);
+
+	QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
 }
 
 void MainWindow::onComputationFinished()
@@ -104,6 +124,7 @@ void MainWindow::onComputationFinished()
 	ui->progressBar->setMaximum(100);
 
 	if (computationWatcher.result()) {
-		timetable->print(ui->table);
+		solver->print(ui->table);
+		ui->exportButton->setDisabled(false);
 	}
 }

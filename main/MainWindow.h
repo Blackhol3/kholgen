@@ -25,7 +25,7 @@ class MainWindow : public QMainWindow
 		Options options;
 		Subjects subjects;
 		Teachers teachers;
-		std::unique_ptr<Solver> timetable;
+		std::unique_ptr<Solver> solver;
 
 		QFutureWatcher<bool> computationWatcher;
 
@@ -38,6 +38,7 @@ class MainWindow : public QMainWindow
 	private slots:
 		void on_startButton_clicked();
 		void on_stopButton_clicked();
+		void on_exportButton_clicked();
 		void onComputationFinished();
 };
 
