@@ -37,8 +37,9 @@ void ExcelExporter::initWorkbook()
 void ExcelExporter::createTeachersWorksheet()
 {
 	xlnt::column_t const subjectColumn("A");
-	xlnt::column_t const teacherColumn(subjectColumn + 1);
-	xlnt::column_t const timeslotColumn(teacherColumn + 1);
+	xlnt::column_t const teacherCodeColumn(subjectColumn + 1);
+	xlnt::column_t const teacherNameColumn(teacherCodeColumn + 1);
+	xlnt::column_t const timeslotColumn(teacherNameColumn + 1);
 	xlnt::column_t const firstGroupColumn(timeslotColumn + 1);
 
 	xlnt::row_t const weekRow(1);
@@ -71,18 +72,31 @@ void ExcelExporter::createTeachersWorksheet()
 	}
 
 	// Print the teachers
+	auto const teachersBySubject = getTeachersBySubject();
 	auto const rowsByTeacher = getRowsByTeacher();
 	for (auto rows = rowsByTeacher.cbegin(); rows != rowsByTeacher.cend(); ++rows)
 	{
 		auto teacher = rows.key();
 		auto firstRow = *std::min_element(rows->cbegin(), rows->cend()) + firstGroupRow;
 		auto lastRow = *std::max_element(rows->cbegin(), rows->cend()) + firstGroupRow;
-		worksheet.merge_cells(xlnt::range_reference(teacherColumn, firstRow, teacherColumn, lastRow));
 
-		auto cell = worksheet.cell(teacherColumn, firstRow);
-		cell.value(teacher->getName().toStdString());
-		cell.alignment(centerAlignement);
-		cell.font(xlnt::font().size(10));
+		worksheet.merge_cells(xlnt::range_reference(teacherCodeColumn, firstRow, teacherCodeColumn, lastRow));
+		worksheet.merge_cells(xlnt::range_reference(teacherNameColumn, firstRow, teacherNameColumn, lastRow));
+
+		auto cellCode = worksheet.cell(teacherCodeColumn, firstRow);
+		cellCode.value(
+			QObject::tr("%1%2")
+		   .arg(teacher->getSubject()->getShortName())
+		   .arg(teachersBySubject[teacher->getSubject()].indexOf(teacher) + 1)
+		   .toStdString()
+		);
+		cellCode.alignment(centerAlignement);
+		cellCode.font(xlnt::font().size(10));
+
+		auto cellName = worksheet.cell(teacherNameColumn, firstRow);
+		cellName.value(teacher->getName().toStdString());
+		cellName.alignment(centerAlignement);
+		cellName.font(xlnt::font().size(10));
 	}
 
 	// Print the timeslots
@@ -126,7 +140,8 @@ void ExcelExporter::createTeachersWorksheet()
 	{
 		worksheet.range(xlnt::range_reference(firstGroupColumn, row, firstGroupColumn + static_cast<xlnt::row_t>(nbWeeks - 1), row)).border(thickBottomBorder);
 		worksheet.cell(subjectColumn, row).border(thickBottomBorder);
-		worksheet.cell(teacherColumn, row).border(thickBottomBorder);
+		worksheet.cell(teacherCodeColumn, row).border(thickBottomBorder);
+		worksheet.cell(teacherNameColumn, row).border(thickBottomBorder);
 		worksheet.cell(timeslotColumn, row).border(thickBottomBorder);
 	}
 
@@ -136,7 +151,8 @@ void ExcelExporter::createTeachersWorksheet()
 	auto dayWithLongerName = std::max_element(Timeslot::dayNames.cbegin(), Timeslot::dayNames.cend(), [] (auto const &a, auto const &b) { return a.size() < b.size(); });
 
 	worksheet.column_properties(subjectColumn).width = subjectWithLongerName->getName().size();
-	worksheet.column_properties(teacherColumn).width = teacherWithLongerName->getName().size() - 2;
+	worksheet.column_properties(teacherCodeColumn).width = 5;
+	worksheet.column_properties(teacherNameColumn).width = teacherWithLongerName->getName().size() - 2;
 	worksheet.column_properties(timeslotColumn).width = dayWithLongerName->size() + 5;
 }
 
@@ -296,8 +312,12 @@ QHash<const Subject *, QVector<const Teacher *> > ExcelExporter::getTeachersBySu
 	QHash<const Subject*, QVector<const Teacher*>> teachersBySubject;
 	auto const rowsByTeacher = getRowsByTeacher();
 
-	for (auto rows = rowsByTeacher.cbegin(); rows != rowsByTeacher.cend(); ++rows) {
-		teachersBySubject[rows.key()->getSubject()] << rows.key();
+	for (auto const &subject: *subjects) {
+		for (auto const &teacher: teachers->ofSubject(subject)) {
+			if (rowsByTeacher.contains(teacher)) {
+				teachersBySubject[subject] << teacher;
+			}
+		}
 	}
 
 	return teachersBySubject;
