@@ -16,10 +16,12 @@ class Timeslot
 		int getHour() const;
 		bool isAdjacentTo(Timeslot const& timeslot) const;
 		QString getDayName() const;
+		QString getDayShortName() const;
 
 		static int const firstHour;
 		static int const lastHour;
 		static QMap<Day, QString> const dayNames;
+		static QMap<Day, QString> const dayShortNames;
 
 	protected:
 		Day day;

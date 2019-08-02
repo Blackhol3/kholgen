@@ -35,10 +35,10 @@ MainWindow::MainWindow() : QMainWindow(), ui(new Ui::MainWindow)
 	};
 
 	subjects
-		<< new Subject("Mathematics", 1, QColor::fromHsv(0, 192, 192))
-		<< new Subject("Physics", 2, QColor::fromHsv(90, 192, 192))
-		<< new Subject("Engineering", 2, QColor::fromHsv(180, 192, 192))
-		<< new Subject("English", 2, QColor::fromHsv(270, 192, 192))
+		<< new Subject("Mathématiques", "M", 1, QColor::fromHsv(0, 192, 192))
+		<< new Subject("Physique", "φ", 2, QColor::fromHsv(90, 192, 192))
+		<< new Subject("Sciences de l'ingénieur", "SI", 2, QColor::fromHsv(180, 192, 192))
+		<< new Subject("Anglais", "A", 2, QColor::fromHsv(270, 192, 192))
 	;
 
 	teachers

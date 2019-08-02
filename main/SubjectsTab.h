@@ -29,13 +29,15 @@ class SubjectsTab : public QWidget
 		void edit(int row, int column);
 		void editColor(int row) const;
 		void editName(int row) const;
+		void editShortName(int row) const;
 		void editFrequency(int row) const;
 		void updateRow(int row) const;
 
 		enum Column {
 			ColumnColor = 0,
 			ColumnName = 1,
-			ColumnFrequency = 2,
+			ColumnShortName = 2,
+			ColumnFrequency = 3,
 		};
 
 	private:

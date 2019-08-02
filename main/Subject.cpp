@@ -1,6 +1,6 @@
 #include "Subject.h"
 
-Subject::Subject(QString name, int frequency, QColor color): QObject(), name(name), frequency(frequency), color(color)
+Subject::Subject(const QString &name, const QString &shortName, int frequency, QColor color): QObject(), name(name), shortName(shortName), frequency(frequency), color(color)
 {
 
 }
@@ -8,6 +8,11 @@ Subject::Subject(QString name, int frequency, QColor color): QObject(), name(nam
 QString Subject::getName() const
 {
 	return name;
+}
+
+QString Subject::getShortName() const
+{
+	return shortName;
 }
 
 int Subject::getFrequency() const
@@ -20,10 +25,15 @@ QColor Subject::getColor() const
 	return color;
 }
 
-
 void Subject::setName(const QString &value)
 {
     name = value;
+	emit changed();
+}
+
+void Subject::setShortName(const QString &value)
+{
+	shortName = value;
 	emit changed();
 }
 

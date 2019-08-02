@@ -122,6 +122,7 @@ void SubjectsTab::edit(int row, int column)
 	switch (column) {
 		case ColumnColor: editColor(row); break;
 		case ColumnName: editName(row); break;
+		case ColumnShortName: editShortName(row); break;
 		case ColumnFrequency: editFrequency(row); break;
 	}
 	isModificationInProgress = false;
@@ -158,6 +159,13 @@ void SubjectsTab::editName(int row) const
 	subjects->at(row)->setName(name);
 }
 
+void SubjectsTab::editShortName(int row) const
+{
+	auto item = ui->table->item(row, ColumnShortName);
+	QString shortName = item->data(Qt::DisplayRole).toString();
+	subjects->at(row)->setName(shortName);
+}
+
 void SubjectsTab::editFrequency(int row) const
 {
 	auto item = ui->table->item(row, ColumnFrequency);
@@ -179,15 +187,20 @@ void SubjectsTab::updateRow(int row) const
 	auto color = new QTableWidgetItem();
 	color->setBackground(subject->getColor());
 	color->setFlags(Qt::ItemIsEnabled);
-	ui->table->setItem(row, 0, color);
+	ui->table->setItem(row, ColumnColor, color);
 
 	auto name = new QTableWidgetItem();
 	name->setData(Qt::DisplayRole, subject->getName());
 	name->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled);
-	ui->table->setItem(row, 1, name);
+	ui->table->setItem(row, ColumnName, name);
+
+	auto shortName = new QTableWidgetItem();
+	shortName->setData(Qt::DisplayRole, subject->getShortName());
+	shortName->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled);
+	ui->table->setItem(row, ColumnShortName, shortName);
 
 	auto frequency = new QTableWidgetItem();
 	frequency->setData(Qt::DisplayRole, subject->getFrequency());
 	frequency->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled);
-	ui->table->setItem(row, 2, frequency);
+	ui->table->setItem(row, ColumnFrequency, frequency);
 }

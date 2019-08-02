@@ -12,7 +12,7 @@ void Subjects::append()
 		++i;
 	}
 
-	append(new Subject(name.arg(i), 1, QColor::fromHsv(QRandomGenerator::global()->bounded(0, 360), 192, 192)));
+	append(new Subject(name.arg(i), tr("–"), 1, QColor::fromHsv(QRandomGenerator::global()->bounded(0, 360), 192, 192)));
 }
 
 void Subjects::append(Subject *const subject)

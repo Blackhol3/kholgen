@@ -191,9 +191,9 @@ void ExcelExporter::createGroupsWorksheet()
 
 				cell.value(
 					QObject::tr("%1%2 %3%4")
-					.arg(slot.getTeacher()->getSubject()->getName().left(5))
+					.arg(slot.getTeacher()->getSubject()->getShortName())
 					.arg(teachersBySubject[slot.getTeacher()->getSubject()].indexOf(slot.getTeacher()) + 1)
-					.arg(slot.getTimeslot().getDayName().left(1))
+					.arg(slot.getTimeslot().getDayShortName())
 					.arg(slot.getTimeslot().getHour())
 					.toStdString()
 				);
@@ -208,7 +208,7 @@ void ExcelExporter::createGroupsWorksheet()
 	for (int idWeek = 0; idWeek < nbWeeks; ++idWeek)
 	{
 		auto column = firstSlotColumn + static_cast<unsigned int>(idWeek);
-		worksheet.column_properties(column).width = 5;
+		worksheet.column_properties(column).width = 6;
 		printWeekHeaderCell(worksheet.cell(column, weekRow), idWeek);
 	}
 

@@ -6,12 +6,21 @@
 
 int const Timeslot::firstHour = 8;
 int const Timeslot::lastHour = 19;
+
 QMap<Day, QString> const Timeslot::dayNames = {
 	{Day::Monday,    QObject::tr("Lundi")},
 	{Day::Tuesday,   QObject::tr("Mardi")},
 	{Day::Wednesday, QObject::tr("Mercredi")},
 	{Day::Thursday,  QObject::tr("Jeudi")},
 	{Day::Friday,    QObject::tr("Vendredi")},
+};
+
+QMap<Day, QString> const Timeslot::dayShortNames = {
+	{Day::Monday,    QObject::tr("l")},
+	{Day::Tuesday,   QObject::tr("m")},
+	{Day::Wednesday, QObject::tr("M")},
+	{Day::Thursday,  QObject::tr("j")},
+	{Day::Friday,    QObject::tr("v")},
 };
 
 Timeslot::Timeslot(const Day &day, int hour): day(day), hour(hour)
@@ -37,6 +46,11 @@ bool Timeslot::isAdjacentTo(const Timeslot &timeslot) const
 QString Timeslot::getDayName() const
 {
 	return dayNames[day];
+}
+
+QString Timeslot::getDayShortName() const
+{
+	return dayShortNames[day];
 }
 
 bool operator==(const Timeslot &a, const Timeslot &b)
