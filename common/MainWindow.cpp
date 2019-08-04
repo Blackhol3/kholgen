@@ -53,16 +53,6 @@ MainWindow::MainWindow() : QMainWindow(), ui(new Ui::MainWindow)
 		<< new Teacher("Colleur d'anglais n°1", subjects[3], extract(timeslots, {4}))
 		<< new Teacher("Colleur d'anglais n°2", subjects[3], extract(timeslots, {5}))
 	;
-	/*teachers.push_back(std::make_unique<Teacher>("M. Pillet", subjects[0].get(), extract(timeslots, {0, 2, 3})));
-	teachers.push_back(std::make_unique<Teacher>("M. Biton", subjects[0].get(), extract(timeslots, {3})));
-	teachers.push_back(std::make_unique<Teacher>("M. Lambour", subjects[0].get(), extract(timeslots, {2})));
-	teachers.push_back(std::make_unique<Teacher>("Mme Moreau", subjects[1].get(), extract(timeslots, {4, 5})));
-	teachers.push_back(std::make_unique<Teacher>("M. Berthet", subjects[1].get(), extract(timeslots, {6})));
-	teachers.push_back(std::make_unique<Teacher>("M. Dalla Monta", subjects[2].get(), extract(timeslots, {4, 6})));
-	teachers.push_back(std::make_unique<Teacher>("M. Milhaud", subjects[2].get(), extract(timeslots, {1})));
-	teachers.push_back(std::make_unique<Teacher>("Mme Nouet", subjects[3].get(), extract(timeslots, {0, 1})));
-	teachers.push_back(std::make_unique<Teacher>("Colleur d'anglais n°1", subjects[3].get(), extract(timeslots, {4})));
-	teachers.push_back(std::make_unique<Teacher>("Colleur d'anglais n°2", subjects[3].get(), extract(timeslots, {5})));*/
 
 	ui->subjectsTab->setData(&subjects, &teachers);
 	ui->teachersTab->setData(&subjects, &teachers);

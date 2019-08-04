@@ -263,7 +263,7 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 			for (int idWeek = 0; idWeek < weeks.size() - expectedFrequency; ++idWeek) {
 				LinearExpr nbEqualVariables(0);
 
-				for (int offsetWeek = 0; offsetWeek < expectedNumberOfSlots * expectedFrequency; offsetWeek += expectedFrequency) {
+				for (int offsetWeek = 0; offsetWeek < (expectedNumberOfSlots - 1) * expectedFrequency; offsetWeek += expectedFrequency) {
 					if (idWeek + offsetWeek + expectedFrequency >= weeks.size()) {
 						break;
 					}
@@ -294,7 +294,7 @@ bool Solver::compute()
 	shouldComputationBeStopped = false;
 
 	OptionsVariations optionsVariations(options, subjects, groups.size());
-	while (!optionsVariations.exhausted())
+	while (!shouldComputationBeStopped && !optionsVariations.exhausted())
 	{
 		CpModelBuilder modelBuilder;
 		createVariables(modelBuilder);

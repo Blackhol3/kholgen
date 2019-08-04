@@ -8,11 +8,11 @@ void Subjects::append()
 	QString name(tr("Matière %1"));
 	int i = 1;
 
-	while (std::any_of(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject->getName() == name.arg(i); })) {
+	while (std::any_of(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject->getName() == name.arg(i) || subject->getShortName() == name.arg(i); })) {
 		++i;
 	}
 
-	append(new Subject(name.arg(i), tr("–"), 1, QColor::fromHsv(QRandomGenerator::global()->bounded(0, 360), 192, 192)));
+	append(new Subject(name.arg(i), name.arg(i), 1, QColor::fromHsv(QRandomGenerator::global()->bounded(0, 360), 192, 192)));
 }
 
 void Subjects::append(Subject *const subject)

@@ -1,58 +1,58 @@
-MAIN_PATH = $$PWD/main/
+COMMON_PATH = $$PWD/common/
 
 QT += widgets concurrent
 
 CONFIG += c++17 qt
 
 SOURCES += \
-        $$MAIN_PATH/Colle.cpp \
-        $$MAIN_PATH/ExcelExporter.cpp \
-        $$MAIN_PATH/Group.cpp \
-        $$MAIN_PATH/MainWindow.cpp \
-        $$MAIN_PATH/Options.cpp \
-        $$MAIN_PATH/OptionsTab.cpp \
-        $$MAIN_PATH/OptionsVariations.cpp \
-        $$MAIN_PATH/Slot.cpp \
-        $$MAIN_PATH/Solver.cpp \
-        $$MAIN_PATH/Subject.cpp \
-        $$MAIN_PATH/Subjects.cpp \
-        $$MAIN_PATH/SubjectsTab.cpp \
-        $$MAIN_PATH/Teacher.cpp \
-        $$MAIN_PATH/TeacherDialog.cpp \
-        $$MAIN_PATH/Teachers.cpp \
-        $$MAIN_PATH/TeachersTab.cpp \
-        $$MAIN_PATH/Timeslot.cpp \
-        $$MAIN_PATH/Week.cpp \
+        $$COMMON_PATH/Colle.cpp \
+        $$COMMON_PATH/ExcelExporter.cpp \
+        $$COMMON_PATH/Group.cpp \
+        $$COMMON_PATH/MainWindow.cpp \
+        $$COMMON_PATH/Options.cpp \
+        $$COMMON_PATH/OptionsTab.cpp \
+        $$COMMON_PATH/OptionsVariations.cpp \
+        $$COMMON_PATH/Slot.cpp \
+        $$COMMON_PATH/Solver.cpp \
+        $$COMMON_PATH/Subject.cpp \
+        $$COMMON_PATH/Subjects.cpp \
+        $$COMMON_PATH/SubjectsTab.cpp \
+        $$COMMON_PATH/Teacher.cpp \
+        $$COMMON_PATH/TeacherDialog.cpp \
+        $$COMMON_PATH/Teachers.cpp \
+        $$COMMON_PATH/TeachersTab.cpp \
+        $$COMMON_PATH/Timeslot.cpp \
+        $$COMMON_PATH/Week.cpp \
 
 HEADERS += \
-    $$MAIN_PATH/Colle.h \
-    $$MAIN_PATH/ExcelExporter.h \
-    $$MAIN_PATH/Group.h \
-    $$MAIN_PATH/MainWindow.h \
-    $$MAIN_PATH/Options.h \
-    $$MAIN_PATH/OptionsTab.h \
-    $$MAIN_PATH/OptionsVariations.h \
-    $$MAIN_PATH/Slot.h \
-    $$MAIN_PATH/Solver.h \
-    $$MAIN_PATH/Subject.h \
-    $$MAIN_PATH/Subjects.h \
-    $$MAIN_PATH/SubjectsTab.h \
-    $$MAIN_PATH/Teacher.h \
-    $$MAIN_PATH/TeacherDialog.h \
-    $$MAIN_PATH/Teachers.h \
-    $$MAIN_PATH/TeachersTab.h \
-    $$MAIN_PATH/Timeslot.h \
-    $$MAIN_PATH/Week.h
+    $$COMMON_PATH/Colle.h \
+    $$COMMON_PATH/ExcelExporter.h \
+    $$COMMON_PATH/Group.h \
+    $$COMMON_PATH/MainWindow.h \
+    $$COMMON_PATH/Options.h \
+    $$COMMON_PATH/OptionsTab.h \
+    $$COMMON_PATH/OptionsVariations.h \
+    $$COMMON_PATH/Slot.h \
+    $$COMMON_PATH/Solver.h \
+    $$COMMON_PATH/Subject.h \
+    $$COMMON_PATH/Subjects.h \
+    $$COMMON_PATH/SubjectsTab.h \
+    $$COMMON_PATH/Teacher.h \
+    $$COMMON_PATH/TeacherDialog.h \
+    $$COMMON_PATH/Teachers.h \
+    $$COMMON_PATH/TeachersTab.h \
+    $$COMMON_PATH/Timeslot.h \
+    $$COMMON_PATH/Week.h
 
 FORMS += \
-    $$MAIN_PATH/MainWindow.ui \
-    $$MAIN_PATH/OptionsTab.ui \
-    $$MAIN_PATH/SubjectsTab.ui \
-    $$MAIN_PATH/TeacherDialog.ui \
-    $$MAIN_PATH/TeachersTab.ui
+    $$COMMON_PATH/MainWindow.ui \
+    $$COMMON_PATH/OptionsTab.ui \
+    $$COMMON_PATH/SubjectsTab.ui \
+    $$COMMON_PATH/TeacherDialog.ui \
+    $$COMMON_PATH/TeachersTab.ui
 
 INCLUDEPATH += \
-    $$MAIN_PATH
+    $$COMMON_PATH
 
 ORTOOLS = $$PWD/../../../../../Qt/Libraries/or-tools
 

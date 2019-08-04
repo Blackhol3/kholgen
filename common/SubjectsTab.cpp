@@ -119,6 +119,11 @@ void SubjectsTab::edit(int row, int column)
 	}
 
 	isModificationInProgress = true;
+	if (column == ColumnName || column == ColumnShortName) {
+		auto item = ui->table->item(row, column);
+		item->setData(Qt::DisplayRole, item->data(Qt::DisplayRole).toString().trimmed());
+	}
+
 	switch (column) {
 		case ColumnColor: editColor(row); break;
 		case ColumnName: editName(row); break;
@@ -142,6 +147,24 @@ void SubjectsTab::editName(int row) const
 	auto item = ui->table->item(row, ColumnName);
 	QString name = item->data(Qt::DisplayRole).toString();
 
+	if (name == subjects->at(row)->getName()) {
+		return;
+	}
+
+	if (name.isEmpty())
+	{
+		QMessageBox messageBox;
+		messageBox.setIcon(QMessageBox::Critical);
+		messageBox.setText(tr("Vous n'avez indiqué aucun nom pour cette matière."));
+		messageBox.setInformativeText(tr("Veuillez indiquer un nom."));
+		messageBox.setStandardButtons(QMessageBox::Ok);
+		messageBox.setDefaultButton(QMessageBox::Ok);
+		messageBox.exec();
+
+		item->setData(Qt::DisplayRole, subjects->at(row)->getName());
+		return;
+	}
+
 	if (std::any_of(subjects->cbegin(), subjects->cend(), [&](auto const &subject) { return subject->getName() == name; }))
 	{
 		QMessageBox messageBox;
@@ -163,7 +186,40 @@ void SubjectsTab::editShortName(int row) const
 {
 	auto item = ui->table->item(row, ColumnShortName);
 	QString shortName = item->data(Qt::DisplayRole).toString();
-	subjects->at(row)->setName(shortName);
+
+	if (shortName == subjects->at(row)->getShortName()) {
+		return;
+	}
+
+	if (shortName.isEmpty())
+	{
+		QMessageBox messageBox;
+		messageBox.setIcon(QMessageBox::Critical);
+		messageBox.setText(tr("Vous n'avez indiqué aucune abréviation pour cette matière."));
+		messageBox.setInformativeText(tr("Veuillez indiquer une abréviation."));
+		messageBox.setStandardButtons(QMessageBox::Ok);
+		messageBox.setDefaultButton(QMessageBox::Ok);
+		messageBox.exec();
+
+		item->setData(Qt::DisplayRole, subjects->at(row)->getShortName());
+		return;
+	}
+
+	if (std::any_of(subjects->cbegin(), subjects->cend(), [&](auto const &subject) { return subject->getShortName() == shortName; }))
+	{
+		QMessageBox messageBox;
+		messageBox.setIcon(QMessageBox::Critical);
+		messageBox.setText(tr("Une matière portant cette abréviation existe déjà."));
+		messageBox.setInformativeText(tr("Veuillez indiquer une autre abréviation."));
+		messageBox.setStandardButtons(QMessageBox::Ok);
+		messageBox.setDefaultButton(QMessageBox::Ok);
+		messageBox.exec();
+
+		item->setData(Qt::DisplayRole, subjects->at(row)->getShortName());
+		return;
+	}
+
+	subjects->at(row)->setShortName(shortName);
 }
 
 void SubjectsTab::editFrequency(int row) const
