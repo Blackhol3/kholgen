@@ -9,6 +9,7 @@ SOURCES += \
         $$COMMON_PATH/ExcelExporter.cpp \
         $$COMMON_PATH/Group.cpp \
         $$COMMON_PATH/MainWindow.cpp \
+        $$COMMON_PATH/misc.cpp \
         $$COMMON_PATH/Options.cpp \
         $$COMMON_PATH/OptionsTab.cpp \
         $$COMMON_PATH/OptionsVariations.cpp \
@@ -22,13 +23,14 @@ SOURCES += \
         $$COMMON_PATH/Teachers.cpp \
         $$COMMON_PATH/TeachersTab.cpp \
         $$COMMON_PATH/Timeslot.cpp \
-        $$COMMON_PATH/Week.cpp \
+        $$COMMON_PATH/Week.cpp
 
 HEADERS += \
     $$COMMON_PATH/Colle.h \
     $$COMMON_PATH/ExcelExporter.h \
     $$COMMON_PATH/Group.h \
     $$COMMON_PATH/MainWindow.h \
+    $$COMMON_PATH/misc.h \
     $$COMMON_PATH/Options.h \
     $$COMMON_PATH/OptionsTab.h \
     $$COMMON_PATH/OptionsVariations.h \

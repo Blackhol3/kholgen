@@ -4,6 +4,7 @@
 #include <ortools/util/time_limit.h>
 #include <QDebug>
 #include <QTableWidget>
+#include "misc.h"
 #include "Options.h"
 #include "OptionsVariations.h"
 #include "Slot.h"
@@ -225,26 +226,23 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 			int expectedFrequency = teacher->getSubject()->getFrequency();
 			int expectedNumberOfSlots = size / expectedFrequency + (size % expectedFrequency != 0);
 
-			for (int idWeek = 0; idWeek < weeks.size() - expectedFrequency; ++idWeek) {
+			auto const idWeekGroups = getIntegerGroups(0, weeks.size() - 1, expectedNumberOfSlots, expectedFrequency);
+			for (auto const &idWeekGroup: idWeekGroups)
+			{
 				LinearExpr nbEqualVariables(0);
 
-				for (int offsetWeek1 = 0; offsetWeek1 < expectedNumberOfSlots * expectedFrequency; offsetWeek1 += expectedFrequency) {
-					for (int offsetWeek2 = offsetWeek1 + expectedFrequency; offsetWeek2 < expectedNumberOfSlots * expectedFrequency; offsetWeek2 += expectedFrequency) {
-						if (idWeek + offsetWeek2 >= weeks.size()) {
-							break;
-						}
-
-						auto x = modelBuilder.NewBoolVar();
-						modelBuilder.AddEquality(
-							idGroupWithTeacherAtTimeslotInWeek[weeks[idWeek + offsetWeek1]][teacher][timeslot],
-							idGroupWithTeacherAtTimeslotInWeek[weeks[idWeek + offsetWeek2]][teacher][timeslot]
-						).OnlyEnforceIf(x);
-						modelBuilder.AddNotEqual(
-							idGroupWithTeacherAtTimeslotInWeek[weeks[idWeek + offsetWeek1]][teacher][timeslot],
-							idGroupWithTeacherAtTimeslotInWeek[weeks[idWeek + offsetWeek2]][teacher][timeslot]
-						).OnlyEnforceIf(x.Not());
-						nbEqualVariables.AddVar(x);
-					}
+				for (auto const &idWeeks: getAllPairs(idWeekGroup))
+				{
+					auto x = modelBuilder.NewBoolVar();
+					modelBuilder.AddEquality(
+						idGroupWithTeacherAtTimeslotInWeek[weeks[idWeeks.first]][teacher][timeslot],
+						idGroupWithTeacherAtTimeslotInWeek[weeks[idWeeks.second]][teacher][timeslot]
+					).OnlyEnforceIf(x);
+					modelBuilder.AddNotEqual(
+						idGroupWithTeacherAtTimeslotInWeek[weeks[idWeeks.first]][teacher][timeslot],
+						idGroupWithTeacherAtTimeslotInWeek[weeks[idWeeks.second]][teacher][timeslot]
+					).OnlyEnforceIf(x.Not());
+					nbEqualVariables.AddVar(x);
 				}
 
 				int variation = optionsVariations.get(Option::SameTeacherAndTimeslotOnlyOnceInCycle, subjects->indexOf(teacher->getSubject()));
@@ -260,27 +258,26 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 		int expectedNumberOfSlots = size / expectedFrequency + (size % expectedFrequency != 0);
 
 		for (auto const &group: groups) {
-			for (int idWeek = 0; idWeek < weeks.size() - expectedFrequency; ++idWeek) {
+			auto const idWeekGroups = getIntegerGroups(0, weeks.size() - 1, expectedNumberOfSlots, expectedFrequency);
+			for (auto const &idWeekGroup: idWeekGroups)
+			{
 				LinearExpr nbEqualVariables(0);
 
-				for (int offsetWeek = 0; offsetWeek < (expectedNumberOfSlots - 1) * expectedFrequency; offsetWeek += expectedFrequency) {
-					if (idWeek + offsetWeek + expectedFrequency >= weeks.size()) {
-						break;
-					}
-
+				for (auto const &idWeeks: getAllPairs(idWeekGroup))
+				{
 					auto x = modelBuilder.NewBoolVar();
 					modelBuilder.AddEquality(
-						idTeacherWithGroupForSubjectInWeek[weeks[idWeek + offsetWeek]][group][subject],
-						idTeacherWithGroupForSubjectInWeek[weeks[idWeek + offsetWeek + expectedFrequency]][group][subject]
+						idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.first]][group][subject],
+						idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.second]][group][subject]
 					).OnlyEnforceIf(x);
 					modelBuilder.AddNotEqual(
-						idTeacherWithGroupForSubjectInWeek[weeks[idWeek + offsetWeek]][group][subject],
-						idTeacherWithGroupForSubjectInWeek[weeks[idWeek + offsetWeek + expectedFrequency]][group][subject]
+						idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.first]][group][subject],
+						idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.second]][group][subject]
 					).OnlyEnforceIf(x.Not());
 					nbEqualVariables.AddVar(x);
 				}
 
-				auto x = doesGroupHaveSubjectInWeek[weeks[idWeek]][group][subject];
+				auto x = doesGroupHaveSubjectInWeek[weeks[idWeekGroup.first()]][group][subject];
 
 				int variation = optionsVariations.get(Option::SameTeacherOnlyOnceInCycle, subjects->indexOf(subject));
 				modelBuilder.AddLessOrEqual(nbEqualVariables, variation).OnlyEnforceIf(x);

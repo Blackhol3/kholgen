@@ -7,7 +7,7 @@
 
 using namespace testing;
 
-TEST(TimeslotTest, IsAdjacentTo)
+TEST(TimeslotTest, isAdjacentTo)
 {
 	Timeslot timeslot1(Day::Monday, 12);
 	Timeslot timeslot2(Day::Monday, 11);
@@ -25,7 +25,7 @@ TEST(TimeslotTest, IsAdjacentTo)
 	EXPECT_FALSE(timeslot1.isAdjacentTo(timeslot6));
 }
 
-TEST(TimeslotTest, Getters)
+TEST(TimeslotTest, getters)
 {
 	Timeslot timeslot(Day::Monday, 12);
 

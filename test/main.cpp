@@ -1,3 +1,4 @@
+#include "miscTest.h"
 #include "TimeslotTest.h"
 
 #include <gtest/gtest.h>
