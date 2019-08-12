@@ -1,9 +1,5 @@
 #include "Options.h"
 
-#include <QObject>
-#include "Subject.h"
-#include "Subjects.h"
-
 QMap<Option, QString> const Options::optionNames = {
 	{Option::NoConsecutiveColles, QObject::tr("Un groupe n'a jamais deux colles consécutives")},
 	{Option::SameTeacherOnlyOnceInCycle, QObject::tr("Au cours d'un cycle, un groupe n'a jamais deux fois le même professeur")},
@@ -12,6 +8,7 @@ QMap<Option, QString> const Options::optionNames = {
 };
 
 Options::Options():
+	QObject(),
 	options{
 		Option::NoConsecutiveColles,
 		Option::SameTeacherAndTimeslotOnlyOnceInCycle,
@@ -77,6 +74,7 @@ bool Options::move(int from, int to)
 		return false;
 	}
 
+	emit moved(from, to);
 	return true;
 }
 

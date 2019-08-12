@@ -6,25 +6,32 @@
 #include <QVector>
 #include "Colle.h"
 #include "Group.h"
-#include "Teacher.h"
+#include "OptionsVariations.h"
 #include "Timeslot.h"
 #include "Week.h"
 
 class Options;
-class OptionsVariations;
+class Subject;
 class Subjects;
+class Teacher;
 class Teachers;
 class QTableWidget;
 
-class Solver
+class Solver : public QObject
 {
+	Q_OBJECT
 	public:
-		Solver(Subjects const* const subjects, Teachers const* const teachers, int nbGroups, int nbWeeks, Options const* const options);
-		bool compute();
+		Solver(Subjects const* const subjects, Teachers const* const teachers, Options const* const options);
+		void compute(int const nbGroups, int const nbWeeks);
 		void stopComputation();
 
+		OptionsVariations const* getOptionsVariations() const;
 		QVector<Colle> getColles() const;
 		void print(QTableWidget* const table) const;
+
+	signals:
+		void optionFreezed();
+		void finished(bool success);
 
 	protected:
 		Subjects const* subjects;
@@ -32,6 +39,7 @@ class Solver
 		QVector<Group> groups;
 		QVector<Week> weeks;
 		Options const* options;
+		OptionsVariations optionsVariations;
 
 		QHash<Week, QHash<Group, QHash<Teacher const*, QHash<Timeslot, operations_research::sat::BoolVar>>>> isGroupWithTeacherAtTimeslotInWeek;
 		QHash<Teacher const*, QHash<Timeslot, operations_research::sat::BoolVar>> doesTeacherUseTimeslot;
@@ -43,8 +51,8 @@ class Solver
 		operations_research::sat::CpSolverResponse response;
 		std::atomic<bool> shouldComputationBeStopped;
 
-		void initGroups(int nbGroups);
-		void initWeeks(int nbWeeks);
+		void initGroups(int const nbGroups);
+		void initWeeks(int const nbWeeks);
 		void createVariables(operations_research::sat::CpModelBuilder &modelBuilder);
 		void createConstraints(operations_research::sat::CpModelBuilder &modelBuilder, OptionsVariations const &optionsVariations) const;
 };

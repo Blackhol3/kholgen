@@ -6,6 +6,7 @@ CONFIG += c++17 qt
 
 SOURCES += \
         $$COMMON_PATH/Colle.cpp \
+        $$COMMON_PATH/ComputationTab.cpp \
         $$COMMON_PATH/ExcelExporter.cpp \
         $$COMMON_PATH/Group.cpp \
         $$COMMON_PATH/MainWindow.cpp \
@@ -27,6 +28,7 @@ SOURCES += \
 
 HEADERS += \
     $$COMMON_PATH/Colle.h \
+    $$COMMON_PATH/ComputationTab.h \
     $$COMMON_PATH/ExcelExporter.h \
     $$COMMON_PATH/Group.h \
     $$COMMON_PATH/MainWindow.h \
@@ -47,6 +49,7 @@ HEADERS += \
     $$COMMON_PATH/Week.h
 
 FORMS += \
+    $$COMMON_PATH/ComputationTab.ui \
     $$COMMON_PATH/MainWindow.ui \
     $$COMMON_PATH/OptionsTab.ui \
     $$COMMON_PATH/SubjectsTab.ui \
@@ -56,7 +59,7 @@ FORMS += \
 INCLUDEPATH += \
     $$COMMON_PATH
 
-ORTOOLS = $$PWD/../../../../../Qt/Libraries/or-tools
+ORTOOLS = C:/Qt/Libraries/or-tools
 
 win32:CONFIG(release, debug|release): LIBS += -L$$ORTOOLS/lib/ -lortools
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$ORTOOLS/lib/ -lortoolsd
@@ -64,7 +67,7 @@ else:win32:CONFIG(debug, debug|release): LIBS += -L$$ORTOOLS/lib/ -lortoolsd
 INCLUDEPATH += $$ORTOOLS/include
 DEPENDPATH += $$ORTOOLS/include
 
-XLNT = $$PWD/../../../../../Qt/Libraries/xlnt
+XLNT = C:/Qt/Libraries/xlnt
 
 win32:CONFIG(release, debug|release): LIBS += -L$$XLNT/lib/ -lxlnt
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$XLNT/lib/ -lxlntd

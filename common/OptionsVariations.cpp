@@ -1,10 +1,13 @@
 #include "OptionsVariations.h"
 
-#include <QDebug>
 #include "Subject.h"
 #include "Subjects.h"
 
-OptionsVariations::OptionsVariations(Options const* const options, Subjects const* const subjects, int numberOfGroups): options(options)
+OptionsVariations::OptionsVariations(Options const* const options, Subjects const* const subjects): options(options), subjects(subjects)
+{
+}
+
+void OptionsVariations::init(const int numberOfGroups)
 {
 	numberOfVariations.clear();
 	numberOfVariations[Option::NoConsecutiveColles][0] = 2;
@@ -37,7 +40,6 @@ bool OptionsVariations::exhausted() const
  * @brief Return the identifiant (as a non-negative integer) of the variation of the option at the current index.
  * For instance, with binary option, 0 means that the constraint should be enforced, and 1 that it should be relaxed.
  * With tertiary option, 0 means that the constraint should be enforced, 1 partially enforced and 2 relaxed.
- * OptionsVariations::Enforce is a constant defined to 0.
  */
 int OptionsVariations::get(Option option, int subOption) const
 {
@@ -64,7 +66,6 @@ void OptionsVariations::increment()
 			if (variations[option][subOption] < numberOfVariations[option][subOption] - 1)
 			{
 				++variations[option][subOption];
-				qDebug().noquote() << QString("%1 | %2 => %3").arg(Options::optionNames[option], QString::number(subOption), QString::number(variations[option][subOption]));
 				lastIncrementedOption = {option, subOption};
 				return;
 			}
@@ -92,4 +93,9 @@ void OptionsVariations::reset()
 	}
 
 	lastIncrementedOption = {options->last(), 0};
+}
+
+OptionsVariationIndex OptionsVariations::getFreezedOption() const
+{
+	return freezedOption;
 }

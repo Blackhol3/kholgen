@@ -2,7 +2,9 @@
 
 #include <QCoreApplication>
 #include "Solver.h"
+#include "Subject.h"
 #include "Subjects.h"
+#include "Teacher.h"
 #include "Teachers.h"
 
 ExcelExporter::ExcelExporter(Subjects const* const subjects, Teachers const* const teachers, Solver const* const solver): subjects(subjects), teachers(teachers), solver(solver)

@@ -1,8 +1,6 @@
 #pragma once
 
 #include <QMap>
-#include <QString>
-#include <QVariant>
 #include "Options.h"
 
 class Subjects;
@@ -16,16 +14,20 @@ struct OptionsVariationIndex
 class OptionsVariations
 {
 	public:
-		OptionsVariations(Options const* const options, Subjects const* const subjects, int numberOfGroups);
+		OptionsVariations(Options const* const options, Subjects const* const subjects);
+		void init(int const numberOfGroups);
 		bool exhausted() const;
 		int get(Option option, int subOption = 0) const;
 		bool shouldEnforce(Option option, int subOption = 0) const;
 		void increment();
 		void freeze();
 		void reset();
+		OptionsVariationIndex getFreezedOption() const;
 
 	protected:
 		Options const* options;
+		Subjects const* subjects;
+
 		QMap<Option, QMap<int, int>> variations;
 		QMap<Option, QMap<int, int>> numberOfVariations;
 		OptionsVariationIndex lastIncrementedOption;

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <QMap>
+#include <QObject>
+#include <QPair>
 #include <QString>
-#include <QVariant>
-
-class Subjects;
+#include <QVector>
 
 enum class Option {
 	NoConsecutiveColles,
@@ -13,8 +13,9 @@ enum class Option {
 	OnlyOneCollePerDay,
 };
 
-class Options
+class Options : public QObject
 {
+	Q_OBJECT
 	public:
 		Options();
 		Option at(int i) const;
@@ -31,6 +32,9 @@ class Options
 		Option operator[](int i) const;
 
 		static QMap<Option, QString> const optionNames;
+
+	signals:
+		void moved(int from, int to);
 
 	protected:
 		QVector<Option> options;

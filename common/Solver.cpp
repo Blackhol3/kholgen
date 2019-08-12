@@ -8,7 +8,9 @@
 #include "Options.h"
 #include "OptionsVariations.h"
 #include "Slot.h"
+#include "Subject.h"
 #include "Subjects.h"
+#include "Teacher.h"
 #include "Teachers.h"
 
 using operations_research::TimeLimit;
@@ -20,16 +22,12 @@ using operations_research::sat::Model;
 Solver::Solver(
 		Subjects const* const subjects,
 		Teachers const* const teachers,
-		int nbGroups,
-		int nbWeeks,
 		Options const* const options
-	): subjects(subjects), teachers(teachers), options(options)
+	): QObject(), subjects(subjects), teachers(teachers), options(options), optionsVariations(options, subjects)
 {
-	initGroups(nbGroups);
-	initWeeks(nbWeeks);
 }
 
-void Solver::initGroups(int nbGroups)
+void Solver::initGroups(int const nbGroups)
 {
 	groups.clear();
 	for (int i = 0; i < nbGroups; ++i) {
@@ -37,7 +35,7 @@ void Solver::initGroups(int nbGroups)
 	}
 }
 
-void Solver::initWeeks(int nbWeeks)
+void Solver::initWeeks(int const nbWeeks)
 {
 	weeks.clear();
 	for (int i = 0; i < nbWeeks; ++i) {
@@ -140,7 +138,6 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 			}
 		}
 	}
-
 
 	// Subjects must be regularly distributed amongst weeks
 	for (auto const &subject: *subjects) {
@@ -286,12 +283,15 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 	}
 }
 
-bool Solver::compute()
+void Solver::compute(int const nbGroups, int const nbWeeks)
 {
+	initGroups(nbGroups);
+	initWeeks(nbWeeks);
+
 	shouldComputationBeStopped = false;
 	operations_research::sat::CpSolverResponse lastResponse;
 
-	OptionsVariations optionsVariations(options, subjects, groups.size());
+	optionsVariations.init(groups.size());
 	while (!shouldComputationBeStopped && !optionsVariations.exhausted())
 	{
 		CpModelBuilder modelBuilder;
@@ -307,6 +307,7 @@ bool Solver::compute()
 			response = lastResponse;
 			optionsVariations.freeze();
 			optionsVariations.reset();
+			emit optionFreezed();
 			//qDebug().noquote() << QString::fromStdString(CpSolverResponseStats(response));
 		}
 		else {
@@ -314,12 +315,17 @@ bool Solver::compute()
 		}
 	}
 
-	return response.status() == CpSolverStatus::FEASIBLE;
+	emit finished(response.status() == CpSolverStatus::FEASIBLE);
 }
 
 void Solver::stopComputation()
 {
 	shouldComputationBeStopped = true;
+}
+
+const OptionsVariations *Solver::getOptionsVariations() const
+{
+	return &optionsVariations;
 }
 
 QVector<Colle> Solver::getColles() const

@@ -2,12 +2,9 @@
 
 #include <QFutureWatcher>
 #include <QMainWindow>
-#include <memory>
 #include "Options.h"
 #include "Subjects.h"
-#include "Teacher.h"
 #include "Teachers.h"
-#include "Timeslot.h"
 #include "Solver.h"
 
 namespace Ui {
@@ -25,20 +22,11 @@ class MainWindow : public QMainWindow
 		Options options;
 		Subjects subjects;
 		Teachers teachers;
-		std::unique_ptr<Solver> solver;
+		Solver solver;
 
-		QFutureWatcher<bool> computationWatcher;
+		QFutureWatcher<void> computationWatcher;
 
 	private:
 		Ui::MainWindow *ui;
-
-	signals:
-
-	public slots:
-	private slots:
-		void on_startButton_clicked();
-		void on_stopButton_clicked();
-		void on_exportButton_clicked();
-		void onComputationFinished();
 };
 

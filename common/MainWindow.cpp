@@ -1,12 +1,11 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include <QtConcurrent>
-#include <QFileDialog>
 #include <QVector>
 #include "ExcelExporter.h"
-
-#include <QDesktopServices>
+#include "OptionsVariations.h"
+#include "Subject.h"
+#include "Teacher.h"
 
 template<typename T>
 QSet<T> extract(QVector<T> const &list, QVector<int> const &indexes)
@@ -19,10 +18,9 @@ QSet<T> extract(QVector<T> const &list, QVector<int> const &indexes)
 	return extractedList;
 }
 
-MainWindow::MainWindow() : QMainWindow(), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : QMainWindow(), solver(&subjects, &teachers, &options), ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-	ui->stopButton->hide();
 
 	QVector<Timeslot> timeslots = {
 		Timeslot(Day::Monday, 17),
@@ -57,64 +55,10 @@ MainWindow::MainWindow() : QMainWindow(), ui(new Ui::MainWindow)
 	ui->subjectsTab->setData(&subjects, &teachers);
 	ui->teachersTab->setData(&subjects, &teachers);
 	ui->optionsTab->setData(&options);
-
-	connect(&computationWatcher, SIGNAL(finished()), this, SLOT(onComputationFinished()));
+	ui->computationTab->setData(&options, &solver, &subjects, &teachers);
 }
 
 MainWindow::~MainWindow()
 {
-	if (solver)
-	{
-		solver->stopComputation();
-		computationWatcher.waitForFinished();
-	}
-
 	delete ui;
-}
-
-void MainWindow::on_startButton_clicked()
-{
-	ui->startButton->hide();
-	ui->stopButton->show();
-	ui->exportButton->setDisabled(true);
-	ui->progressBar->setMaximum(0);
-
-	solver = std::make_unique<Solver>(&subjects, &teachers, ui->numberOfGroupsSpinBox->value(), ui->numberOfWeeksSpinBox->value(), &options);
-	computationWatcher.setFuture(QtConcurrent::run([&]() { return solver->compute(); }));
-}
-
-void MainWindow::on_stopButton_clicked()
-{
-	solver->stopComputation();
-}
-
-void MainWindow::on_exportButton_clicked()
-{
-	QString filePath = QFileDialog::getSaveFileName(
-		this,
-		tr("Exporter"),
-		"",
-		tr("Classeur Microsoft Excel (*.xlsx)")
-	);
-
-	if (filePath.isEmpty()) {
-		return;
-	}
-
-	ExcelExporter excelExporter(&subjects, &teachers, solver.get());
-	excelExporter.save(filePath);
-
-	QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
-}
-
-void MainWindow::onComputationFinished()
-{
-	ui->stopButton->hide();
-	ui->startButton->show();
-	ui->progressBar->setMaximum(100);
-
-	if (computationWatcher.result()) {
-		solver->print(ui->table);
-		ui->exportButton->setDisabled(false);
-	}
 }
