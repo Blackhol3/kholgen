@@ -1,5 +1,6 @@
 #include "OptionsVariations.h"
 
+#include <QDebug>
 #include "Subject.h"
 #include "Subjects.h"
 
@@ -66,6 +67,7 @@ void OptionsVariations::increment()
 			if (variations[option][subOption] < numberOfVariations[option][subOption] - 1)
 			{
 				++variations[option][subOption];
+				qDebug().noquote() << QString("%1 | %2 => %3").arg(Options::optionNames[option], QString::number(subOption), QString::number(variations[option][subOption]));
 				lastIncrementedOption = {option, subOption};
 				return;
 			}
@@ -95,7 +97,15 @@ void OptionsVariations::reset()
 	lastIncrementedOption = {options->last(), 0};
 }
 
-OptionsVariationIndex OptionsVariations::getFreezedOption() const
+bool OptionsVariations::isOptionFreezed(Option option, int subOption) const
 {
-	return freezedOption;
+	if (options->indexOf(option) < options->indexOf(freezedOption.option)) {
+		return true;
+	}
+
+	if (option == freezedOption.option) {
+		return subOption >= freezedOption.subOption;
+	}
+
+	return false;
 }

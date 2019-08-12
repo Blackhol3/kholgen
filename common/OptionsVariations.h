@@ -22,7 +22,7 @@ class OptionsVariations
 		void increment();
 		void freeze();
 		void reset();
-		OptionsVariationIndex getFreezedOption() const;
+		bool isOptionFreezed(Option option, int subOption = 0) const;
 
 	protected:
 		Options const* options;

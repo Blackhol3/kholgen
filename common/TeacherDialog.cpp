@@ -61,7 +61,7 @@ void TeacherDialog::accept()
 	{
 		QMessageBox messageBox;
 		messageBox.setIcon(QMessageBox::Critical);
-		messageBox.setText(tr("Vous n'avez indiqué aucun nom pour cet enseignant."));
+		messageBox.setText(tr("Vous n'avez indiqué aucun nom pour cet·te enseignant·e."));
 		messageBox.setInformativeText(tr("Veuillez indiquer un nom."));
 		messageBox.setStandardButtons(QMessageBox::Ok);
 		messageBox.setDefaultButton(QMessageBox::Ok);

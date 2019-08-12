@@ -290,6 +290,7 @@ void Solver::compute(int const nbGroups, int const nbWeeks)
 
 	shouldComputationBeStopped = false;
 	operations_research::sat::CpSolverResponse lastResponse;
+	bool success = false;
 
 	optionsVariations.init(groups.size());
 	while (!shouldComputationBeStopped && !optionsVariations.exhausted())
@@ -308,6 +309,7 @@ void Solver::compute(int const nbGroups, int const nbWeeks)
 			optionsVariations.freeze();
 			optionsVariations.reset();
 			emit optionFreezed();
+			success = true;
 			//qDebug().noquote() << QString::fromStdString(CpSolverResponseStats(response));
 		}
 		else {
@@ -315,7 +317,7 @@ void Solver::compute(int const nbGroups, int const nbWeeks)
 		}
 	}
 
-	emit finished(response.status() == CpSolverStatus::FEASIBLE);
+	emit finished(success);
 }
 
 void Solver::stopComputation()

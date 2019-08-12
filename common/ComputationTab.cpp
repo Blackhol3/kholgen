@@ -1,8 +1,9 @@
 #include "ComputationTab.h"
 #include "ui_ComputationTab.h"
 
-#include <QFileDialog>
 #include <QDesktopServices>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <QtConcurrent>
 #include "ExcelExporter.h"
 #include "Options.h"
@@ -86,69 +87,68 @@ void ComputationTab::reconstruct()
 	}
 }
 
-void ComputationTab::setInProgressIcons()
-{
-	auto blankIcon = QPixmap(100, 100);
-	blankIcon.fill();
-
-	for (int idOption = 0; idOption < options->size(); ++idOption)
-	{
-		auto item = ui->optionsTree->topLevelItem(idOption);
-		if (!item->childCount()) {
-			item->setIcon(0, inProgressIcon);
-			continue;
-		}
-
-		item->setIcon(0, blankIcon);
-
-		for (int subOption = 0; subOption < item->childCount(); ++subOption) {
-			item->child(subOption)->setIcon(0, inProgressIcon);
-		}
-	}
-}
-
 void ComputationTab::updateIcons()
 {
-	auto optionsVariations = solver->getOptionsVariations();
-	auto freezedOption = optionsVariations->getFreezedOption();
-	for (int idOption = 0; idOption <= options->indexOf(freezedOption.option); ++idOption)
+	for (int idOption = 0; idOption < options->size(); ++idOption)
 	{
 		auto item = ui->optionsTree->topLevelItem(idOption);
 		auto option = options->at(idOption);
 
 		if (!item->childCount()) {
-			item->setIcon(0, optionsVariations->shouldEnforce(option) ? successIcon : errorIcon);
+			item->setIcon(0, getIcon(option));
 			continue;
 		}
 
-		int firstSubOption = option == freezedOption.option ? freezedOption.subOption : 0;
-		for (int subOption = firstSubOption; subOption < item->childCount(); ++subOption) {
-			item->child(subOption)->setIcon(0, optionsVariations->shouldEnforce(option, subOption) ? successIcon : errorIcon);
+		for (int subOption = 0; subOption < item->childCount(); ++subOption) {
+			item->child(subOption)->setIcon(0, getIcon(option, subOption));
 		}
 	}
 }
 
+const QIcon &ComputationTab::getIcon(Option option, int subOption) const
+{
+	auto optionsVariations = solver->getOptionsVariations();
+	if (optionsVariations->isOptionFreezed(option, subOption)) {
+		return optionsVariations->shouldEnforce(option) ? successIcon : errorIcon;
+	}
+
+	return computationWatcher.isRunning() ? inProgressIcon : errorIcon;
+}
+
 void ComputationTab::start()
 {
-	setInProgressIcons();
 	ui->startButton->hide();
 	ui->stopButton->show();
 	ui->exportButton->setDisabled(true);
 	ui->progressBar->setMaximum(0);
 
 	computationWatcher.setFuture(QtConcurrent::run([&]() { solver->compute(ui->numberOfGroupsSpinBox->value(), ui->numberOfWeeksSpinBox->value()); }));
+	updateIcons();
 }
 
 void ComputationTab::onFinished(bool success)
 {
-	updateIcons();
 	ui->stopButton->hide();
 	ui->startButton->show();
 	ui->progressBar->setMaximum(100);
 
-	if (success) {
+	if (success)
+	{
+		updateIcons();
 		solver->print(ui->table);
 		ui->exportButton->setDisabled(false);
+	}
+	else
+	{
+		reconstruct();
+
+		QMessageBox messageBox;
+		messageBox.setIcon(QMessageBox::Critical);
+		messageBox.setText(tr("Aucune solution n'a été trouvée."));
+		messageBox.setInformativeText(tr("Si vous avez interrompu volontairement le calcul, relancez-le puis laissez-le se terminer. Sinon, ajouter des enseignant·es ou modifier leurs disponibilités, puis relancer un calcul."));
+		messageBox.setStandardButtons(QMessageBox::Ok);
+		messageBox.setDefaultButton(QMessageBox::Ok);
+		messageBox.exec();
 	}
 }
 

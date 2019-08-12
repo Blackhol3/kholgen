@@ -35,8 +35,8 @@ class ComputationTab : public QWidget
 		static QIcon const errorIcon;
 
 		void reconstruct();
-		void setInProgressIcons();
 		void updateIcons();
+		QIcon const &getIcon(Option option, int subOption = 0) const;
 
 		void start();
 		void onFinished(bool success);
