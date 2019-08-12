@@ -74,10 +74,10 @@ void ComputationTab::reconstruct()
 	for (auto const &option: *options)
 	{
 		auto item = new QTreeWidgetItem(ui->optionsTree);
-		item->setText(0, Options::optionNames[option]);
+		item->setText(0, option.getName());
 		item->setExpanded(true);
 
-		if (option == Option::NoSameTeacherConsecutively || option == Option::SameTeacherOnlyOnceInCycle || option == Option::SameTeacherAndTimeslotOnlyOnceInCycle)
+		if (option.isDefinedBySubject())
 		{
 			for (auto const &subject: *subjects)
 			{

@@ -1,18 +1,10 @@
 #pragma once
 
-#include <QMap>
 #include <QObject>
 #include <QPair>
 #include <QString>
 #include <QVector>
-
-enum class Option {
-	NoConsecutiveColles,
-	NoSameTeacherConsecutively,
-	SameTeacherOnlyOnceInCycle,
-	SameTeacherAndTimeslotOnlyOnceInCycle,
-	OnlyOneCollePerDay,
-};
+#include "Option.h"
 
 class Options : public QObject
 {
@@ -31,8 +23,6 @@ class Options : public QObject
 		bool move(int from, int to);
 		int size() const;
 		Option operator[](int i) const;
-
-		static QMap<Option, QString> const optionNames;
 
 	signals:
 		void moved(int from, int to);

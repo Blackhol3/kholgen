@@ -11,6 +11,7 @@ SOURCES += \
         $$COMMON_PATH/Group.cpp \
         $$COMMON_PATH/MainWindow.cpp \
         $$COMMON_PATH/misc.cpp \
+        $$COMMON_PATH/Option.cpp \
         $$COMMON_PATH/Options.cpp \
         $$COMMON_PATH/OptionsTab.cpp \
         $$COMMON_PATH/OptionsVariations.cpp \
@@ -33,6 +34,7 @@ HEADERS += \
     $$COMMON_PATH/Group.h \
     $$COMMON_PATH/MainWindow.h \
     $$COMMON_PATH/misc.h \
+    $$COMMON_PATH/Option.h \
     $$COMMON_PATH/Options.h \
     $$COMMON_PATH/OptionsTab.h \
     $$COMMON_PATH/OptionsVariations.h \

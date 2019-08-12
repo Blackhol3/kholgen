@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QMap>
+#include <QHash>
 #include "Options.h"
 
 class Subjects;
@@ -28,8 +28,8 @@ class OptionsVariations
 		Options const* options;
 		Subjects const* subjects;
 
-		QMap<Option, QMap<int, int>> variations;
-		QMap<Option, QMap<int, int>> numberOfVariations;
+		QHash<Option, QMap<int, int>> variations;
+		QHash<Option, QMap<int, int>> numberOfVariations;
 		OptionsVariationIndex lastIncrementedOption;
 		OptionsVariationIndex freezedOption;
 };

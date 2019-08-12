@@ -32,7 +32,7 @@ void OptionsTab::reconstruct()
 	for (auto const &option: *options)
 	{
 		auto item = new QListWidgetItem(ui->list);
-		item->setText(Options::optionNames[option]);
+		item->setText(option.getName());
 	}
 
 	/** @link https://stackoverflow.com/a/27830068 **/
@@ -45,7 +45,7 @@ void OptionsTab::move(int from, int to)
 	if (!isMoveSuccessful)
 	{
 		auto const errorPair = options->getLastErrorPair();
-		auto const message = tr("La contrainte <em>« %1 »</em> ne peut logiquement pas être plus importante que la contrainte <em>« %2 »</em>").arg(Options::optionNames[errorPair.first], Options::optionNames[errorPair.second]);
+		auto const message = tr("La contrainte <em>« %1 »</em> ne peut logiquement pas être plus importante que la contrainte <em>« %2 »</em>").arg(errorPair.first.getName(), errorPair.second.getName());
 
 		QMessageBox messageBox;
 		messageBox.setIcon(QMessageBox::Critical);

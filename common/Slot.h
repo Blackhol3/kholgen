@@ -4,7 +4,7 @@
 
 class Teacher;
 
-struct Slot
+class Slot
 {
 	public:
 		Slot(Teacher const *teacher, Timeslot timeslot);

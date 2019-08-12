@@ -11,16 +11,18 @@ OptionsVariations::OptionsVariations(Options const* const options, Subjects cons
 void OptionsVariations::init(const int numberOfGroups)
 {
 	numberOfVariations.clear();
-	numberOfVariations[Option::NoConsecutiveColles][0] = 2;
-	numberOfVariations[Option::OnlyOneCollePerDay][0] = 2;
+	for (auto const &option: *options)
+	{
+		if (!option.isDefinedBySubject()) {
+			numberOfVariations[option][0] = 2;
+			continue;
+		}
 
-	for (int idSubject = 0; idSubject < subjects->size(); ++idSubject) {
-		auto subject = subjects->at(idSubject);
-		numberOfVariations[Option::SameTeacherOnlyOnceInCycle][idSubject] = numberOfGroups / subject->getFrequency() + (numberOfGroups % subject->getFrequency() != 0);
+		for (int idSubject = 0; idSubject < subjects->size(); ++idSubject) {
+			auto subject = subjects->at(idSubject);
+			numberOfVariations[option][idSubject] = numberOfGroups / subject->getFrequency() + (numberOfGroups % subject->getFrequency() != 0);
+		}
 	}
-
-	numberOfVariations[Option::SameTeacherAndTimeslotOnlyOnceInCycle] = numberOfVariations[Option::SameTeacherOnlyOnceInCycle];
-	numberOfVariations[Option::NoSameTeacherConsecutively] = numberOfVariations[Option::SameTeacherOnlyOnceInCycle];
 
 	variations = numberOfVariations;
 	for (auto &variation: variations) {
@@ -68,7 +70,7 @@ void OptionsVariations::increment()
 			if (variations[option][subOption] < numberOfVariations[option][subOption] - 1)
 			{
 				++variations[option][subOption];
-				qDebug().noquote() << QString("%1 | %2 => %3").arg(Options::optionNames[option], QString::number(subOption), QString::number(variations[option][subOption]));
+				qDebug().noquote() << QString("%1 | %2 => %3").arg(option.getName(), QString::number(subOption), QString::number(variations[option][subOption]));
 				lastIncrementedOption = {option, subOption};
 				return;
 			}

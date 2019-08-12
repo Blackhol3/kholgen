@@ -1,13 +1,5 @@
 #include "Options.h"
 
-QMap<Option, QString> const Options::optionNames = {
-	{Option::NoConsecutiveColles, QObject::tr("Un groupe n'a jamais deux colles consécutives")},
-	{Option::NoSameTeacherConsecutively, QObject::tr("Un groupe n'a jamais le même professeur deux fois d'affilée")},
-	{Option::SameTeacherOnlyOnceInCycle, QObject::tr("Au cours d'un cycle, un groupe n'a jamais deux fois le même professeur")},
-	{Option::SameTeacherAndTimeslotOnlyOnceInCycle, QObject::tr("Au cours d'un cycle, un groupe n'a jamais deux fois le même professeur, le même jour, à la même heure")},
-	{Option::OnlyOneCollePerDay, QObject::tr("Un groupe n'a jamais deux colles le même jour")},
-};
-
 Options::Options():
 	QObject(),
 	options{
