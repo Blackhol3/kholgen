@@ -8,6 +8,7 @@
 
 enum class Option {
 	NoConsecutiveColles,
+	NoSameTeacherConsecutively,
 	SameTeacherOnlyOnceInCycle,
 	SameTeacherAndTimeslotOnlyOnceInCycle,
 	OnlyOneCollePerDay,

@@ -20,6 +20,7 @@ void OptionsVariations::init(const int numberOfGroups)
 	}
 
 	numberOfVariations[Option::SameTeacherAndTimeslotOnlyOnceInCycle] = numberOfVariations[Option::SameTeacherOnlyOnceInCycle];
+	numberOfVariations[Option::NoSameTeacherConsecutively] = numberOfVariations[Option::SameTeacherOnlyOnceInCycle];
 
 	variations = numberOfVariations;
 	for (auto &variation: variations) {

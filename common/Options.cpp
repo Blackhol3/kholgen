@@ -2,6 +2,7 @@
 
 QMap<Option, QString> const Options::optionNames = {
 	{Option::NoConsecutiveColles, QObject::tr("Un groupe n'a jamais deux colles consécutives")},
+	{Option::NoSameTeacherConsecutively, QObject::tr("Un groupe n'a jamais le même professeur deux fois d'affilée")},
 	{Option::SameTeacherOnlyOnceInCycle, QObject::tr("Au cours d'un cycle, un groupe n'a jamais deux fois le même professeur")},
 	{Option::SameTeacherAndTimeslotOnlyOnceInCycle, QObject::tr("Au cours d'un cycle, un groupe n'a jamais deux fois le même professeur, le même jour, à la même heure")},
 	{Option::OnlyOneCollePerDay, QObject::tr("Un groupe n'a jamais deux colles le même jour")},
@@ -11,6 +12,7 @@ Options::Options():
 	QObject(),
 	options{
 		Option::NoConsecutiveColles,
+		Option::NoSameTeacherConsecutively,
 		Option::SameTeacherAndTimeslotOnlyOnceInCycle,
 		Option::SameTeacherOnlyOnceInCycle,
 		Option::OnlyOneCollePerDay,
@@ -90,16 +92,18 @@ Option Options::operator[](int i) const
 
 bool Options::isStateIncoherent()
 {
-	if (options.indexOf(Option::SameTeacherOnlyOnceInCycle) < options.indexOf(Option::SameTeacherAndTimeslotOnlyOnceInCycle)) {
-		lastErrorPair.first = Option::SameTeacherOnlyOnceInCycle;
-		lastErrorPair.second = Option::SameTeacherAndTimeslotOnlyOnceInCycle;
-		return true;
-	}
+	QVector<QPair<Option, Option>> const possibleErrorPairs = {
+		{Option::SameTeacherOnlyOnceInCycle, Option::NoSameTeacherConsecutively},
+		{Option::SameTeacherOnlyOnceInCycle, Option::SameTeacherAndTimeslotOnlyOnceInCycle},
+		{Option::OnlyOneCollePerDay, Option::NoConsecutiveColles},
+	};
 
-	if (options.indexOf(Option::OnlyOneCollePerDay) < options.indexOf(Option::NoConsecutiveColles)) {
-		lastErrorPair.first = Option::OnlyOneCollePerDay;
-		lastErrorPair.second = Option::NoConsecutiveColles;
-		return true;
+	for (auto const &possibleErrorPair: possibleErrorPairs)
+	{
+		if (options.indexOf(possibleErrorPair.first) < options.indexOf(possibleErrorPair.second)) {
+			lastErrorPair = possibleErrorPair;
+			return true;
+		}
 	}
 
 	return false;

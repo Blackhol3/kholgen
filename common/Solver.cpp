@@ -257,7 +257,8 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 			auto const idWeekGroups = getIntegerGroups(0, weeks.size() - 1, expectedNumberOfSlots, expectedFrequency);
 			for (auto const &idWeekGroup: idWeekGroups)
 			{
-				LinearExpr nbEqualVariables(0);
+				LinearExpr nbEqualVariablesCycle(0);
+				LinearExpr nbEqualVariablesConsecutively(0);
 
 				for (auto const &idWeeks: getAllPairs(idWeekGroup))
 				{
@@ -270,13 +271,30 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 						idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.first]][group][subject],
 						idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.second]][group][subject]
 					).OnlyEnforceIf(x.Not());
-					nbEqualVariables.AddVar(x);
+					nbEqualVariablesCycle.AddVar(x);
+				}
+
+				for (auto const &idWeeks: getAllConsecutivePairs(idWeekGroup))
+				{
+					auto x = modelBuilder.NewBoolVar();
+					modelBuilder.AddEquality(
+								idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.first]][group][subject],
+							idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.second]][group][subject]
+							).OnlyEnforceIf(x);
+					modelBuilder.AddNotEqual(
+								idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.first]][group][subject],
+							idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.second]][group][subject]
+							).OnlyEnforceIf(x.Not());
+					nbEqualVariablesConsecutively.AddVar(x);
 				}
 
 				auto x = doesGroupHaveSubjectInWeek[weeks[idWeekGroup.first()]][group][subject];
 
-				int variation = optionsVariations.get(Option::SameTeacherOnlyOnceInCycle, subjects->indexOf(subject));
-				modelBuilder.AddLessOrEqual(nbEqualVariables, variation).OnlyEnforceIf(x);
+				int variationCycle = optionsVariations.get(Option::SameTeacherOnlyOnceInCycle, subjects->indexOf(subject));
+				modelBuilder.AddLessOrEqual(nbEqualVariablesCycle, variationCycle).OnlyEnforceIf(x);
+
+				int variationConsecutively = optionsVariations.get(Option::NoSameTeacherConsecutively, subjects->indexOf(subject));
+				modelBuilder.AddLessOrEqual(nbEqualVariablesConsecutively, variationConsecutively).OnlyEnforceIf(x);
 			}
 		}
 	}

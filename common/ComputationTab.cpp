@@ -77,7 +77,7 @@ void ComputationTab::reconstruct()
 		item->setText(0, Options::optionNames[option]);
 		item->setExpanded(true);
 
-		if (option == Option::SameTeacherOnlyOnceInCycle || option == Option::SameTeacherAndTimeslotOnlyOnceInCycle)
+		if (option == Option::NoSameTeacherConsecutively || option == Option::SameTeacherOnlyOnceInCycle || option == Option::SameTeacherAndTimeslotOnlyOnceInCycle)
 		{
 			for (auto const &subject: *subjects)
 			{
@@ -110,7 +110,7 @@ const QIcon &ComputationTab::getIcon(Option option, int subOption) const
 {
 	auto optionsVariations = solver->getOptionsVariations();
 	if (optionsVariations->isOptionFreezed(option, subOption)) {
-		return optionsVariations->shouldEnforce(option) ? successIcon : errorIcon;
+		return optionsVariations->shouldEnforce(option, subOption) ? successIcon : errorIcon;
 	}
 
 	return computationWatcher.isRunning() ? inProgressIcon : errorIcon;
