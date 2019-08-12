@@ -3,7 +3,6 @@
 #include <ortools/sat/model.h>
 #include <ortools/util/time_limit.h>
 #include <QDebug>
-#include <QTableWidget>
 #include "misc.h"
 #include "Options.h"
 #include "OptionsVariations.h"
@@ -346,60 +345,4 @@ QVector<Colle> Solver::getColles() const
 	}
 
 	return colles;
-}
-
-void Solver::print(QTableWidget* const table) const
-{
-	QVector<Slot> creneaux;
-	for (auto it1 = doesTeacherUseTimeslot.cbegin(); it1 != doesTeacherUseTimeslot.cend(); ++it1)
-	{
-		for (auto it2 = it1.value().cbegin(); it2 != it1.value().cend(); ++it2)
-		{
-			if (SolutionBooleanValue(response, it2.value())) {
-				creneaux << Slot(it1.key(), it2.key());
-			}
-		}
-	}
-
-	std::sort(creneaux.begin(), creneaux.end(), [&](auto const &a, auto const &b) {
-		if (a.getTeacher()->getSubject() != b.getTeacher()->getSubject()) { return subjects->indexOf(a.getTeacher()->getSubject()) < subjects->indexOf(b.getTeacher()->getSubject()); }
-		if (a.getTeacher() != b.getTeacher()) { return teachers->indexOf(a.getTeacher()) < teachers->indexOf(b.getTeacher()); }
-		return a.getTimeslot() < b.getTimeslot();
-	});
-
-	table->clear();
-	table->setRowCount(creneaux.size());
-	table->setColumnCount(static_cast<int>(weeks.size()));
-
-	for (auto const &week: weeks)
-	{
-		auto headerItem = new QTableWidgetItem();
-		headerItem->setData(Qt::DisplayRole, week.getId() + 1);
-
-		table->setHorizontalHeaderItem(week.getId(), headerItem);
-		table->setColumnWidth(week.getId(), 5);
-	}
-
-	for (int idCreneau = 0; idCreneau < creneaux.size(); ++idCreneau)
-	{
-		auto &creneau = creneaux[idCreneau];
-
-		auto pixmap = QPixmap(100, 100);
-		pixmap.fill(creneau.getTeacher()->getSubject()->getColor());
-
-		auto headerItem = new QTableWidgetItem();
-		headerItem->setText(QObject::tr("%1, %2 à %3h00").arg(creneau.getTeacher()->getName(), creneau.getTimeslot().getDayName().toLower(), QString::number(creneau.getTimeslot().getHour())));
-		headerItem->setIcon(pixmap);
-		table->setVerticalHeaderItem(idCreneau, headerItem);
-
-		for (auto const &week: weeks)
-		{
-			int idGroup = static_cast<int>(SolutionIntegerValue(response, idGroupWithTeacherAtTimeslotInWeek[week][creneau.getTeacher()][creneau.getTimeslot()]));
-			if (idGroup != -1) {
-				auto item = new QTableWidgetItem(QString::number(idGroup + 1));
-				item->setBackground(QColor::fromHsv(360 * idGroup / groups.size(), 70, 255));
-				table->setItem(idCreneau, week.getId(), item);
-			}
-		}
-	}
 }

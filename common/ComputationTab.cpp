@@ -11,6 +11,7 @@
 #include "Solver.h"
 #include "Subject.h"
 #include "Subjects.h"
+#include "Teacher.h"
 #include "Teachers.h"
 
 QIcon const ComputationTab::inProgressIcon("../../image/cogs.svg");
@@ -115,6 +116,70 @@ const QIcon &ComputationTab::getIcon(Option option, int subOption) const
 	return computationWatcher.isRunning() ? inProgressIcon : errorIcon;
 }
 
+void ComputationTab::printTable()
+{
+	auto colles = solver->getColles();
+	int nbGroups = 0;
+	int nbWeeks = 0;
+
+	QVector<Slot> creneaux;
+	for (auto const &colle: colles)
+	{
+		Slot slot(colle.getTeacher(), colle.getTimeslot());
+		if (!creneaux.contains(slot)) {
+			creneaux << slot;
+		}
+
+		if (nbWeeks < colle.getWeek().getId() + 1) {
+			nbWeeks = colle.getWeek().getId() + 1;
+		}
+
+		if (nbGroups < colle.getGroup().getId() + 1) {
+			nbGroups = colle.getGroup().getId() + 1;
+		}
+	}
+
+	std::sort(creneaux.begin(), creneaux.end(), [&](auto const &a, auto const &b) {
+		if (a.getTeacher()->getSubject() != b.getTeacher()->getSubject()) { return subjects->indexOf(a.getTeacher()->getSubject()) < subjects->indexOf(b.getTeacher()->getSubject()); }
+		if (a.getTeacher() != b.getTeacher()) { return teachers->indexOf(a.getTeacher()) < teachers->indexOf(b.getTeacher()); }
+		return a.getTimeslot() < b.getTimeslot();
+	});
+
+	ui->table->clear();
+	ui->table->setRowCount(creneaux.size());
+	ui->table->setColumnCount(nbWeeks);
+
+	for (int idWeek = 0; idWeek < nbWeeks; ++idWeek)
+	{
+		auto headerItem = new QTableWidgetItem();
+		headerItem->setData(Qt::DisplayRole, idWeek + 1);
+
+		ui->table->setHorizontalHeaderItem(idWeek, headerItem);
+		ui->table->setColumnWidth(idWeek, 5);
+	}
+
+	for (int idCreneau = 0; idCreneau < creneaux.size(); ++idCreneau)
+	{
+		auto &creneau = creneaux[idCreneau];
+
+		auto pixmap = QPixmap(100, 100);
+		pixmap.fill(creneau.getTeacher()->getSubject()->getColor());
+
+		auto headerItem = new QTableWidgetItem();
+		headerItem->setText(QObject::tr("%1, %2 à %3h00").arg(creneau.getTeacher()->getName(), creneau.getTimeslot().getDayName().toLower(), QString::number(creneau.getTimeslot().getHour())));
+		headerItem->setIcon(pixmap);
+		ui->table->setVerticalHeaderItem(idCreneau, headerItem);
+	}
+
+	for (auto const &colle: colles)
+	{
+		auto idGroup = colle.getGroup().getId();
+		auto item = new QTableWidgetItem(QString::number(idGroup + 1));
+		item->setBackground(QColor::fromHsv(360 * idGroup / nbGroups, 70, 255));
+		ui->table->setItem(creneaux.indexOf(Slot(colle.getTeacher(), colle.getTimeslot())), colle.getWeek().getId(), item);
+	}
+}
+
 void ComputationTab::start()
 {
 	ui->startButton->hide();
@@ -135,7 +200,7 @@ void ComputationTab::onFinished(bool success)
 	if (success)
 	{
 		updateIcons();
-		solver->print(ui->table);
+		printTable();
 		ui->exportButton->setDisabled(false);
 	}
 	else

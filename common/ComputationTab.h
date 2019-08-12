@@ -37,6 +37,7 @@ class ComputationTab : public QWidget
 		void reconstruct();
 		void updateIcons();
 		QIcon const &getIcon(Option option, int subOption = 0) const;
+		void printTable();
 
 		void start();
 		void onFinished(bool success);

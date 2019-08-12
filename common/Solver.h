@@ -15,7 +15,6 @@ class Subject;
 class Subjects;
 class Teacher;
 class Teachers;
-class QTableWidget;
 
 class Solver : public QObject
 {
@@ -27,7 +26,6 @@ class Solver : public QObject
 
 		OptionsVariations const* getOptionsVariations() const;
 		QVector<Colle> getColles() const;
-		void print(QTableWidget* const table) const;
 
 	signals:
 		void optionFreezed();
