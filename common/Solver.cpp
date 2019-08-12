@@ -289,6 +289,7 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 bool Solver::compute()
 {
 	shouldComputationBeStopped = false;
+	operations_research::sat::CpSolverResponse lastResponse;
 
 	OptionsVariations optionsVariations(options, subjects, groups.size());
 	while (!shouldComputationBeStopped && !optionsVariations.exhausted())
@@ -300,17 +301,20 @@ bool Solver::compute()
 		Model model;
 		model.GetOrCreate<TimeLimit>()->RegisterExternalBooleanAsLimit(&shouldComputationBeStopped);
 
-		response = SolveCpModel(modelBuilder.Build(), &model);
-		if (response.status() == CpSolverStatus::FEASIBLE)
+		lastResponse = SolveCpModel(modelBuilder.Build(), &model);
+		if (lastResponse.status() == CpSolverStatus::FEASIBLE)
 		{
-			qDebug().noquote() << QString::fromStdString(CpSolverResponseStats(response));
-			return true;
+			response = lastResponse;
+			optionsVariations.freeze();
+			optionsVariations.reset();
+			//qDebug().noquote() << QString::fromStdString(CpSolverResponseStats(response));
 		}
-
-		optionsVariations.increment();
+		else {
+			optionsVariations.increment();
+		}
 	}
 
-	return false;
+	return response.status() == CpSolverStatus::FEASIBLE;
 }
 
 void Solver::stopComputation()

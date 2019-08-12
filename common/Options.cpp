@@ -48,9 +48,24 @@ QVector<Option>::const_iterator Options::cend() const
 	return options.cend();
 }
 
+Option Options::first() const
+{
+	return options.first();
+}
+
+Option Options::last() const
+{
+	return options.last();
+}
+
 const QPair<Option, Option> &Options::getLastErrorPair() const
 {
 	return lastErrorPair;
+}
+
+int Options::indexOf(const Option &option) const
+{
+	return options.indexOf(option);
 }
 
 bool Options::move(int from, int to)

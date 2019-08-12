@@ -7,6 +7,12 @@
 
 class Subjects;
 
+struct OptionsVariationIndex
+{
+	Option option;
+	int subOption;
+};
+
 class OptionsVariations
 {
 	public:
@@ -15,10 +21,13 @@ class OptionsVariations
 		int get(Option option, int subOption = 0) const;
 		bool shouldEnforce(Option option, int subOption = 0) const;
 		void increment();
+		void freeze();
+		void reset();
 
 	protected:
 		Options const* options;
 		QMap<Option, QMap<int, int>> variations;
 		QMap<Option, QMap<int, int>> numberOfVariations;
-		bool isExhausted;
+		OptionsVariationIndex lastIncrementedOption;
+		OptionsVariationIndex freezedOption;
 };

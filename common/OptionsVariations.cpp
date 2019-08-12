@@ -4,7 +4,7 @@
 #include "Subject.h"
 #include "Subjects.h"
 
-OptionsVariations::OptionsVariations(Options const* const options, Subjects const* const subjects, int numberOfGroups): options(options), isExhausted(false)
+OptionsVariations::OptionsVariations(Options const* const options, Subjects const* const subjects, int numberOfGroups): options(options)
 {
 	numberOfVariations.clear();
 	numberOfVariations[Option::NoConsecutiveColles][0] = 2;
@@ -23,11 +23,14 @@ OptionsVariations::OptionsVariations(Options const* const options, Subjects cons
 			subVariation = 0;
 		}
 	}
+
+	lastIncrementedOption = {options->last(), 0};
+	freezedOption = {options->first(), variations[options->first()].size()};
 }
 
 bool OptionsVariations::exhausted() const
 {
-	return isExhausted;
+	return lastIncrementedOption.option == freezedOption.option && lastIncrementedOption.subOption == freezedOption.subOption;
 }
 
 /**
@@ -48,11 +51,11 @@ bool OptionsVariations::shouldEnforce(Option option, int subOption) const
 
 void OptionsVariations::increment()
 {
-	for (int idOption = options->size() - 1; idOption >= 0; --idOption)
+	for (int idOption = options->size() - 1; idOption >= options->indexOf(freezedOption.option); --idOption)
 	{
 		auto option = options->at(idOption);
 
-		QVector<int> subOptions(variations[option].size());
+		QVector<int> subOptions(option == freezedOption.option ? freezedOption.subOption : variations[option].size());
 		std::iota(subOptions.begin(), subOptions.end(), 0);
 		std::stable_sort(subOptions.begin(), subOptions.end(), [&](int a, int b) { return variations[option][a] < variations[option][b]; });
 
@@ -62,10 +65,31 @@ void OptionsVariations::increment()
 			{
 				++variations[option][subOption];
 				qDebug().noquote() << QString("%1 | %2 => %3").arg(Options::optionNames[option], QString::number(subOption), QString::number(variations[option][subOption]));
+				lastIncrementedOption = {option, subOption};
 				return;
 			}
 		}
 	}
 
-	isExhausted = true;
+	lastIncrementedOption = freezedOption;
+}
+
+void OptionsVariations::freeze()
+{
+	freezedOption = lastIncrementedOption;
+}
+
+void OptionsVariations::reset()
+{
+	for (int idOption = options->size() - 1; idOption >= options->indexOf(freezedOption.option); --idOption)
+	{
+		auto option = options->at(idOption);
+		int subOptionsSize = option == freezedOption.option ? freezedOption.subOption : variations[option].size();
+
+		for (int subOption = 0; subOption < subOptionsSize; ++subOption) {
+			variations[option][subOption] = 0;
+		}
+	}
+
+	lastIncrementedOption = {options->last(), 0};
 }

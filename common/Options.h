@@ -22,7 +22,10 @@ class Options
 		QVector<Option>::const_iterator cbegin() const;
 		QVector<Option>::const_iterator end() const;
 		QVector<Option>::const_iterator cend() const;
+		Option first() const;
+		Option last() const;
 		QPair<Option, Option> const &getLastErrorPair() const;
+		int indexOf(Option const &option) const;
 		bool move(int from, int to);
 		int size() const;
 		Option operator[](int i) const;
