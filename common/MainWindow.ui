@@ -15,7 +15,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>2</number>
       </property>
       <widget class="SubjectsTab" name="subjectsTab">
        <attribute name="title">
@@ -25,6 +25,11 @@
       <widget class="TeachersTab" name="teachersTab">
        <attribute name="title">
         <string>Enseignants</string>
+       </attribute>
+      </widget>
+      <widget class="GroupsTab" name="groupsTab">
+       <attribute name="title">
+        <string>Groupes</string>
        </attribute>
       </widget>
       <widget class="OptionsTab" name="optionsTab">
@@ -80,6 +85,12 @@
    <class>ComputationTab</class>
    <extends>QWidget</extends>
    <header>ComputationTab.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GroupsTab</class>
+   <extends>QWidget</extends>
+   <header>GroupsTab.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

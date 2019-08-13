@@ -9,6 +9,7 @@ class ComputationTab;
 }
 
 class QTreeWidgetItem;
+class Groups;
 class Solver;
 class Subjects;
 class Teachers;
@@ -19,14 +20,15 @@ class ComputationTab : public QWidget
 
 	public:
 		explicit ComputationTab(QWidget *parent = nullptr);
-		void setData(Options* const newOptions, Solver* const newSolver, Subjects* const newSubjects, Teachers* const teachers);
+		void setData(Groups const* const newGroups, Options const* const newOptions, Solver* const newSolver, Subjects const* const newSubjects, Teachers const* const teachers);
 		~ComputationTab();
 
 	protected:
-		Options* options;
+		Groups const* groups;
+		Options const* options;
 		Solver* solver;
-		Subjects* subjects;
-		Teachers* teachers;
+		Subjects const* subjects;
+		Teachers const* teachers;
 
 		QFutureWatcher<void> computationWatcher;
 

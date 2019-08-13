@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include "ExcelExporter.h"
+#include "Groups.h"
 #include "Options.h"
 #include "OptionsVariations.h"
 #include "Solver.h"
@@ -20,6 +21,7 @@ QIcon const ComputationTab::errorIcon("../../image/error.svg");
 
 ComputationTab::ComputationTab(QWidget *parent) :
 	QWidget(parent),
+	groups(nullptr),
 	options(nullptr),
 	solver(nullptr),
 	subjects(nullptr),
@@ -33,7 +35,7 @@ ComputationTab::ComputationTab(QWidget *parent) :
 	connect(ui->exportButton, &QPushButton::clicked, this, &ComputationTab::exportResult);
 }
 
-void ComputationTab::setData(Options *const newOptions, Solver *const newSolver, Subjects *const newSubjects, Teachers *const newTeachers)
+void ComputationTab::setData(Groups const* const newGroups, const Options *const newOptions, Solver *const newSolver, const Subjects *const newSubjects, const Teachers *const newTeachers)
 {
 	if (options != nullptr) {
 		options->disconnect(this);
@@ -44,6 +46,11 @@ void ComputationTab::setData(Options *const newOptions, Solver *const newSolver,
 		solver->disconnect(this);
 	}
 
+	if (subjects != nullptr) {
+		subjects->disconnect(this);
+	}
+
+	groups = newGroups;
 	options = newOptions;
 	solver = newSolver;
 	subjects = newSubjects;
@@ -58,6 +65,10 @@ void ComputationTab::setData(Options *const newOptions, Solver *const newSolver,
 	connect(ui->stopButton, &QPushButton::clicked, solver, &Solver::stopComputation);
 	connect(solver, &Solver::optionFreezed, this, &ComputationTab::updateIcons);
 	connect(solver, &Solver::finished, this, &ComputationTab::onFinished);
+
+	connect(subjects, &Subjects::appended, this, &ComputationTab::reconstruct);
+	connect(subjects, &Subjects::changed, this, &ComputationTab::reconstruct);
+	connect(subjects, &Subjects::removed, this, &ComputationTab::reconstruct);
 }
 
 ComputationTab::~ComputationTab()
@@ -119,7 +130,6 @@ const QIcon &ComputationTab::getIcon(Option option, int subOption) const
 void ComputationTab::printTable()
 {
 	auto colles = solver->getColles();
-	int nbGroups = 0;
 	int nbWeeks = 0;
 
 	QVector<Slot> creneaux;
@@ -132,10 +142,6 @@ void ComputationTab::printTable()
 
 		if (nbWeeks < colle.getWeek().getId() + 1) {
 			nbWeeks = colle.getWeek().getId() + 1;
-		}
-
-		if (nbGroups < colle.getGroup().getId() + 1) {
-			nbGroups = colle.getGroup().getId() + 1;
 		}
 	}
 
@@ -173,9 +179,9 @@ void ComputationTab::printTable()
 
 	for (auto const &colle: colles)
 	{
-		auto idGroup = colle.getGroup().getId();
+		auto idGroup = groups->indexOf(colle.getGroup());
 		auto item = new QTableWidgetItem(QString::number(idGroup + 1));
-		item->setBackground(QColor::fromHsv(360 * idGroup / nbGroups, 70, 255));
+		item->setBackground(QColor::fromHsv(360 * idGroup / groups->size(), 70, 255));
 		ui->table->setItem(creneaux.indexOf(Slot(colle.getTeacher(), colle.getTimeslot())), colle.getWeek().getId(), item);
 	}
 }
@@ -187,7 +193,7 @@ void ComputationTab::start()
 	ui->exportButton->setDisabled(true);
 	ui->progressBar->setMaximum(0);
 
-	computationWatcher.setFuture(QtConcurrent::run([&]() { solver->compute(ui->numberOfGroupsSpinBox->value(), ui->numberOfWeeksSpinBox->value()); }));
+	computationWatcher.setFuture(QtConcurrent::run([&]() { solver->compute(ui->numberOfWeeksSpinBox->value()); }));
 	updateIcons();
 }
 
@@ -230,7 +236,7 @@ void ComputationTab::exportResult()
 		return;
 	}
 
-	ExcelExporter excelExporter(subjects, teachers, solver);
+	ExcelExporter excelExporter(subjects, teachers, groups, solver);
 	excelExporter.save(filePath);
 
 	QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));

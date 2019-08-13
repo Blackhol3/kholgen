@@ -1,13 +1,20 @@
 #include "ExcelExporter.h"
 
 #include <QCoreApplication>
+#include "Group.h"
+#include "Groups.h"
 #include "Solver.h"
 #include "Subject.h"
 #include "Subjects.h"
 #include "Teacher.h"
 #include "Teachers.h"
 
-ExcelExporter::ExcelExporter(Subjects const* const subjects, Teachers const* const teachers, Solver const* const solver): subjects(subjects), teachers(teachers), solver(solver)
+ExcelExporter::ExcelExporter(
+		Subjects const* const subjects,
+		Teachers const* const teachers,
+		Groups const* const groups,
+		Solver const* const solver
+	): subjects(subjects), teachers(teachers), groups(groups), solver(solver)
 {
 
 }
@@ -118,7 +125,7 @@ void ExcelExporter::createTeachersWorksheet()
 	{
 		auto row = rowBySlot[Slot(colle.getTeacher(), colle.getTimeslot())];
 		auto cell = worksheet.cell(firstGroupColumn + static_cast<unsigned int>(colle.getWeek().getId()), row + firstGroupRow);
-		cell.value(colle.getGroup().getId() + 1);
+		cell.value(groups->indexOf(colle.getGroup()) + 1);
 		cell.alignment(centerAlignement);
 		cell.font(xlnt::font().size(10));
 	}
@@ -177,11 +184,10 @@ void ExcelExporter::createGroupsWorksheet()
 	thickBottomBorder.side(xlnt::border_side::bottom, xlnt::border::border_property().style(xlnt::border_style::medium));
 
 	auto const colles = solver->getColles();
-	int const nbGroups = std::max_element(colles.cbegin(), colles.cend(), [] (auto const &a, auto const &b) { return a.getGroup().getId() < b.getGroup().getId(); })->getGroup().getId() + 1;
 	int const maximalNumberOfCollesByWeek = getMaximalNumberOfCollesByWeek();
 
 	// Print the groups
-	for (int idGroup = 0; idGroup < nbGroups; ++idGroup)
+	for (int idGroup = 0; idGroup < groups->size(); ++idGroup)
 	{
 		auto firstRow = static_cast<xlnt::row_t>(maximalNumberOfCollesByWeek * idGroup) + firstSlotRow;
 		auto lastRow = static_cast<xlnt::row_t>(maximalNumberOfCollesByWeek * (idGroup + 1) - 1) + firstSlotRow;
@@ -198,7 +204,7 @@ void ExcelExporter::createGroupsWorksheet()
 	auto const slotsByGroupAndWeek = getSlotsByGroupAndWeek();
 	for (auto slotsByWeek = slotsByGroupAndWeek.cbegin(); slotsByWeek != slotsByGroupAndWeek.cend(); ++slotsByWeek)
 	{
-		auto idGroup = slotsByWeek.key().getId();
+		auto idGroup = groups->indexOf(slotsByWeek.key());
 		for (auto slotsOfWeek = slotsByWeek->cbegin(); slotsOfWeek != slotsByWeek->cend(); ++slotsOfWeek)
 		{
 			auto idWeek = static_cast<unsigned int>(slotsOfWeek.key().getId());
@@ -232,7 +238,7 @@ void ExcelExporter::createGroupsWorksheet()
 
 	// Print the borders
 	QVector<xlnt::row_t> bottomBorderedRows{weekRow};
-	for (int idGroup = 0; idGroup < nbGroups; ++idGroup) {
+	for (int idGroup = 0; idGroup < groups->size(); ++idGroup) {
 		bottomBorderedRows << static_cast<xlnt::row_t>(maximalNumberOfCollesByWeek * (idGroup + 1) - 1) + firstSlotRow;
 	}
 
@@ -295,12 +301,11 @@ QHash<const Subject *, QVector<xlnt::row_t> > ExcelExporter::getRowsBySubject() 
 int ExcelExporter::getMaximalNumberOfCollesByWeek() const
 {
 	auto const colles = solver->getColles();
-	int const nbGroups = std::max_element(colles.cbegin(), colles.cend(), [] (auto const &a, auto const &b) { return a.getGroup().getId() < b.getGroup().getId(); })->getGroup().getId() + 1;
 
 	auto maximalNumberOfCollesByWeek = 0;
-	for (int idGroup = 0; idGroup < nbGroups; ++idGroup)
+	for (auto const &group: *groups)
 	{
-		auto numberOfCollesInFirstWeek = std::count_if(colles.cbegin(), colles.cend(), [&] (auto const &colle) { return colle.getGroup().getId() == idGroup && colle.getWeek().getId() == 0; });
+		auto numberOfCollesInFirstWeek = std::count_if(colles.cbegin(), colles.cend(), [&] (auto const &colle) { return colle.getGroup() == group && colle.getWeek().getId() == 0; });
 		if (maximalNumberOfCollesByWeek < numberOfCollesInFirstWeek) {
 			maximalNumberOfCollesByWeek = static_cast<int>(numberOfCollesInFirstWeek);
 		}
@@ -325,9 +330,9 @@ QHash<const Subject *, QVector<const Teacher *> > ExcelExporter::getTeachersBySu
 	return teachersBySubject;
 }
 
-QHash<Group, QHash<Week, QVector<Slot> > > ExcelExporter::getSlotsByGroupAndWeek() const
+QHash<Group const*, QHash<Week, QVector<Slot> > > ExcelExporter::getSlotsByGroupAndWeek() const
 {
-	QHash<Group, QHash<Week, QVector<Slot>>> slotsByGroupAndWeek;
+	QHash<Group const*, QHash<Week, QVector<Slot>>> slotsByGroupAndWeek;
 	auto const colles = solver->getColles();
 
 	for (auto const &colle: colles) {

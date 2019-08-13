@@ -1,16 +1,19 @@
 #pragma once
 
+#include <QObject>
+#include <QSet>
 
-class Group
+class Subject;
+
+class Group : public QObject
 {
+	Q_OBJECT
 	public:
-		Group(int id);
-		int getId() const;
+		Group(QSet<Subject const*> subjects);
+		bool hasSubject(Subject const* const subject) const;
+		void addSubject(Subject const* const subject);
+		void removeSubject(Subject const* const subject);
 
 	protected:
-		int id;
+		QSet<Subject const*> subjects;
 };
-
-bool operator==(const Group &a, const Group &b);
-bool operator!=(const Group &a, const Group &b);
-unsigned int qHash(Group const &key, unsigned int seed);

@@ -4,7 +4,10 @@
 #include <QColorDialog>
 #include <QDebug>
 #include <QMessageBox>
+#include <QRandomGenerator>
 #include <QShortcut>
+#include "Group.h"
+#include "Groups.h"
 #include "Subject.h"
 #include "Subjects.h"
 #include "Teacher.h"
@@ -27,13 +30,14 @@ SubjectsTab::SubjectsTab(QWidget *parent) :
 	connect(new QShortcut(QKeySequence(QKeySequence::Delete), this), &QShortcut::activated, this, &SubjectsTab::deleteSelected);
 }
 
-void SubjectsTab::setData(Subjects* const newSubjects, Teachers* const newTeachers)
+void SubjectsTab::setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers)
 {
 	if (subjects != nullptr) {
 		subjects->disconnect(this);
 		ui->addButton->disconnect(this);
 	}
 
+	groups = newGroups;
 	subjects = newSubjects;
 	teachers = newTeachers;
 
@@ -41,7 +45,21 @@ void SubjectsTab::setData(Subjects* const newSubjects, Teachers* const newTeache
 	connect(subjects, &Subjects::changed, this, &SubjectsTab::updateRow);
 	connect(subjects, &Subjects::appended, this, &SubjectsTab::append);
 	connect(subjects, &Subjects::removed, this, &SubjectsTab::reconstruct);
-	connect(ui->addButton, &QPushButton::clicked, this, [&]() { subjects->append(); });
+	connect(ui->addButton, &QPushButton::clicked, this, [&]() {
+		QString name(tr("Matière %1"));
+		int i = 1;
+
+		while (std::any_of(subjects->cbegin(), subjects->cend(), [&](auto const &subject) { return subject->getName() == name.arg(i) || subject->getShortName() == name.arg(i); })) {
+			++i;
+		}
+
+		auto subject = new Subject(name.arg(i), name.arg(i), 1, QColor::fromHsv(QRandomGenerator::global()->bounded(0, 360), 192, 192));
+		for (auto const &group: *groups) {
+			group->addSubject(subject);
+		}
+
+		subjects->append(subject);
+	});
 }
 
 SubjectsTab::~SubjectsTab()
@@ -106,6 +124,10 @@ void SubjectsTab::deleteSelected() const
 			for (auto const &teacher: teachersOfSubject) {
 				teachers->remove(teachers->indexOf(teacher));
 			}
+		}
+
+		for (auto const &group: *groups) {
+			group->removeSubject(subject);
 		}
 
 		subjects->remove(rowToDelete);

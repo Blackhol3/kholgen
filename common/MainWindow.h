@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QFutureWatcher>
 #include <QMainWindow>
+#include "Groups.h"
 #include "Options.h"
 #include "Subjects.h"
 #include "Teachers.h"
@@ -20,11 +20,10 @@ class MainWindow : public QMainWindow
 
 	protected:
 		Options options;
+		Groups groups;
 		Subjects subjects;
 		Teachers teachers;
 		Solver solver;
-
-		QFutureWatcher<void> computationWatcher;
 
 	private:
 		Ui::MainWindow *ui;

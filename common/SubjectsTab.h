@@ -6,6 +6,7 @@ namespace Ui {
 class SubjectsTab;
 }
 
+class Groups;
 class Subjects;
 class Teachers;
 
@@ -15,10 +16,11 @@ class SubjectsTab : public QWidget
 
 	public:
 		explicit SubjectsTab(QWidget *parent = nullptr);
-		void setData(Subjects* const newSubjects, Teachers* const newTeachers);
+		void setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers);
 		~SubjectsTab();
 
 	protected:
+		Groups* groups;
 		Subjects* subjects;
 		Teachers* teachers;
 		bool isModificationInProgress;

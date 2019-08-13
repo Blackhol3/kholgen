@@ -24,6 +24,7 @@ TeachersTab::TeachersTab(QWidget *parent) :
 		}
 	});
 
+	connect(ui->addButton, &QPushButton::clicked, this, &TeachersTab::editNewTeacher);
 	connect(ui->removeButton, &QPushButton::clicked, this, &TeachersTab::deleteSelectedTeacher);
 	connect(new QShortcut(QKeySequence(QKeySequence::Delete), this), &QShortcut::activated, this, &TeachersTab::deleteSelectedTeacher);
 }
@@ -47,8 +48,6 @@ void TeachersTab::setData(Subjects* const newSubjects, Teachers* const newTeache
 	connect(teachers, &Teachers::changed, this, &TeachersTab::reconstruct);
 	connect(teachers, &Teachers::appended, this, [&](int i) { appendTeacher(teachers->at(i)); });
 	connect(teachers, &Teachers::removed, this, &TeachersTab::reconstruct);
-
-	connect(ui->addButton, &QPushButton::clicked, this, &TeachersTab::editNewTeacher);
 }
 
 TeachersTab::~TeachersTab()

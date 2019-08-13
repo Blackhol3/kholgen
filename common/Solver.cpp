@@ -4,6 +4,7 @@
 #include <ortools/util/time_limit.h>
 #include <QDebug>
 #include "misc.h"
+#include "Groups.h"
 #include "Options.h"
 #include "OptionsVariations.h"
 #include "Slot.h"
@@ -21,17 +22,10 @@ using operations_research::sat::Model;
 Solver::Solver(
 		Subjects const* const subjects,
 		Teachers const* const teachers,
+		Groups const* const groups,
 		Options const* const options
-	): QObject(), subjects(subjects), teachers(teachers), options(options), optionsVariations(options, subjects)
+	): QObject(), subjects(subjects), teachers(teachers), groups(groups), options(options), optionsVariations(options, subjects)
 {
-}
-
-void Solver::initGroups(int const nbGroups)
-{
-	groups.clear();
-	for (int i = 0; i < nbGroups; ++i) {
-		groups << Group(i);
-	}
 }
 
 void Solver::initWeeks(int const nbWeeks)
@@ -46,7 +40,7 @@ void Solver::createVariables(CpModelBuilder &modelBuilder)
 {
 	isGroupWithTeacherAtTimeslotInWeek.clear();
 	for (auto const &week: weeks) {
-		for (auto const &group: groups) {
+		for (auto const &group: *groups) {
 			for (auto const &teacher: *teachers) {
 				for (auto const &timeslot: teacher->getAvailableTimeslots()) {
 					isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot] = modelBuilder.NewBoolVar();
@@ -62,7 +56,7 @@ void Solver::createVariables(CpModelBuilder &modelBuilder)
 
 			LinearExpr nbCollesWithTeacherAtTimeslot(0);
 			for (auto const &week: weeks) {
-				for (auto const &group: groups) {
+				for (auto const &group: *groups) {
 					nbCollesWithTeacherAtTimeslot.AddVar(isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot]);
 				}
 			}
@@ -77,11 +71,11 @@ void Solver::createVariables(CpModelBuilder &modelBuilder)
 	for (auto const &week: weeks) {
 		for (auto const &teacher: *teachers) {
 			for (auto const &timeslot: teacher->getAvailableTimeslots()) {
-				idGroupWithTeacherAtTimeslotInWeek[week][teacher][timeslot] = modelBuilder.NewIntVar({-1, static_cast<int>(groups.size()) - 1});
+				idGroupWithTeacherAtTimeslotInWeek[week][teacher][timeslot] = modelBuilder.NewIntVar({-1, static_cast<int>(groups->size()) - 1});
 
 				LinearExpr nbCollesWithTeacherAtTimeslotInWeek(0);
-				for (auto const &group: groups) {
-					modelBuilder.AddEquality(idGroupWithTeacherAtTimeslotInWeek[week][teacher][timeslot], group.getId()).OnlyEnforceIf(isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot]);
+				for (auto const &group: *groups) {
+					modelBuilder.AddEquality(idGroupWithTeacherAtTimeslotInWeek[week][teacher][timeslot], groups->indexOf(group)).OnlyEnforceIf(isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot]);
 					nbCollesWithTeacherAtTimeslotInWeek.AddVar(isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot]);
 				}
 
@@ -96,7 +90,7 @@ void Solver::createVariables(CpModelBuilder &modelBuilder)
 	idTeacherWithGroupForSubjectInWeek.clear();
 	doesGroupHaveSubjectInWeek.clear();
 	for (auto const &week: weeks) {
-		for (auto const &group: groups) {
+		for (auto const &group: *groups) {
 			for (auto const &subject: *subjects) {
 				idTeacherWithGroupForSubjectInWeek[week][group][subject] = modelBuilder.NewIntVar({-1, teachers->size() - 1});
 
@@ -124,7 +118,7 @@ void Solver::createVariables(CpModelBuilder &modelBuilder)
 void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations const &optionsVariations) const
 {
 	// Groups must have subject with the appropriate frequency
-	for (auto const &group: groups) {
+	for (auto const &group: *groups) {
 		for (auto const &subject: *subjects) {
 			for (int idWeek = 0; idWeek < weeks.size() - subject->getFrequency() + 1; ++idWeek) {
 				LinearExpr nbCollesOfGroupForSubjectInPeriodicWeek(0);
@@ -142,12 +136,12 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 	for (auto const &subject: *subjects) {
 		for (auto const &week: weeks) {
 			LinearExpr nbCollesOfSubjectInWeek(0);
-			for (auto const &group: groups) {
+			for (auto const &group: *groups) {
 				nbCollesOfSubjectInWeek.AddVar(doesGroupHaveSubjectInWeek[week][group][subject]);
 			}
 
-			int nbCollesExpected = groups.size() / subject->getFrequency();
-			if (groups.size() % subject->getFrequency() == 0) {
+			int nbCollesExpected = groups->size() / subject->getFrequency();
+			if (groups->size() % subject->getFrequency() == 0) {
 				modelBuilder.AddEquality(nbCollesOfSubjectInWeek, nbCollesExpected);
 			}
 			else {
@@ -169,7 +163,7 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 	// Groups cannot have two colles at the same time or consecutively
 	auto timeslots = teachers->getAvailableTimeslots();
 	for (auto const &week: weeks) {
-		for (auto const &group: groups) {
+		for (auto const &group: *groups) {
 			for (auto const &timeslot1: timeslots) {
 				LinearExpr nbCollesWithGroupInWeekAtExtendedTimeslot(0);
 				for (auto const &timeslot2: timeslots) {
@@ -197,7 +191,7 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 
 	// The number of slots must be minimal
 	for (auto const &subject: *subjects) {
-		int size = groups.size();
+		int size = groups->size();
 		int expectedFrequency = subject->getFrequency();
 		int expectedNumberOfSlots = size / expectedFrequency + (size % expectedFrequency != 0);
 
@@ -218,7 +212,7 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 	// Groups cannot use the same slot repeatedly
 	for (auto const &teacher: *teachers) {
 		for (auto const &timeslot: teacher->getAvailableTimeslots()) {
-			int size = groups.size();
+			int size = groups->size();
 			int expectedFrequency = teacher->getSubject()->getFrequency();
 			int expectedNumberOfSlots = size / expectedFrequency + (size % expectedFrequency != 0);
 
@@ -249,11 +243,11 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 
 	// Groups cannot have the same teacher repeatedly
 	for (auto const &subject: *subjects) {
-		int size = groups.size();
+		int size = groups->size();
 		int expectedFrequency = subject->getFrequency();
 		int expectedNumberOfSlots = size / expectedFrequency + (size % expectedFrequency != 0);
 
-		for (auto const &group: groups) {
+		for (auto const &group: *groups) {
 			auto const idWeekGroups = getIntegerGroups(0, weeks.size() - 1, expectedNumberOfSlots, expectedFrequency);
 			for (auto const &idWeekGroup: idWeekGroups)
 			{
@@ -300,16 +294,15 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations c
 	}
 }
 
-void Solver::compute(int const nbGroups, int const nbWeeks)
+void Solver::compute(int const nbWeeks)
 {
-	initGroups(nbGroups);
 	initWeeks(nbWeeks);
 
 	shouldComputationBeStopped = false;
 	operations_research::sat::CpSolverResponse lastResponse;
 	bool success = false;
 
-	optionsVariations.init(groups.size());
+	optionsVariations.init(groups->size());
 	while (!shouldComputationBeStopped && !optionsVariations.exhausted())
 	{
 		CpModelBuilder modelBuilder;
@@ -351,7 +344,7 @@ QVector<Colle> Solver::getColles() const
 {
 	QVector<Colle> colles;
 	for (auto const &week: weeks) {
-		for (auto const &group: groups) {
+		for (auto const &group: *groups) {
 			for (auto const &teacher: *teachers) {
 				for (auto const &timeslot: teacher->getAvailableTimeslots()) {
 					if (SolutionBooleanValue(response, isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot])) {

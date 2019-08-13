@@ -9,7 +9,6 @@ class Subjects : public QObject
 {
 	Q_OBJECT
 	public:
-		void append();
 		void append(Subject* const subject);
 		Subject* at(int i) const;
 		QVector<Subject const*>::const_iterator begin() const;

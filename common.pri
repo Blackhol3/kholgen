@@ -9,6 +9,8 @@ SOURCES += \
         $$COMMON_PATH/ComputationTab.cpp \
         $$COMMON_PATH/ExcelExporter.cpp \
         $$COMMON_PATH/Group.cpp \
+        $$COMMON_PATH/Groups.cpp \
+        $$COMMON_PATH/GroupsTab.cpp \
         $$COMMON_PATH/MainWindow.cpp \
         $$COMMON_PATH/misc.cpp \
         $$COMMON_PATH/Option.cpp \
@@ -32,6 +34,8 @@ HEADERS += \
     $$COMMON_PATH/ComputationTab.h \
     $$COMMON_PATH/ExcelExporter.h \
     $$COMMON_PATH/Group.h \
+    $$COMMON_PATH/Groups.h \
+    $$COMMON_PATH/GroupsTab.h \
     $$COMMON_PATH/MainWindow.h \
     $$COMMON_PATH/misc.h \
     $$COMMON_PATH/Option.h \
@@ -52,6 +56,7 @@ HEADERS += \
 
 FORMS += \
     $$COMMON_PATH/ComputationTab.ui \
+    $$COMMON_PATH/GroupsTab.ui \
     $$COMMON_PATH/MainWindow.ui \
     $$COMMON_PATH/OptionsTab.ui \
     $$COMMON_PATH/SubjectsTab.ui \

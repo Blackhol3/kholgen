@@ -1,28 +1,22 @@
 #include "Group.h"
 
-#include <QHash>
-
-Group::Group(int id): id(id)
+Group::Group(QSet<const Subject *> subjects): QObject(), subjects(subjects)
 {
 
 }
 
-int Group::getId() const
+bool Group::hasSubject(const Subject *const subject) const
 {
-    return id;
+	return subjects.contains(subject);
 }
 
-bool operator==(const Group &a, const Group &b)
+void Group::addSubject(const Subject *const subject)
 {
-	return a.getId() == b.getId();
+	subjects.insert(subject);
 }
 
-bool operator!=(const Group &a, const Group &b)
+void Group::removeSubject(const Subject *const subject)
 {
-	return !(a == b);
+	subjects.remove(subject);
 }
 
-unsigned int qHash(Group const &key, unsigned int seed)
-{
-	return qHash(key.getId(), seed);
-}

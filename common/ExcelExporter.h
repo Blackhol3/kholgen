@@ -2,11 +2,12 @@
 
 #include <QString>
 #include <xlnt/xlnt.hpp>
-#include "Group.h"
 #include "Slot.h"
 #include "Timeslot.h"
 #include "Week.h"
 
+class Group;
+class Groups;
 class Solver;
 class Subject;
 class Subjects;
@@ -16,12 +17,13 @@ class Teachers;
 class ExcelExporter
 {
 	public:
-		ExcelExporter(Subjects const* const subjects, Teachers const* const teachers, Solver const* const solver);
+		ExcelExporter(Subjects const* const subjects, Teachers const* const teachers, Groups const* const, Solver const* const solver);
 		void save(QString filePath);
 
 	protected:
 		Subjects const* subjects;
 		Teachers const* teachers;
+		Groups const* groups;
 		Solver const* solver;
 		std::unique_ptr<xlnt::workbook> workbook;
 
@@ -35,7 +37,7 @@ class ExcelExporter
 
 		int getMaximalNumberOfCollesByWeek() const;
 		QHash<Subject const*, QVector<Teacher const*>> getTeachersBySubject() const;
-		QHash<Group, QHash<Week, QVector<Slot>>> getSlotsByGroupAndWeek() const;
+		QHash<Group const*, QHash<Week, QVector<Slot>>> getSlotsByGroupAndWeek() const;
 
 		void printWeekHeaderCell(xlnt::cell cell, int idWeek) const;
 };

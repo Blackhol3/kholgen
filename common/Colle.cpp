@@ -3,7 +3,7 @@
 #include "Teacher.h"
 #include "Timeslot.h"
 
-Colle::Colle(Teacher const* const teacher, Timeslot const &timeslot, Group const &group, Week const &week): teacher(teacher), timeslot(timeslot), group(group), week(week)
+Colle::Colle(Teacher const* const teacher, Timeslot const &timeslot, Group const* const group, Week const &week): teacher(teacher), timeslot(timeslot), group(group), week(week)
 {
 
 }
@@ -23,7 +23,7 @@ const Week &Colle::getWeek() const
 	return week;
 }
 
-const Group &Colle::getGroup() const
+Group const* Colle::getGroup() const
 {
 	return group;
 }
