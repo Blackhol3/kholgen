@@ -4,6 +4,7 @@
 #include <QVector>
 
 class Group;
+class Subject;
 
 class Groups : public QObject
 {
@@ -21,6 +22,7 @@ class Groups : public QObject
 		int indexOf(Group const* const group) const;
 		void remove(int i);
 		int size() const;
+		QVector<Group*> const withSubject(Subject const* const subject) const;
 		Groups &operator<<(Group* const subject);
 		Group* operator[](int i) const;
 

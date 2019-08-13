@@ -29,6 +29,7 @@ class Solver : public QObject
 		QVector<Colle> getColles() const;
 
 	signals:
+		void started();
 		void optionFreezed();
 		void finished(bool success);
 

@@ -3,6 +3,7 @@
 #include <QHash>
 #include "Options.h"
 
+class Groups;
 class Subjects;
 
 struct OptionsVariationIndex
@@ -14,8 +15,8 @@ struct OptionsVariationIndex
 class OptionsVariations
 {
 	public:
-		OptionsVariations(Options const* const options, Subjects const* const subjects);
-		void init(int const numberOfGroups);
+		OptionsVariations(Groups const* const groups, Options const* const options, Subjects const* const subjects);
+		void init();
 		bool exhausted() const;
 		int get(Option option, int subOption = 0) const;
 		bool shouldEnforce(Option option, int subOption = 0) const;
@@ -25,6 +26,7 @@ class OptionsVariations
 		bool isOptionFreezed(Option option, int subOption = 0) const;
 
 	protected:
+		Groups const* groups;
 		Options const* options;
 		Subjects const* subjects;
 

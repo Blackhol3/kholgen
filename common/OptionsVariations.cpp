@@ -1,14 +1,15 @@
 #include "OptionsVariations.h"
 
 #include <QDebug>
+#include "Groups.h"
 #include "Subject.h"
 #include "Subjects.h"
 
-OptionsVariations::OptionsVariations(Options const* const options, Subjects const* const subjects): options(options), subjects(subjects)
+OptionsVariations::OptionsVariations(Groups const* const groups, Options const* const options, Subjects const* const subjects): groups(groups), options(options), subjects(subjects)
 {
 }
 
-void OptionsVariations::init(const int numberOfGroups)
+void OptionsVariations::init()
 {
 	numberOfVariations.clear();
 	for (auto const &option: *options)
@@ -20,7 +21,7 @@ void OptionsVariations::init(const int numberOfGroups)
 
 		for (int idSubject = 0; idSubject < subjects->size(); ++idSubject) {
 			auto subject = subjects->at(idSubject);
-			numberOfVariations[option][idSubject] = numberOfGroups / subject->getFrequency() + (numberOfGroups % subject->getFrequency() != 0);
+			numberOfVariations[option][idSubject] = groups->withSubject(subject).size() / subject->getFrequency() + (groups->withSubject(subject).size() % subject->getFrequency() != 0);
 		}
 	}
 

@@ -29,7 +29,7 @@ TeachersTab::TeachersTab(QWidget *parent) :
 	connect(new QShortcut(QKeySequence(QKeySequence::Delete), this), &QShortcut::activated, this, &TeachersTab::deleteSelectedTeacher);
 }
 
-void TeachersTab::setData(Subjects* const newSubjects, Teachers* const newTeachers)
+void TeachersTab::setData(Subjects const* const newSubjects, Teachers* const newTeachers)
 {
 	if (subjects != nullptr) {
 		subjects->disconnect(this);

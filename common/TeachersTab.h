@@ -17,11 +17,11 @@ class TeachersTab : public QWidget
 
 	public:
 		explicit TeachersTab(QWidget *parent = nullptr);
-		void setData(Subjects* const newSubjects, Teachers* const newTeachers);
+		void setData(Subjects const* const newSubjects, Teachers* const newTeachers);
 		~TeachersTab();
 
 	protected:
-		Subjects* subjects;
+		Subjects const* subjects;
 		Teachers* teachers;
 
 		void reconstruct();

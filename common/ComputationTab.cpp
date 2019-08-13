@@ -63,6 +63,7 @@ void ComputationTab::setData(Groups const* const newGroups, const Options *const
 		item->setExpanded(true);
 	});
 	connect(ui->stopButton, &QPushButton::clicked, solver, &Solver::stopComputation);
+	connect(solver, &Solver::started, this, &ComputationTab::updateIcons);
 	connect(solver, &Solver::optionFreezed, this, &ComputationTab::updateIcons);
 	connect(solver, &Solver::finished, this, &ComputationTab::onFinished);
 
@@ -194,7 +195,6 @@ void ComputationTab::start()
 	ui->progressBar->setMaximum(0);
 
 	computationWatcher.setFuture(QtConcurrent::run([&]() { solver->compute(ui->numberOfWeeksSpinBox->value()); }));
-	updateIcons();
 }
 
 void ComputationTab::onFinished(bool success)

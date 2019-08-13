@@ -63,6 +63,13 @@ int Groups::size() const
 	return groups.size();
 }
 
+const QVector<Group*> Groups::withSubject(const Subject *const subject) const
+{
+	QVector<Group*> groupsWithSubject;
+	std::copy_if(groups.cbegin(), groups.cend(), std::back_inserter(groupsWithSubject), [=](auto const &group) { return group->hasSubject(subject); });
+	return groupsWithSubject;
+}
+
 Groups &Groups::operator<<(Group *const group)
 {
 	append(group);
