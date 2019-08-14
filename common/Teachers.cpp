@@ -4,12 +4,7 @@
 
 void Teachers::append(Teacher *const teacher)
 {
-	int i = teachers.size();
-	connect(teacher, &Teacher::changed, [=]() { emit changed(i); });
-	teacher->setParent(this);
-
-	teachers << teacher;
-	emit appended(i);
+	insert(teachers.size(), teacher);
 }
 
 Teacher* Teachers::at(int i) const
@@ -56,6 +51,15 @@ int Teachers::indexOf(Teacher* const teacher) const
 int Teachers::indexOf(Teacher const* const teacher) const
 {
 	return teachers.indexOf(const_cast<Teacher* const>(teacher));
+}
+
+void Teachers::insert(int i, Teacher *const teacher)
+{
+	connect(teacher, &Teacher::changed, this, [=]() { emit changed(teachers.indexOf(teacher)); });
+	teacher->setParent(this);
+
+	teachers.insert(i, teacher);
+	emit inserted(i);
 }
 
 const QVector<Teacher *> Teachers::ofSubject(Subject const* const subject) const

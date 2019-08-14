@@ -3,22 +3,33 @@
 
 #include <QMessageBox>
 #include "Options.h"
+#include "UndoCommand.h"
 
 OptionsTab::OptionsTab(QWidget *parent) :
 	QWidget(parent),
+	undoStack(nullptr),
 	ui(new Ui::OptionsTab)
 {
 	ui->setupUi(this);
 
 	connect(ui->list->model(), &QAbstractItemModel::rowsMoved, [&](auto, int source, auto, auto, int destination) {
-		move(source, destination);
+		ui->list->blockSignals(true);
+		move(source, destination > source ? destination - 1 : destination);
+		ui->list->blockSignals(false);
 	});
 }
 
-void OptionsTab::setData(Options *const newOptions)
+void OptionsTab::setData(Options *const newOptions, QUndoStack* const newUndoStack)
 {
+	if (options != nullptr) {
+		options->disconnect(this);
+	}
+
 	options = newOptions;
+	undoStack = newUndoStack;
+
 	reconstruct();
+	connect(options, &Options::moved, this, &OptionsTab::reconstruct);
 }
 
 OptionsTab::~OptionsTab()
@@ -41,7 +52,7 @@ void OptionsTab::reconstruct()
 
 void OptionsTab::move(int from, int to)
 {
-	bool isMoveSuccessful = options->move(from, to > from ? to - 1 : to);
+	bool isMoveSuccessful = options->move(from, to);
 	if (!isMoveSuccessful)
 	{
 		auto const errorPair = options->getLastErrorPair();
@@ -55,5 +66,14 @@ void OptionsTab::move(int from, int to)
 		messageBox.exec();
 
 		reconstruct();
+		return;
 	}
+
+	options->move(to, from);
+	auto command = new UndoCommand(
+		[=]() { emit actionned(); },
+		[=]() { options->move(from, to); },
+		[=]() { options->move(to, from); }
+	);
+	undoStack->push(command);
 }

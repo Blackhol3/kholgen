@@ -4,12 +4,7 @@
 
 void Subjects::append(Subject *const subject)
 {
-	int i = subjects.size();
-	connect(subject, &Subject::changed, this, [=]() { emit changed(i); });
-	subject->setParent(this);
-
-	subjects << subject;
-	emit appended(i);
+	insert(subjects.size(), subject);
 }
 
 Subject* Subjects::at(int i) const
@@ -45,6 +40,15 @@ int Subjects::indexOf(Subject* const subject) const
 int Subjects::indexOf(Subject const* const subject) const
 {
 	return subjects.indexOf(const_cast<Subject* const>(subject));
+}
+
+void Subjects::insert(int i, Subject *const subject)
+{
+	connect(subject, &Subject::changed, this, [=]() { emit changed(subjects.indexOf(subject)); });
+	subject->setParent(this);
+
+	subjects.insert(i, subject);
+	emit inserted(i);
 }
 
 void Subjects::remove(int i)

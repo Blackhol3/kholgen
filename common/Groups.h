@@ -20,11 +20,17 @@ class Groups : public QObject
 		QVector<Group const*>::const_iterator cend() const;
 		int indexOf(Group* const group) const;
 		int indexOf(Group const* const group) const;
+		void insert(int i, Group* const group);
 		void remove(int i);
 		int size() const;
 		QVector<Group*> const withSubject(Subject const* const subject) const;
 		Groups &operator<<(Group* const subject);
 		Group* operator[](int i) const;
+
+	signals:
+		void inserted(int i);
+		void changed(int i);
+		void removed(int i);
 
 	protected:
 		QVector<Group*> groups;

@@ -9,21 +9,25 @@ class SubjectsTab;
 class Groups;
 class Subjects;
 class Teachers;
+class QUndoStack;
 
 class SubjectsTab : public QWidget
 {
 	Q_OBJECT
 
 	public:
-		explicit SubjectsTab(QWidget *parent = nullptr);
-		void setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers);
+		SubjectsTab(QWidget *parent = nullptr);
+		void setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers, QUndoStack* const newUndoStack);
 		~SubjectsTab();
+
+	signals:
+		void actionned() const;
 
 	protected:
 		Groups* groups;
 		Subjects* subjects;
 		Teachers* teachers;
-		bool isModificationInProgress;
+		QUndoStack* undoStack;
 
 		void reconstruct();
 		void append();
@@ -33,6 +37,7 @@ class SubjectsTab : public QWidget
 		void editName(int row) const;
 		void editShortName(int row) const;
 		void editFrequency(int row) const;
+		void insert(int row);
 		void updateRow(int row) const;
 
 		enum Column {

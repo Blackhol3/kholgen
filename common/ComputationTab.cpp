@@ -14,6 +14,7 @@
 #include "Subjects.h"
 #include "Teacher.h"
 #include "Teachers.h"
+#include "UndoCommand.h"
 
 QIcon const ComputationTab::inProgressIcon("../../image/cogs.svg");
 QIcon const ComputationTab::successIcon("../../image/check.svg");
@@ -26,6 +27,7 @@ ComputationTab::ComputationTab(QWidget *parent) :
 	solver(nullptr),
 	subjects(nullptr),
 	teachers(nullptr),
+	undoStack(nullptr),
 	ui(new Ui::ComputationTab)
 {
 	ui->setupUi(this);
@@ -33,9 +35,19 @@ ComputationTab::ComputationTab(QWidget *parent) :
 
 	connect(ui->startButton, &QPushButton::clicked, this, &ComputationTab::start);
 	connect(ui->exportButton, &QPushButton::clicked, this, &ComputationTab::exportResult);
+	connect(ui->numberOfWeeksSpinBox, &QSpinBox::editingFinished, this, &ComputationTab::updateNumberOfWeeks);
+
+	numberOfWeeks = ui->numberOfWeeksSpinBox->value();
 }
 
-void ComputationTab::setData(Groups const* const newGroups, const Options *const newOptions, Solver *const newSolver, const Subjects *const newSubjects, const Teachers *const newTeachers)
+void ComputationTab::setData(
+	Groups const* const newGroups,
+	const Options *const newOptions,
+	Solver* const newSolver,
+	Subjects const* const newSubjects,
+	Teachers const* const newTeachers,
+	QUndoStack* const newUndoStack
+)
 {
 	if (options != nullptr) {
 		options->disconnect(this);
@@ -55,6 +67,7 @@ void ComputationTab::setData(Groups const* const newGroups, const Options *const
 	solver = newSolver;
 	subjects = newSubjects;
 	teachers = newTeachers;
+	undoStack = newUndoStack;
 
 	reconstruct();
 	connect(options, &Options::moved, this, [&](int from, int to) {
@@ -67,7 +80,7 @@ void ComputationTab::setData(Groups const* const newGroups, const Options *const
 	connect(solver, &Solver::optionFreezed, this, &ComputationTab::updateIcons);
 	connect(solver, &Solver::finished, this, &ComputationTab::onFinished);
 
-	connect(subjects, &Subjects::appended, this, &ComputationTab::reconstruct);
+	connect(subjects, &Subjects::inserted, this, &ComputationTab::reconstruct);
 	connect(subjects, &Subjects::changed, this, &ComputationTab::reconstruct);
 	connect(subjects, &Subjects::removed, this, &ComputationTab::reconstruct);
 }
@@ -100,6 +113,29 @@ void ComputationTab::reconstruct()
 	}
 }
 
+void ComputationTab::updateNumberOfWeeks()
+{
+	auto const currentNumberOfWeeks = numberOfWeeks;
+	auto const newNumberOfWeeks = ui->numberOfWeeksSpinBox->value();
+
+	if (currentNumberOfWeeks == newNumberOfWeeks) {
+		return;
+	}
+
+	auto command = new UndoCommand(
+		[=]() { emit actionned(); },
+		[=]() {
+			numberOfWeeks = newNumberOfWeeks;
+			ui->numberOfWeeksSpinBox->setValue(numberOfWeeks);
+		},
+		[=]() {
+			numberOfWeeks = currentNumberOfWeeks;
+			ui->numberOfWeeksSpinBox->setValue(numberOfWeeks);
+		}
+	);
+	undoStack->push(command);
+}
+
 void ComputationTab::updateIcons()
 {
 	for (int idOption = 0; idOption < options->size(); ++idOption)
@@ -126,6 +162,42 @@ const QIcon &ComputationTab::getIcon(Option option, int subOption) const
 	}
 
 	return computationWatcher.isRunning() ? inProgressIcon : errorIcon;
+}
+
+void ComputationTab::start()
+{
+	ui->startButton->hide();
+	ui->stopButton->show();
+	ui->exportButton->setDisabled(true);
+	ui->progressBar->setMaximum(0);
+
+	computationWatcher.setFuture(QtConcurrent::run([&]() { solver->compute(numberOfWeeks); }));
+}
+
+void ComputationTab::onFinished(bool success)
+{
+	ui->stopButton->hide();
+	ui->startButton->show();
+	ui->progressBar->setMaximum(100);
+
+	if (success)
+	{
+		updateIcons();
+		printTable();
+		ui->exportButton->setDisabled(false);
+	}
+	else
+	{
+		reconstruct();
+
+		QMessageBox messageBox;
+		messageBox.setIcon(QMessageBox::Critical);
+		messageBox.setText(tr("Aucune solution n'a été trouvée."));
+		messageBox.setInformativeText(tr("Si vous avez interrompu volontairement le calcul, relancez-le puis laissez-le se terminer. Sinon, ajouter des enseignant·es ou modifier leurs disponibilités, puis relancer un calcul."));
+		messageBox.setStandardButtons(QMessageBox::Ok);
+		messageBox.setDefaultButton(QMessageBox::Ok);
+		messageBox.exec();
+	}
 }
 
 void ComputationTab::printTable()
@@ -184,42 +256,6 @@ void ComputationTab::printTable()
 		auto item = new QTableWidgetItem(QString::number(idGroup + 1));
 		item->setBackground(QColor::fromHsv(360 * idGroup / groups->size(), 70, 255));
 		ui->table->setItem(creneaux.indexOf(Slot(colle.getTeacher(), colle.getTimeslot())), colle.getWeek().getId(), item);
-	}
-}
-
-void ComputationTab::start()
-{
-	ui->startButton->hide();
-	ui->stopButton->show();
-	ui->exportButton->setDisabled(true);
-	ui->progressBar->setMaximum(0);
-
-	computationWatcher.setFuture(QtConcurrent::run([&]() { solver->compute(ui->numberOfWeeksSpinBox->value()); }));
-}
-
-void ComputationTab::onFinished(bool success)
-{
-	ui->stopButton->hide();
-	ui->startButton->show();
-	ui->progressBar->setMaximum(100);
-
-	if (success)
-	{
-		updateIcons();
-		printTable();
-		ui->exportButton->setDisabled(false);
-	}
-	else
-	{
-		reconstruct();
-
-		QMessageBox messageBox;
-		messageBox.setIcon(QMessageBox::Critical);
-		messageBox.setText(tr("Aucune solution n'a été trouvée."));
-		messageBox.setInformativeText(tr("Si vous avez interrompu volontairement le calcul, relancez-le puis laissez-le se terminer. Sinon, ajouter des enseignant·es ou modifier leurs disponibilités, puis relancer un calcul."));
-		messageBox.setStandardButtons(QMessageBox::Ok);
-		messageBox.setDefaultButton(QMessageBox::Ok);
-		messageBox.exec();
 	}
 }
 

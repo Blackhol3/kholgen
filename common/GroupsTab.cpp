@@ -9,6 +9,7 @@
 #include "Groups.h"
 #include "Subject.h"
 #include "Subjects.h"
+#include "UndoCommand.h"
 
 class StyledItemDelegate: public QStyledItemDelegate
 {
@@ -34,6 +35,7 @@ GroupsTab::GroupsTab(QWidget *parent) :
 	QWidget(parent),
 	groups(nullptr),
 	subjects(nullptr),
+	undoStack(nullptr),
 	ui(new Ui::GroupsTab)
 {
 	ui->setupUi(this);
@@ -49,18 +51,27 @@ GroupsTab::GroupsTab(QWidget *parent) :
 	connect(new QShortcut(QKeySequence(Qt::Key_Return), this), &QShortcut::activated, this, &GroupsTab::toggleSelected);
 }
 
-void GroupsTab::setData(Groups *const newGroups, Subjects const*const newSubjects)
+void GroupsTab::setData(Groups *const newGroups, Subjects const*const newSubjects, QUndoStack* const newUndoStack)
 {
+	if (groups != nullptr) {
+		groups->disconnect(this);
+	}
+
 	if (subjects != nullptr) {
 		subjects->disconnect(this);
 	}
 
 	groups = newGroups;
 	subjects = newSubjects;
+	undoStack = newUndoStack;
 
 	reconstruct();
+	connect(groups, &Groups::inserted, this, &GroupsTab::reconstruct);
+	connect(groups, &Groups::changed, this, &GroupsTab::updateRow);
+	connect(groups, &Groups::removed, this, &GroupsTab::reconstruct);
+
+	connect(subjects, &Subjects::inserted, this, &GroupsTab::reconstruct);
 	connect(subjects, &Subjects::changed, this, &GroupsTab::reconstruct);
-	connect(subjects, &Subjects::appended, this, &GroupsTab::reconstruct);
 	connect(subjects, &Subjects::removed, this, &GroupsTab::reconstruct);
 }
 
@@ -124,28 +135,28 @@ void GroupsTab::append()
 		allSubjects << subject;
 	}
 
-	int newNumberOfGroups = groups->size() + numberOfGroupsToAppend;
-	ui->table->setRowCount(newNumberOfGroups);
-	for (int idGroup = groups->size(); idGroup < newNumberOfGroups; ++idGroup) {
-		groups->append(new Group(allSubjects));
-		updateRow(idGroup);
+	undoStack->beginMacro("");
+	for (int idNewGroup = 0; idNewGroup < numberOfGroupsToAppend; ++idNewGroup)
+	{
+		auto command = new UndoCommand(
+			[=]() { emit actionned(); },
+			[=]() { groups->append(new Group(allSubjects)); },
+			[=]() { groups->remove(groups->size() - 1); }
+		);
+		undoStack->push(command);
 	}
+	undoStack->endMacro();
 }
 
 void GroupsTab::toggleSubject(int row, int column)
 {
-	auto group = groups->at(row);
 	auto subject = subjects->at(column);
-	auto item = ui->table->item(row, column);
-
-	if (item->background().style() == Qt::NoBrush) {
-		group->addSubject(subject);
-	}
-	else {
-		group->removeSubject(subject);
-	}
-
-	updateRow(row);
+	auto command = new UndoCommand(
+		[=]() { emit actionned(); },
+		[=]() { groups->at(row)->toggleSubject(subject); },
+		[=]() { groups->at(row)->toggleSubject(subject); }
+	);
+	undoStack->push(command);
 }
 
 void GroupsTab::toggleSelected()
@@ -168,10 +179,17 @@ void GroupsTab::deleteSelected()
 		}
 	}
 
+	undoStack->beginMacro("");
 	std::sort(rowsToDelete.rbegin(), rowsToDelete.rend());
 	for (int rowToDelete: rowsToDelete)
 	{
-		groups->remove(rowToDelete);
-		ui->table->removeRow(rowToDelete);
+		auto group = groups->at(rowToDelete);
+		auto command = new UndoCommand(
+			[=]() { emit actionned(); },
+			[=]() { groups->remove(rowToDelete); },
+			[=]() { groups->insert(rowToDelete, group); }
+		);
+		undoStack->push(command);
 	}
+	undoStack->endMacro();
 }

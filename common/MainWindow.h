@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QUndoStack>
 #include "Groups.h"
 #include "Options.h"
 #include "Subjects.h"
@@ -24,6 +25,7 @@ class MainWindow : public QMainWindow
 		Subjects subjects;
 		Teachers teachers;
 		Solver solver;
+		QUndoStack undoStack;
 
 	private:
 		Ui::MainWindow *ui;

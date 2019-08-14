@@ -4,8 +4,7 @@
 
 void Groups::append(Group *const group)
 {
-	group->setParent(this);
-	groups << group;
+	insert(groups.size(), group);
 }
 
 Group* Groups::at(int i) const
@@ -53,9 +52,22 @@ int Groups::indexOf(Group const* const group) const
 	return groups.indexOf(const_cast<Group* const>(group));
 }
 
+void Groups::insert(int i, Group *const group)
+{
+	connect(group, &Group::changed, this, [=]() { emit changed(groups.indexOf(group)); });
+	group->setParent(this);
+
+	groups.insert(i, group);
+	emit inserted(i);
+}
+
 void Groups::remove(int i)
 {
+	auto group = groups[i];
+	group->disconnect(this);
+
 	groups.remove(i);
+	emit removed(i);
 }
 
 int Groups::size() const

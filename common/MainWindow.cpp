@@ -1,9 +1,8 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
+#include <QMessageBox>
 #include <QVector>
-#include "ExcelExporter.h"
-#include "OptionsVariations.h"
 #include "Subject.h"
 #include "Teacher.h"
 
@@ -52,11 +51,48 @@ MainWindow::MainWindow() : QMainWindow(), solver(&subjects, &teachers, &groups, 
 		<< new Teacher("Colleur d'anglais n°2", subjects[3], extract(timeslots, {5}))
 	;
 
-	ui->subjectsTab->setData(&groups, &subjects, &teachers);
-	ui->teachersTab->setData(&subjects, &teachers);
-	ui->groupsTab->setData(&groups, &subjects);
-	ui->optionsTab->setData(&options);
-	ui->computationTab->setData(&groups, &options, &solver, &subjects, &teachers);
+	ui->subjectsTab->setData(&groups, &subjects, &teachers, &undoStack);
+	ui->teachersTab->setData(&subjects, &teachers, &undoStack);
+	ui->groupsTab->setData(&groups, &subjects, &undoStack);
+	ui->optionsTab->setData(&options, &undoStack);
+	ui->computationTab->setData(&groups, &options, &solver, &subjects, &teachers, &undoStack);
+
+	connect(ui->subjectsTab, &SubjectsTab::actionned, this, [&]() { ui->tabWidget->setCurrentWidget(ui->subjectsTab); });
+	connect(ui->teachersTab, &TeachersTab::actionned, this, [&]() { ui->tabWidget->setCurrentWidget(ui->teachersTab); });
+	connect(ui->groupsTab, &GroupsTab::actionned, this, [&]() { ui->tabWidget->setCurrentWidget(ui->groupsTab); });
+	connect(ui->optionsTab, &OptionsTab::actionned, this, [&]() { ui->tabWidget->setCurrentWidget(ui->optionsTab); });
+	connect(ui->computationTab, &ComputationTab::actionned, this, [&]() { ui->tabWidget->setCurrentWidget(ui->computationTab); });
+
+	auto undoAction = undoStack.createUndoAction(this, tr("&Annuler"));
+	undoAction->setShortcuts(QKeySequence::Undo);
+
+	auto redoAction = undoStack.createRedoAction(this, tr("&Rétablir"));
+	redoAction->setShortcuts(QKeySequence::Redo);
+
+	auto editMenu = menuBar()->addMenu(tr("&Édition"));
+	editMenu->addAction(undoAction);
+	editMenu->addAction(redoAction);
+
+	auto aboutAction = new QAction(tr("À &propos de %1").arg(QApplication::applicationName()), this);
+	connect(aboutAction, &QAction::triggered, this, [&]() {
+		QMessageBox::about(this, tr("À propos de %1").arg(QApplication::applicationName()), tr(
+			"<h1>%1</h1>"
+			"<h3>v%2</h3>"
+			"Ce logiciel est développée par %3 et distribué sous la licence MIT. "
+			"Il utilise ou inclut les composants listés ci-dessous, chacun d'eux étant distribué "
+			"sous sa licence propre. Pour plus d'informations, vous êtes invités à consulter le "
+			"fichier <code>LICENCE.md</code> distribué avec ce logiciel."
+			"<blockquote>%4</blockquote>"
+		).arg(
+			QApplication::applicationName(),
+			QApplication::applicationVersion(),
+			"Amaury Dalla Monta",
+			"OR-Tools, Qt, Eye of Ra, small-n-flat, xlnt, Google Test"
+		));
+	});
+
+	auto helpMenu = menuBar()->addMenu(tr("&?"));
+	helpMenu->addAction(aboutAction);
 }
 
 MainWindow::~MainWindow()

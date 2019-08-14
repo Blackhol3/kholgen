@@ -21,6 +21,7 @@ class Teachers : public QObject
 		QSet<Timeslot> getAvailableTimeslots() const;
 		int indexOf(Teacher* const teacher) const;
 		int indexOf(Teacher const* const teacher) const;
+		void insert(int i, Teacher* const teacher);
 		QVector<Teacher*> const ofSubject(Subject const* const subject) const;
 		void remove(int i);
 		int size() const;
@@ -28,7 +29,7 @@ class Teachers : public QObject
 		Teacher* operator[](int i) const;
 
 	signals:
-		void appended(int i);
+		void inserted(int i);
 		void changed(int i);
 		void removed(int i);
 

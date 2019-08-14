@@ -2,22 +2,24 @@
 #include "ui_SubjectsTab.h"
 
 #include <QColorDialog>
-#include <QDebug>
 #include <QMessageBox>
 #include <QRandomGenerator>
 #include <QShortcut>
+#include <QUndoStack>
 #include "Group.h"
 #include "Groups.h"
 #include "Subject.h"
 #include "Subjects.h"
 #include "Teacher.h"
 #include "Teachers.h"
+#include "UndoCommand.h"
 
 SubjectsTab::SubjectsTab(QWidget *parent) :
 	QWidget(parent),
+	groups(nullptr),
 	subjects(nullptr),
 	teachers(nullptr),
-	isModificationInProgress(false),
+	undoStack(nullptr),
 	ui(new Ui::SubjectsTab)
 {
 	ui->setupUi(this);
@@ -26,40 +28,26 @@ SubjectsTab::SubjectsTab(QWidget *parent) :
 	connect(ui->table, &QTableWidget::cellDoubleClicked, this, [&](int row, int column) { if (column == ColumnColor) { edit(row, column); } });
 	connect(ui->table, &QTableWidget::cellChanged, this, &SubjectsTab::edit);
 
+	connect(ui->addButton, &QPushButton::clicked, this, &SubjectsTab::append);
 	connect(ui->removeButton, &QPushButton::clicked, this, &SubjectsTab::deleteSelected);
 	connect(new QShortcut(QKeySequence(QKeySequence::Delete), this), &QShortcut::activated, this, &SubjectsTab::deleteSelected);
 }
 
-void SubjectsTab::setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers)
+void SubjectsTab::setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers, QUndoStack* const newUndoStack)
 {
 	if (subjects != nullptr) {
 		subjects->disconnect(this);
-		ui->addButton->disconnect(this);
 	}
 
 	groups = newGroups;
 	subjects = newSubjects;
 	teachers = newTeachers;
+	undoStack = newUndoStack;
 
 	reconstruct();
+	connect(subjects, &Subjects::inserted, this, &SubjectsTab::insert);
 	connect(subjects, &Subjects::changed, this, &SubjectsTab::updateRow);
-	connect(subjects, &Subjects::appended, this, &SubjectsTab::append);
 	connect(subjects, &Subjects::removed, this, &SubjectsTab::reconstruct);
-	connect(ui->addButton, &QPushButton::clicked, this, [&]() {
-		QString name(tr("Matière %1"));
-		int i = 1;
-
-		while (std::any_of(subjects->cbegin(), subjects->cend(), [&](auto const &subject) { return subject->getName() == name.arg(i) || subject->getShortName() == name.arg(i); })) {
-			++i;
-		}
-
-		auto subject = new Subject(name.arg(i), name.arg(i), 1, QColor::fromHsv(QRandomGenerator::global()->bounded(0, 360), 192, 192));
-		for (auto const &group: *groups) {
-			group->addSubject(subject);
-		}
-
-		subjects->append(subject);
-	});
 }
 
 SubjectsTab::~SubjectsTab()
@@ -69,23 +57,43 @@ SubjectsTab::~SubjectsTab()
 
 void SubjectsTab::reconstruct()
 {
-	isModificationInProgress = true;
-
+	ui->table->blockSignals(true);
 	ui->table->clearContents();
 	ui->table->setRowCount(subjects->size());
 	for (int row = 0; row < subjects->size(); ++row) {
 		updateRow(row);
 	}
-
-	isModificationInProgress = false;
+	ui->table->blockSignals(false);
 }
 
 void SubjectsTab::append()
 {
-	isModificationInProgress = true;
-	ui->table->setRowCount(subjects->size());
-	updateRow(subjects->size() - 1);
-	isModificationInProgress = false;
+	QString name(tr("Matière %1"));
+	int i = 1;
+
+	while (std::any_of(subjects->cbegin(), subjects->cend(), [&](auto const &subject) { return subject->getName() == name.arg(i) || subject->getShortName() == name.arg(i); })) {
+		++i;
+	}
+
+	auto subject = new Subject(name.arg(i), name.arg(i), 1, QColor::fromHsv(QRandomGenerator::global()->bounded(0, 360), 192, 192));
+	for (auto const &group: *groups) {
+		group->addSubject(subject);
+	}
+
+	auto command = new UndoCommand(
+		[=]() { emit actionned(); },
+		[=]() { subjects->append(subject); },
+		[=]() { subjects->remove(subjects->size() - 1); }
+	);
+	undoStack->push(command);
+}
+
+void SubjectsTab::insert(int row)
+{
+	ui->table->blockSignals(true);
+	ui->table->insertRow(row);
+	updateRow(row);
+	ui->table->blockSignals(false);
 }
 
 void SubjectsTab::deleteSelected() const
@@ -100,6 +108,7 @@ void SubjectsTab::deleteSelected() const
 		}
 	}
 
+	undoStack->beginMacro("");
 	std::sort(rowsToDelete.rbegin(), rowsToDelete.rend());
 	for (int rowToDelete: rowsToDelete)
 	{
@@ -120,27 +129,43 @@ void SubjectsTab::deleteSelected() const
 			if (clickedButton == QMessageBox::No) {
 				continue;
 			}
+		}
 
-			for (auto const &teacher: teachersOfSubject) {
-				teachers->remove(teachers->indexOf(teacher));
+		QVector<int> idTeachersOfSubject;
+		for (auto const &teacher: teachersOfSubject) {
+			idTeachersOfSubject << teachers->indexOf(teacher);
+		}
+
+		auto groupsWithSubject = groups->withSubject(subject);
+		auto command = new UndoCommand(
+			[=]() { emit actionned(); },
+			[=]() {
+				for (int i = teachersOfSubject.size() - 1; i >= 0; --i) {
+					teachers->remove(idTeachersOfSubject[i]);
+				}
+				for (auto const &group: groupsWithSubject) {
+					group->removeSubject(subject);
+				}
+				subjects->remove(rowToDelete);
+			},
+			[=]() {
+				for (int i = 0; i < teachersOfSubject.size(); ++i) {
+					teachers->insert(idTeachersOfSubject[i], teachersOfSubject[i]);
+				}
+				for (auto const &group: groupsWithSubject) {
+					group->addSubject(subject);
+				}
+				subjects->insert(rowToDelete, subject);
 			}
-		}
-
-		for (auto const &group: *groups) {
-			group->removeSubject(subject);
-		}
-
-		subjects->remove(rowToDelete);
+		);
+		undoStack->push(command);
 	}
+	undoStack->endMacro();
 }
 
 void SubjectsTab::edit(int row, int column)
 {
-	if (isModificationInProgress) {
-		return;
-	}
-
-	isModificationInProgress = true;
+	ui->table->blockSignals(true);
 	if (column == ColumnName || column == ColumnShortName) {
 		auto item = ui->table->item(row, column);
 		item->setData(Qt::DisplayRole, item->data(Qt::DisplayRole).toString().trimmed());
@@ -152,24 +177,31 @@ void SubjectsTab::edit(int row, int column)
 		case ColumnShortName: editShortName(row); break;
 		case ColumnFrequency: editFrequency(row); break;
 	}
-	isModificationInProgress = false;
+	ui->table->blockSignals(false);
 }
 
 void SubjectsTab::editColor(int row) const
 {
-	auto subject = subjects->at(row);
-	auto color = QColorDialog::getColor(subject->getColor(), ui->table);
-	if (color.isValid()) {
-		subject->setColor(color);
+	auto currentColor = subjects->at(row)->getColor();
+	auto color = QColorDialog::getColor(currentColor, ui->table);
+	if (color.isValid())
+	{
+		auto command = new UndoCommand(
+			[=]() { emit actionned(); },
+			[=]() { subjects->at(row)->setColor(color); },
+			[=]() { subjects->at(row)->setColor(currentColor); }
+		);
+		undoStack->push(command);
 	}
 }
 
 void SubjectsTab::editName(int row) const
 {
 	auto item = ui->table->item(row, ColumnName);
-	QString name = item->data(Qt::DisplayRole).toString();
+	auto name = item->data(Qt::DisplayRole).toString();
+	auto currentName = subjects->at(row)->getName();
 
-	if (name == subjects->at(row)->getName()) {
+	if (name == currentName) {
 		return;
 	}
 
@@ -183,7 +215,7 @@ void SubjectsTab::editName(int row) const
 		messageBox.setDefaultButton(QMessageBox::Ok);
 		messageBox.exec();
 
-		item->setData(Qt::DisplayRole, subjects->at(row)->getName());
+		item->setData(Qt::DisplayRole, currentName);
 		return;
 	}
 
@@ -197,19 +229,25 @@ void SubjectsTab::editName(int row) const
 		messageBox.setDefaultButton(QMessageBox::Ok);
 		messageBox.exec();
 
-		item->setData(Qt::DisplayRole, subjects->at(row)->getName());
+		item->setData(Qt::DisplayRole, currentName);
 		return;
 	}
 
-	subjects->at(row)->setName(name);
+	auto command = new UndoCommand(
+		[=]() { emit actionned(); },
+		[=]() { subjects->at(row)->setName(name); },
+		[=]() { subjects->at(row)->setName(currentName); }
+	);
+	undoStack->push(command);
 }
 
 void SubjectsTab::editShortName(int row) const
 {
 	auto item = ui->table->item(row, ColumnShortName);
-	QString shortName = item->data(Qt::DisplayRole).toString();
+	auto shortName = item->data(Qt::DisplayRole).toString();
+	auto currentShortName = subjects->at(row)->getShortName();
 
-	if (shortName == subjects->at(row)->getShortName()) {
+	if (shortName == currentShortName) {
 		return;
 	}
 
@@ -223,7 +261,7 @@ void SubjectsTab::editShortName(int row) const
 		messageBox.setDefaultButton(QMessageBox::Ok);
 		messageBox.exec();
 
-		item->setData(Qt::DisplayRole, subjects->at(row)->getShortName());
+		item->setData(Qt::DisplayRole, currentShortName);
 		return;
 	}
 
@@ -237,29 +275,41 @@ void SubjectsTab::editShortName(int row) const
 		messageBox.setDefaultButton(QMessageBox::Ok);
 		messageBox.exec();
 
-		item->setData(Qt::DisplayRole, subjects->at(row)->getShortName());
+		item->setData(Qt::DisplayRole, currentShortName);
 		return;
 	}
 
-	subjects->at(row)->setShortName(shortName);
+	auto command = new UndoCommand(
+		[=]() { emit actionned(); },
+		[=]() { subjects->at(row)->setShortName(shortName); },
+		[=]() { subjects->at(row)->setShortName(currentShortName); }
+	);
+	undoStack->push(command);
 }
 
 void SubjectsTab::editFrequency(int row) const
 {
 	auto item = ui->table->item(row, ColumnFrequency);
-	int frequency = item->data(Qt::DisplayRole).toInt();
+	auto frequency = item->data(Qt::DisplayRole).toInt();
+	auto currentFrequency = subjects->at(row)->getFrequency();
 
 	if (frequency <= 0)
 	{
-		item->setData(Qt::DisplayRole, subjects->at(row)->getFrequency());
+		item->setData(Qt::DisplayRole, currentFrequency);
 		return;
 	}
 
-	subjects->at(row)->setFrequency(frequency);
+	auto command = new UndoCommand(
+		[=]() { emit actionned(); },
+		[=]() { subjects->at(row)->setFrequency(frequency); },
+		[=]() { subjects->at(row)->setFrequency(currentFrequency); }
+	);
+	undoStack->push(command);
 }
 
 void SubjectsTab::updateRow(int row) const
 {
+	ui->table->blockSignals(true);
 	auto subject = subjects->at(row);
 
 	auto color = new QTableWidgetItem();
@@ -281,4 +331,6 @@ void SubjectsTab::updateRow(int row) const
 	frequency->setData(Qt::DisplayRole, subject->getFrequency());
 	frequency->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled);
 	ui->table->setItem(row, ColumnFrequency, frequency);
+
+	ui->table->blockSignals(false);
 }

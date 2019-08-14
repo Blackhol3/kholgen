@@ -17,13 +17,14 @@ class Subjects : public QObject
 		QVector<Subject const*>::const_iterator cend() const;
 		int indexOf(Subject* const subject) const;
 		int indexOf(Subject const* const subject) const;
+		void insert(int i, Subject* const subject);
 		void remove(int i);
 		int size() const;
 		Subjects &operator<<(Subject* const subject);
 		Subject* operator[](int i) const;
 
 	signals:
-		void appended(int i);
+		void inserted(int i);
 		void changed(int i);
 		void removed(int i);
 

@@ -7,11 +7,13 @@
 #include "Teacher.h"
 #include "TeacherDialog.h"
 #include "Teachers.h"
+#include "UndoCommand.h"
 
 TeachersTab::TeachersTab(QWidget *parent) :
 	QWidget(parent),
 	subjects(nullptr),
 	teachers(nullptr),
+	undoStack(nullptr),
 	ui(new Ui::TeachersTab)
 {
 	ui->setupUi(this);
@@ -29,24 +31,24 @@ TeachersTab::TeachersTab(QWidget *parent) :
 	connect(new QShortcut(QKeySequence(QKeySequence::Delete), this), &QShortcut::activated, this, &TeachersTab::deleteSelectedTeacher);
 }
 
-void TeachersTab::setData(Subjects const* const newSubjects, Teachers* const newTeachers)
+void TeachersTab::setData(Subjects const* const newSubjects, Teachers* const newTeachers, QUndoStack* const newUndoStack)
 {
 	if (subjects != nullptr) {
 		subjects->disconnect(this);
 		teachers->disconnect(this);
-		ui->addButton->disconnect(this);
 	}
 
 	subjects = newSubjects;
 	teachers = newTeachers;
+	undoStack = newUndoStack;
 
 	reconstruct();
+	connect(subjects, &Subjects::inserted, this, &TeachersTab::reconstruct);
 	connect(subjects, &Subjects::changed, this, &TeachersTab::updateSubject);
-	connect(subjects, &Subjects::appended, this, &TeachersTab::updateSubject);
 	connect(subjects, &Subjects::removed, this, &TeachersTab::reconstruct);
 
+	connect(teachers, &Teachers::inserted, this, &TeachersTab::reconstruct);
 	connect(teachers, &Teachers::changed, this, &TeachersTab::reconstruct);
-	connect(teachers, &Teachers::appended, this, [&](int i) { appendTeacher(teachers->at(i)); });
 	connect(teachers, &Teachers::removed, this, &TeachersTab::reconstruct);
 }
 
@@ -100,19 +102,49 @@ void TeachersTab::editNewTeacher()
 	}
 
 	auto teacher = teacherDialog.createTeacher();
-	teachers->append(teacher);
+	auto command = new UndoCommand(
+		[=]() { emit actionned(); },
+		[=]() { teachers->append(teacher); },
+		[=]() { teachers->remove(teachers->size() - 1); }
+	);
+	undoStack->push(command);
 }
 
 void TeachersTab::editTeacher(QTreeWidgetItem* item)
 {
-	auto teacher = teachers->at(item->data(0, Qt::UserRole).toInt());
+	auto idTeacher = item->data(0, Qt::UserRole).toInt();
+	auto teacher = teachers->at(idTeacher);
 
 	TeacherDialog teacherDialog(subjects, teachers, this);
 	teacherDialog.setTeacher(teacher);
 	auto status = teacherDialog.exec();
 
-	if (status == QDialog::Accepted) {
+	if (status == QDialog::Accepted)
+	{
+		auto const currentName = teacher->getName();
+		auto const currentSubject = teacher->getSubject();
+		auto const currentAvailableTimeslots = teacher->getAvailableTimeslots();
+
 		teacherDialog.updateTeacher();
+
+		auto const newName = teacher->getName();
+		auto const newSubject = teacher->getSubject();
+		auto const newAvailableTimeslots = teacher->getAvailableTimeslots();
+
+		auto command = new UndoCommand(
+			[=]() { emit actionned(); },
+			[=]() {
+				teachers->at(idTeacher)->setName(newName);
+				teachers->at(idTeacher)->setSubject(newSubject);
+				teachers->at(idTeacher)->setAvailableTimeslots(newAvailableTimeslots);
+			},
+			[=]() {
+				teachers->at(idTeacher)->setName(currentName);
+				teachers->at(idTeacher)->setSubject(currentSubject);
+				teachers->at(idTeacher)->setAvailableTimeslots(currentAvailableTimeslots);
+			}
+		);
+		undoStack->push(command);
 	}
 }
 
