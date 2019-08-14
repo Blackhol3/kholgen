@@ -32,10 +32,9 @@ class StyledItemDelegate: public QStyledItemDelegate
 };
 
 GroupsTab::GroupsTab(QWidget *parent) :
-	QWidget(parent),
+	Tab(parent),
 	groups(nullptr),
 	subjects(nullptr),
-	undoStack(nullptr),
 	ui(new Ui::GroupsTab)
 {
 	ui->setupUi(this);
@@ -51,7 +50,7 @@ GroupsTab::GroupsTab(QWidget *parent) :
 	connect(new QShortcut(QKeySequence(Qt::Key_Return), this), &QShortcut::activated, this, &GroupsTab::toggleSelected);
 }
 
-void GroupsTab::setData(Groups *const newGroups, Subjects const*const newSubjects, QUndoStack* const newUndoStack)
+void GroupsTab::setData(Groups *const newGroups, Subjects const*const newSubjects)
 {
 	if (groups != nullptr) {
 		groups->disconnect(this);
@@ -63,7 +62,6 @@ void GroupsTab::setData(Groups *const newGroups, Subjects const*const newSubject
 
 	groups = newGroups;
 	subjects = newSubjects;
-	undoStack = newUndoStack;
 
 	reconstruct();
 	connect(groups, &Groups::inserted, this, &GroupsTab::reconstruct);
@@ -135,28 +133,26 @@ void GroupsTab::append()
 		allSubjects << subject;
 	}
 
-	undoStack->beginMacro("");
+	beginUndoMacro();
 	for (int idNewGroup = 0; idNewGroup < numberOfGroupsToAppend; ++idNewGroup)
 	{
 		auto command = new UndoCommand(
-			[=]() { emit actionned(); },
 			[=]() { groups->append(new Group(allSubjects)); },
 			[=]() { groups->remove(groups->size() - 1); }
 		);
-		undoStack->push(command);
+		addUndoCommand(command);
 	}
-	undoStack->endMacro();
+	endUndoMacro();
 }
 
 void GroupsTab::toggleSubject(int row, int column)
 {
 	auto subject = subjects->at(column);
 	auto command = new UndoCommand(
-		[=]() { emit actionned(); },
 		[=]() { groups->at(row)->toggleSubject(subject); },
 		[=]() { groups->at(row)->toggleSubject(subject); }
 	);
-	undoStack->push(command);
+	addUndoCommand(command);
 }
 
 void GroupsTab::toggleSelected()
@@ -179,17 +175,16 @@ void GroupsTab::deleteSelected()
 		}
 	}
 
-	undoStack->beginMacro("");
+	beginUndoMacro();
 	std::sort(rowsToDelete.rbegin(), rowsToDelete.rend());
 	for (int rowToDelete: rowsToDelete)
 	{
 		auto group = groups->at(rowToDelete);
 		auto command = new UndoCommand(
-			[=]() { emit actionned(); },
 			[=]() { groups->remove(rowToDelete); },
 			[=]() { groups->insert(rowToDelete, group); }
 		);
-		undoStack->push(command);
+		addUndoCommand(command);
 	}
-	undoStack->endMacro();
+	endUndoMacro();
 }

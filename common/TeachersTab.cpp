@@ -10,10 +10,9 @@
 #include "UndoCommand.h"
 
 TeachersTab::TeachersTab(QWidget *parent) :
-	QWidget(parent),
+	Tab(parent),
 	subjects(nullptr),
 	teachers(nullptr),
-	undoStack(nullptr),
 	ui(new Ui::TeachersTab)
 {
 	ui->setupUi(this);
@@ -31,7 +30,7 @@ TeachersTab::TeachersTab(QWidget *parent) :
 	connect(new QShortcut(QKeySequence(QKeySequence::Delete), this), &QShortcut::activated, this, &TeachersTab::deleteSelectedTeacher);
 }
 
-void TeachersTab::setData(Subjects const* const newSubjects, Teachers* const newTeachers, QUndoStack* const newUndoStack)
+void TeachersTab::setData(Subjects const* const newSubjects, Teachers* const newTeachers)
 {
 	if (subjects != nullptr) {
 		subjects->disconnect(this);
@@ -40,7 +39,6 @@ void TeachersTab::setData(Subjects const* const newSubjects, Teachers* const new
 
 	subjects = newSubjects;
 	teachers = newTeachers;
-	undoStack = newUndoStack;
 
 	reconstruct();
 	connect(subjects, &Subjects::inserted, this, &TeachersTab::reconstruct);
@@ -103,11 +101,10 @@ void TeachersTab::editNewTeacher()
 
 	auto teacher = teacherDialog.createTeacher();
 	auto command = new UndoCommand(
-		[=]() { emit actionned(); },
 		[=]() { teachers->append(teacher); },
 		[=]() { teachers->remove(teachers->size() - 1); }
 	);
-	undoStack->push(command);
+	addUndoCommand(command);
 }
 
 void TeachersTab::editTeacher(QTreeWidgetItem* item)
@@ -132,7 +129,6 @@ void TeachersTab::editTeacher(QTreeWidgetItem* item)
 		auto const newAvailableTimeslots = teacher->getAvailableTimeslots();
 
 		auto command = new UndoCommand(
-			[=]() { emit actionned(); },
 			[=]() {
 				teachers->at(idTeacher)->setName(newName);
 				teachers->at(idTeacher)->setSubject(newSubject);
@@ -144,7 +140,7 @@ void TeachersTab::editTeacher(QTreeWidgetItem* item)
 				teachers->at(idTeacher)->setAvailableTimeslots(currentAvailableTimeslots);
 			}
 		);
-		undoStack->push(command);
+		addUndoCommand(command);
 	}
 }
 

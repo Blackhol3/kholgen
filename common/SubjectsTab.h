@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QWidget>
+#include "Tab.h"
 
 namespace Ui {
 class SubjectsTab;
@@ -9,34 +9,29 @@ class SubjectsTab;
 class Groups;
 class Subjects;
 class Teachers;
-class QUndoStack;
 
-class SubjectsTab : public QWidget
+class SubjectsTab : public Tab
 {
 	Q_OBJECT
 
 	public:
 		SubjectsTab(QWidget *parent = nullptr);
-		void setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers, QUndoStack* const newUndoStack);
+		void setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers);
 		~SubjectsTab();
-
-	signals:
-		void actionned() const;
 
 	protected:
 		Groups* groups;
 		Subjects* subjects;
 		Teachers* teachers;
-		QUndoStack* undoStack;
 
 		void reconstruct();
 		void append();
-		void deleteSelected() const;
+		void deleteSelected();
 		void edit(int row, int column);
-		void editColor(int row) const;
-		void editName(int row) const;
-		void editShortName(int row) const;
-		void editFrequency(int row) const;
+		void editColor(int row);
+		void editName(int row);
+		void editShortName(int row);
+		void editFrequency(int row);
 		void insert(int row);
 		void updateRow(int row) const;
 

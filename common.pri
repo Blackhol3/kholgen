@@ -22,6 +22,7 @@ SOURCES += \
         $$COMMON_PATH/Subject.cpp \
         $$COMMON_PATH/Subjects.cpp \
         $$COMMON_PATH/SubjectsTab.cpp \
+        $$COMMON_PATH/Tab.cpp \
         $$COMMON_PATH/Teacher.cpp \
         $$COMMON_PATH/TeacherDialog.cpp \
         $$COMMON_PATH/Teachers.cpp \
@@ -48,6 +49,7 @@ HEADERS += \
     $$COMMON_PATH/Subject.h \
     $$COMMON_PATH/Subjects.h \
     $$COMMON_PATH/SubjectsTab.h \
+    $$COMMON_PATH/Tab.h \
     $$COMMON_PATH/Teacher.h \
     $$COMMON_PATH/TeacherDialog.h \
     $$COMMON_PATH/Teachers.h \

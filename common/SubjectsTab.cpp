@@ -15,11 +15,10 @@
 #include "UndoCommand.h"
 
 SubjectsTab::SubjectsTab(QWidget *parent) :
-	QWidget(parent),
+	Tab(parent),
 	groups(nullptr),
 	subjects(nullptr),
 	teachers(nullptr),
-	undoStack(nullptr),
 	ui(new Ui::SubjectsTab)
 {
 	ui->setupUi(this);
@@ -33,7 +32,7 @@ SubjectsTab::SubjectsTab(QWidget *parent) :
 	connect(new QShortcut(QKeySequence(QKeySequence::Delete), this), &QShortcut::activated, this, &SubjectsTab::deleteSelected);
 }
 
-void SubjectsTab::setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers, QUndoStack* const newUndoStack)
+void SubjectsTab::setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers)
 {
 	if (subjects != nullptr) {
 		subjects->disconnect(this);
@@ -42,7 +41,6 @@ void SubjectsTab::setData(Groups* const newGroups, Subjects* const newSubjects, 
 	groups = newGroups;
 	subjects = newSubjects;
 	teachers = newTeachers;
-	undoStack = newUndoStack;
 
 	reconstruct();
 	connect(subjects, &Subjects::inserted, this, &SubjectsTab::insert);
@@ -81,11 +79,10 @@ void SubjectsTab::append()
 	}
 
 	auto command = new UndoCommand(
-		[=]() { emit actionned(); },
 		[=]() { subjects->append(subject); },
 		[=]() { subjects->remove(subjects->size() - 1); }
 	);
-	undoStack->push(command);
+	addUndoCommand(command);
 }
 
 void SubjectsTab::insert(int row)
@@ -96,7 +93,7 @@ void SubjectsTab::insert(int row)
 	ui->table->blockSignals(false);
 }
 
-void SubjectsTab::deleteSelected() const
+void SubjectsTab::deleteSelected()
 {
 	auto selectedIndexes = ui->table->selectionModel()->selectedIndexes();
 
@@ -108,7 +105,7 @@ void SubjectsTab::deleteSelected() const
 		}
 	}
 
-	undoStack->beginMacro("");
+	beginUndoMacro();
 	std::sort(rowsToDelete.rbegin(), rowsToDelete.rend());
 	for (int rowToDelete: rowsToDelete)
 	{
@@ -138,7 +135,6 @@ void SubjectsTab::deleteSelected() const
 
 		auto groupsWithSubject = groups->withSubject(subject);
 		auto command = new UndoCommand(
-			[=]() { emit actionned(); },
 			[=]() {
 				for (int i = teachersOfSubject.size() - 1; i >= 0; --i) {
 					teachers->remove(idTeachersOfSubject[i]);
@@ -158,9 +154,9 @@ void SubjectsTab::deleteSelected() const
 				subjects->insert(rowToDelete, subject);
 			}
 		);
-		undoStack->push(command);
+		addUndoCommand(command);
 	}
-	undoStack->endMacro();
+	endUndoMacro();
 }
 
 void SubjectsTab::edit(int row, int column)
@@ -180,22 +176,21 @@ void SubjectsTab::edit(int row, int column)
 	ui->table->blockSignals(false);
 }
 
-void SubjectsTab::editColor(int row) const
+void SubjectsTab::editColor(int row)
 {
 	auto currentColor = subjects->at(row)->getColor();
 	auto color = QColorDialog::getColor(currentColor, ui->table);
 	if (color.isValid())
 	{
 		auto command = new UndoCommand(
-			[=]() { emit actionned(); },
 			[=]() { subjects->at(row)->setColor(color); },
 			[=]() { subjects->at(row)->setColor(currentColor); }
 		);
-		undoStack->push(command);
+		addUndoCommand(command);
 	}
 }
 
-void SubjectsTab::editName(int row) const
+void SubjectsTab::editName(int row)
 {
 	auto item = ui->table->item(row, ColumnName);
 	auto name = item->data(Qt::DisplayRole).toString();
@@ -234,14 +229,13 @@ void SubjectsTab::editName(int row) const
 	}
 
 	auto command = new UndoCommand(
-		[=]() { emit actionned(); },
 		[=]() { subjects->at(row)->setName(name); },
 		[=]() { subjects->at(row)->setName(currentName); }
 	);
-	undoStack->push(command);
+	addUndoCommand(command);
 }
 
-void SubjectsTab::editShortName(int row) const
+void SubjectsTab::editShortName(int row)
 {
 	auto item = ui->table->item(row, ColumnShortName);
 	auto shortName = item->data(Qt::DisplayRole).toString();
@@ -280,14 +274,13 @@ void SubjectsTab::editShortName(int row) const
 	}
 
 	auto command = new UndoCommand(
-		[=]() { emit actionned(); },
 		[=]() { subjects->at(row)->setShortName(shortName); },
 		[=]() { subjects->at(row)->setShortName(currentShortName); }
 	);
-	undoStack->push(command);
+	addUndoCommand(command);
 }
 
-void SubjectsTab::editFrequency(int row) const
+void SubjectsTab::editFrequency(int row)
 {
 	auto item = ui->table->item(row, ColumnFrequency);
 	auto frequency = item->data(Qt::DisplayRole).toInt();
@@ -300,11 +293,10 @@ void SubjectsTab::editFrequency(int row) const
 	}
 
 	auto command = new UndoCommand(
-		[=]() { emit actionned(); },
 		[=]() { subjects->at(row)->setFrequency(frequency); },
 		[=]() { subjects->at(row)->setFrequency(currentFrequency); }
 	);
-	undoStack->push(command);
+	addUndoCommand(command);
 }
 
 void SubjectsTab::updateRow(int row) const

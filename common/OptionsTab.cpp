@@ -6,8 +6,7 @@
 #include "UndoCommand.h"
 
 OptionsTab::OptionsTab(QWidget *parent) :
-	QWidget(parent),
-	undoStack(nullptr),
+	Tab(parent),
 	ui(new Ui::OptionsTab)
 {
 	ui->setupUi(this);
@@ -19,14 +18,13 @@ OptionsTab::OptionsTab(QWidget *parent) :
 	});
 }
 
-void OptionsTab::setData(Options *const newOptions, QUndoStack* const newUndoStack)
+void OptionsTab::setData(Options *const newOptions)
 {
 	if (options != nullptr) {
 		options->disconnect(this);
 	}
 
 	options = newOptions;
-	undoStack = newUndoStack;
 
 	reconstruct();
 	connect(options, &Options::moved, this, &OptionsTab::reconstruct);
@@ -71,9 +69,8 @@ void OptionsTab::move(int from, int to)
 
 	options->move(to, from);
 	auto command = new UndoCommand(
-		[=]() { emit actionned(); },
 		[=]() { options->move(from, to); },
 		[=]() { options->move(to, from); }
 	);
-	undoStack->push(command);
+	addUndoCommand(command);
 }

@@ -51,17 +51,17 @@ MainWindow::MainWindow() : QMainWindow(), solver(&subjects, &teachers, &groups, 
 		<< new Teacher("Colleur d'anglais n°2", subjects[3], extract(timeslots, {5}))
 	;
 
-	ui->subjectsTab->setData(&groups, &subjects, &teachers, &undoStack);
-	ui->teachersTab->setData(&subjects, &teachers, &undoStack);
-	ui->groupsTab->setData(&groups, &subjects, &undoStack);
-	ui->optionsTab->setData(&options, &undoStack);
-	ui->computationTab->setData(&groups, &options, &solver, &subjects, &teachers, &undoStack);
+	ui->subjectsTab->setUndoStack(&undoStack);
+	ui->teachersTab->setUndoStack(&undoStack);
+	ui->groupsTab->setUndoStack(&undoStack);
+	ui->optionsTab->setUndoStack(&undoStack);
+	ui->computationTab->setUndoStack(&undoStack);
 
-	connect(ui->subjectsTab, &SubjectsTab::actionned, this, [&]() { ui->tabWidget->setCurrentWidget(ui->subjectsTab); });
-	connect(ui->teachersTab, &TeachersTab::actionned, this, [&]() { ui->tabWidget->setCurrentWidget(ui->teachersTab); });
-	connect(ui->groupsTab, &GroupsTab::actionned, this, [&]() { ui->tabWidget->setCurrentWidget(ui->groupsTab); });
-	connect(ui->optionsTab, &OptionsTab::actionned, this, [&]() { ui->tabWidget->setCurrentWidget(ui->optionsTab); });
-	connect(ui->computationTab, &ComputationTab::actionned, this, [&]() { ui->tabWidget->setCurrentWidget(ui->computationTab); });
+	ui->subjectsTab->setData(&groups, &subjects, &teachers);
+	ui->teachersTab->setData(&subjects, &teachers);
+	ui->groupsTab->setData(&groups, &subjects);
+	ui->optionsTab->setData(&options);
+	ui->computationTab->setData(&groups, &options, &solver, &subjects, &teachers);
 
 	auto undoAction = undoStack.createUndoAction(this, tr("&Annuler"));
 	undoAction->setShortcuts(QKeySequence::Undo);

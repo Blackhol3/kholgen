@@ -21,13 +21,12 @@ QIcon const ComputationTab::successIcon("../../image/check.svg");
 QIcon const ComputationTab::errorIcon("../../image/error.svg");
 
 ComputationTab::ComputationTab(QWidget *parent) :
-	QWidget(parent),
+	Tab(parent),
 	groups(nullptr),
 	options(nullptr),
 	solver(nullptr),
 	subjects(nullptr),
 	teachers(nullptr),
-	undoStack(nullptr),
 	ui(new Ui::ComputationTab)
 {
 	ui->setupUi(this);
@@ -45,8 +44,7 @@ void ComputationTab::setData(
 	const Options *const newOptions,
 	Solver* const newSolver,
 	Subjects const* const newSubjects,
-	Teachers const* const newTeachers,
-	QUndoStack* const newUndoStack
+	Teachers const* const newTeachers
 )
 {
 	if (options != nullptr) {
@@ -67,7 +65,6 @@ void ComputationTab::setData(
 	solver = newSolver;
 	subjects = newSubjects;
 	teachers = newTeachers;
-	undoStack = newUndoStack;
 
 	reconstruct();
 	connect(options, &Options::moved, this, [&](int from, int to) {
@@ -123,7 +120,6 @@ void ComputationTab::updateNumberOfWeeks()
 	}
 
 	auto command = new UndoCommand(
-		[=]() { emit actionned(); },
 		[=]() {
 			numberOfWeeks = newNumberOfWeeks;
 			ui->numberOfWeeksSpinBox->setValue(numberOfWeeks);
@@ -133,7 +129,7 @@ void ComputationTab::updateNumberOfWeeks()
 			ui->numberOfWeeksSpinBox->setValue(numberOfWeeks);
 		}
 	);
-	undoStack->push(command);
+	addUndoCommand(command);
 }
 
 void ComputationTab::updateIcons()

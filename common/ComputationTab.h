@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Tab.h"
+
 #include <QFutureWatcher>
-#include <QWidget>
 #include "Options.h"
 
 namespace Ui {
@@ -13,19 +14,15 @@ class Groups;
 class Solver;
 class Subjects;
 class Teachers;
-class QUndoStack;
 
-class ComputationTab : public QWidget
+class ComputationTab : public Tab
 {
 	Q_OBJECT
 
 	public:
 		explicit ComputationTab(QWidget *parent = nullptr);
-		void setData(Groups const* const newGroups, Options const* const newOptions, Solver* const newSolver, Subjects const* const newSubjects, Teachers const* const newTeachers, QUndoStack* const newUndoStack);
+		void setData(Groups const* const newGroups, Options const* const newOptions, Solver* const newSolver, Subjects const* const newSubjects, Teachers const* const newTeachers);
 		~ComputationTab();
-
-	signals:
-		void actionned();
 
 	protected:
 		Groups const* groups;
@@ -33,7 +30,6 @@ class ComputationTab : public QWidget
 		Solver* solver;
 		Subjects const* subjects;
 		Teachers const* teachers;
-		QUndoStack* undoStack;
 
 		QFutureWatcher<void> computationWatcher;
 		int numberOfWeeks;

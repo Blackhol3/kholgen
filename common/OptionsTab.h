@@ -1,29 +1,24 @@
 #pragma once
 
-#include <QWidget>
+#include "Tab.h"
 
 namespace Ui {
 class OptionsTab;
 }
 
 class Options;
-class QUndoStack;
 
-class OptionsTab : public QWidget
+class OptionsTab : public Tab
 {
 	Q_OBJECT
 
 	public:
 		explicit OptionsTab(QWidget *parent = nullptr);
-		void setData(Options* const newOptions, QUndoStack* const newUndoStack);
+		void setData(Options* const newOptions);
 		~OptionsTab();
-
-	signals:
-		void actionned();
 
 	protected:
 		Options* options;
-		QUndoStack* undoStack;
 
 		void reconstruct();
 		void move(int from, int to);

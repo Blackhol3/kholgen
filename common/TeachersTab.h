@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QWidget>
+#include "Tab.h"
 
 namespace Ui {
 class TeachersTab;
@@ -10,24 +10,19 @@ class Subjects;
 class Teacher;
 class Teachers;
 class QTreeWidgetItem;
-class QUndoStack;
 
-class TeachersTab : public QWidget
+class TeachersTab : public Tab
 {
 	Q_OBJECT
 
 	public:
 		explicit TeachersTab(QWidget *parent = nullptr);
-		void setData(Subjects const* const newSubjects, Teachers* const newTeachers, QUndoStack* const newUndoStack);
+		void setData(Subjects const* const newSubjects, Teachers* const newTeachers);
 		~TeachersTab();
-
-	signals:
-		void actionned() const;
 
 	protected:
 		Subjects const* subjects;
 		Teachers* teachers;
-		QUndoStack* undoStack;
 
 		void reconstruct();
 		void appendTeacher(Teacher const* const teacher) const;
