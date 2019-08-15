@@ -5,6 +5,11 @@ Subject::Subject(const QString &name, const QString &shortName, int frequency, Q
 
 }
 
+Subject::Subject(Subject const &subject, int frequency): QObject(), name(subject.name), shortName(subject.shortName), frequency(frequency), color(subject.color)
+{
+
+}
+
 QString Subject::getName() const
 {
 	return name;

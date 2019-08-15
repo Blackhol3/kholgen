@@ -1,7 +1,6 @@
 #include "Tab.h"
 
-#include <QDebug>
-#include <QStackedWidget>
+#include <QTabWidget>
 #include "UndoCommand.h"
 
 Tab::Tab(QWidget *parent) : QWidget(parent), undoStack(nullptr)
@@ -31,6 +30,6 @@ void Tab::endUndoMacro()
 
 void Tab::setCurrentWidget()
 {
-	auto stackedWidget = dynamic_cast<QStackedWidget*>(parentWidget());
-	stackedWidget->setCurrentWidget(this);
+	auto tabWidget = dynamic_cast<QTabWidget*>(parentWidget()->parentWidget());
+	tabWidget->setCurrentWidget(this);
 }

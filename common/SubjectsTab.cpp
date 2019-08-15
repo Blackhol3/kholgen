@@ -2,9 +2,11 @@
 #include "ui_SubjectsTab.h"
 
 #include <QColorDialog>
+#include <QDebug>
 #include <QMessageBox>
 #include <QRandomGenerator>
 #include <QShortcut>
+#include <QStandardItemModel>
 #include <QUndoStack>
 #include "Group.h"
 #include "Groups.h"
@@ -27,9 +29,12 @@ SubjectsTab::SubjectsTab(QWidget *parent) :
 	connect(ui->table, &QTableWidget::cellDoubleClicked, this, [&](int row, int column) { if (column == ColumnColor) { edit(row, column); } });
 	connect(ui->table, &QTableWidget::cellChanged, this, &SubjectsTab::edit);
 
+	connect(ui->defaultButton, &QPushButton::clicked, this, &SubjectsTab::useClassSubject);
 	connect(ui->addButton, &QPushButton::clicked, this, &SubjectsTab::append);
 	connect(ui->removeButton, &QPushButton::clicked, this, &SubjectsTab::deleteSelected);
 	connect(new QShortcut(QKeySequence(QKeySequence::Delete), this), &QShortcut::activated, this, &SubjectsTab::deleteSelected);
+
+	setClassesSubjects();
 }
 
 void SubjectsTab::setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers)
@@ -117,8 +122,8 @@ void SubjectsTab::deleteSelected()
 			QMessageBox messageBox;
 			messageBox.setIcon(QMessageBox::Question);
 			messageBox.setTextFormat(Qt::RichText);
-			messageBox.setText(tr("Un ou plusieurs enseignants collant en <em>%1</em> ont été définis.").arg(subject->getName()));
-			messageBox.setInformativeText(tr("Ils seront supprimés en même temps que cette matière. Voulez-vous continuer malgré tout ?"));
+			messageBox.setText(tr("Un ou plusieurs enseignant·es collant en <em>%1</em> ont été défini·es.").arg(subject->getName()));
+			messageBox.setInformativeText(tr("Ils ou elles seront supprimé·es en même temps que cette matière. Voulez-vous continuer malgré tout ?"));
 			messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 			messageBox.setDefaultButton(QMessageBox::No);
 			auto clickedButton = messageBox.exec();
@@ -128,35 +133,43 @@ void SubjectsTab::deleteSelected()
 			}
 		}
 
-		QVector<int> idTeachersOfSubject;
-		for (auto const &teacher: teachersOfSubject) {
-			idTeachersOfSubject << teachers->indexOf(teacher);
-		}
-
-		auto groupsWithSubject = groups->withSubject(subject);
-		auto command = new UndoCommand(
-			[=]() {
-				for (int i = teachersOfSubject.size() - 1; i >= 0; --i) {
-					teachers->remove(idTeachersOfSubject[i]);
-				}
-				for (auto const &group: groupsWithSubject) {
-					group->removeSubject(subject);
-				}
-				subjects->remove(rowToDelete);
-			},
-			[=]() {
-				for (int i = 0; i < teachersOfSubject.size(); ++i) {
-					teachers->insert(idTeachersOfSubject[i], teachersOfSubject[i]);
-				}
-				for (auto const &group: groupsWithSubject) {
-					group->addSubject(subject);
-				}
-				subjects->insert(rowToDelete, subject);
-			}
-		);
-		addUndoCommand(command);
+		deleteSubject(rowToDelete);
 	}
 	endUndoMacro();
+}
+
+void SubjectsTab::deleteSubject(int row)
+{
+	auto subject = subjects->at(row);
+	auto teachersOfSubject = teachers->ofSubject(subject);
+
+	QVector<int> idTeachersOfSubject;
+	for (auto const &teacher: teachersOfSubject) {
+		idTeachersOfSubject << teachers->indexOf(teacher);
+	}
+
+	auto groupsWithSubject = groups->withSubject(subject);
+	auto command = new UndoCommand(
+		[=]() {
+			for (int i = teachersOfSubject.size() - 1; i >= 0; --i) {
+				teachers->remove(idTeachersOfSubject[i]);
+			}
+			for (auto const &group: groupsWithSubject) {
+				group->removeSubject(subject);
+			}
+			subjects->remove(row);
+		},
+		[=]() {
+			for (int i = 0; i < teachersOfSubject.size(); ++i) {
+				teachers->insert(idTeachersOfSubject[i], teachersOfSubject[i]);
+			}
+			for (auto const &group: groupsWithSubject) {
+				group->addSubject(subject);
+			}
+			subjects->insert(row, subject);
+		}
+	);
+	addUndoCommand(command);
 }
 
 void SubjectsTab::edit(int row, int column)
@@ -325,4 +338,107 @@ void SubjectsTab::updateRow(int row) const
 	ui->table->setItem(row, ColumnFrequency, frequency);
 
 	ui->table->blockSignals(false);
+}
+
+void SubjectsTab::useClassSubject()
+{
+	if (subjects->size() > 0)
+	{
+		QMessageBox messageBox;
+		messageBox.setIcon(QMessageBox::Question);
+		messageBox.setTextFormat(Qt::RichText);
+		messageBox.setText(tr("Une ou plusieurs matières et enseignant·es ont été définies."));
+		messageBox.setInformativeText(tr("Ils ou elles seront supprimé·es. Voulez-vous continuer malgré tout ?"));
+		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+		messageBox.setDefaultButton(QMessageBox::No);
+		auto clickedButton = messageBox.exec();
+
+		if (clickedButton == QMessageBox::No) {
+			return;
+		}
+
+		beginUndoMacro();
+		for (int row = subjects->size() - 1; row >= 0; --row) {
+			deleteSubject(row);
+		}
+	}
+	else {
+		beginUndoMacro();
+	}
+
+	auto selectedYear = ui->classComboBox->currentData(Qt::UserRole).toInt();
+	auto selectedClass = ui->classComboBox->currentText();
+
+	QVector<Subject*> classSubjects = (selectedYear == 1 ? firstYearClassesSubjects : secondYearClassesSubjects)[selectedClass];
+	auto command = new UndoCommand(
+		[=]() {
+			for (auto const &subject: classSubjects) {
+				subjects->append(subject);
+			}
+		},
+		[=]() {
+			for (int row = subjects->size() - 1; row >= 0; --row) {
+				subjects->remove(row);
+			}
+		}
+	);
+	addUndoCommand(command);
+	endUndoMacro();
+}
+
+void SubjectsTab::setClassesSubjects()
+{
+	Subject
+		mathematics(tr("Mathématiques"), tr("M"), 1, QColor("#B82035")),
+		physics(tr("Physique"), tr("φ"), 1, QColor("#E9D844")),
+		biology(tr("Biologie"), tr("B"), 1, QColor("#62AC49")),
+		engineering(tr("Sciences de l'ingénieur"), tr("SI"), 1, QColor("#95D7E4")),
+		english(tr("Anglais"), tr("A"), 1, QColor("#6F0989")),
+		geography(tr("Géographie"), tr("G"), 1, QColor("#2B3918")),
+		historyAndGeography(tr("Histoire-Géographie"), tr("HG"), 1, QColor("#2B3918")),
+		informatics(tr("Informatique"), tr("I"), 1, QColor("#2955A9"));
+
+	firstYearClassesSubjects["MPSI"] << new Subject(mathematics, 1) << new Subject(physics, 2) << new Subject(english, 2);
+	firstYearClassesSubjects["PCSI (commun)"] << new Subject(mathematics, 2) << new Subject(physics, 2) << new Subject(engineering, 4) << new Subject(english, 2);
+	firstYearClassesSubjects["PCSI (option PC)"] << new Subject(mathematics, 2) << new Subject(physics, 1) << new Subject(english, 2);
+	firstYearClassesSubjects["PCSI (option PSI)"] << new Subject(mathematics, 2) << new Subject(physics, 2) << new Subject(engineering, 4) << new Subject(english, 2);
+	firstYearClassesSubjects["PTSI"] << new Subject(mathematics, 2) << new Subject(physics, 2) << new Subject(engineering, 2) << new Subject(english, 2);
+	firstYearClassesSubjects["TSI"] << new Subject(mathematics, 1) << new Subject(physics, 2) << new Subject(engineering, 2) << new Subject(english, 2);
+	firstYearClassesSubjects["TPC"] << new Subject(mathematics, 1) << new Subject(physics, 2) << new Subject(engineering, 2) << new Subject(english, 2);
+	firstYearClassesSubjects["BCPST"] << new Subject(mathematics, 2) << new Subject(physics, 2) << new Subject(biology, 2) << new Subject(english, 4) << new Subject(informatics, 4);
+	firstYearClassesSubjects["MT"] << new Subject(mathematics, 1) << new Subject(physics, 2) << new Subject(english, 2);
+
+	secondYearClassesSubjects["MP"] << new Subject(mathematics, 1) << new Subject(physics, 2) << new Subject(english, 2);
+	secondYearClassesSubjects["PC"] << new Subject(mathematics, 2) << new Subject(physics, 1) << new Subject(english, 2);
+	secondYearClassesSubjects["PSI"] << new Subject(mathematics, 2) << new Subject(physics, 2) << new Subject(engineering, 4) << new Subject(english, 2);
+	secondYearClassesSubjects["PT"] << new Subject(mathematics, 2) << new Subject(physics, 2) << new Subject(engineering, 2) << new Subject(english, 2);
+	secondYearClassesSubjects["TSI"] << new Subject(mathematics, 1) << new Subject(physics, 2) << new Subject(engineering, 2) << new Subject(english, 2);
+	secondYearClassesSubjects["TPC"] << new Subject(mathematics, 2) << new Subject(physics, 1) << new Subject(engineering, 2) << new Subject(english, 2);
+	secondYearClassesSubjects["BCPST"] << new Subject(mathematics, 2) << new Subject(physics, 2) << new Subject(biology, 2) << new Subject(english, 4) << new Subject(geography, 4) << new Subject(informatics, 4);
+	secondYearClassesSubjects["MT"] << new Subject(mathematics, 1) << new Subject(physics, 2) << new Subject(engineering, 4) << new Subject(english, 2);
+	secondYearClassesSubjects["TB"] << new Subject(mathematics, 2) << new Subject(physics, 2) << new Subject(biology, 2) << new Subject(engineering, 2) << new Subject(english, 4) << new Subject(historyAndGeography, 4);
+
+	auto classModel = qobject_cast<QStandardItemModel*>(ui->classComboBox->model());
+
+	auto firstYearItem = new QStandardItem(tr("Première année"));
+	firstYearItem->setEnabled(false);
+	classModel->appendRow(firstYearItem);
+
+	for (auto it = firstYearClassesSubjects.cbegin(); it != firstYearClassesSubjects.cend(); ++it) {
+		auto classItem = new QStandardItem(it.key());
+		classItem->setData(1, Qt::UserRole);
+		classModel->appendRow(classItem);
+	}
+
+	auto secondYearItem = new QStandardItem(tr("Deuxième année"));
+	secondYearItem->setEnabled(false);
+	classModel->appendRow(secondYearItem);
+
+	for (auto it = secondYearClassesSubjects.cbegin(); it != secondYearClassesSubjects.cend(); ++it) {
+		auto classItem = new QStandardItem(it.key());
+		classItem->setData(2, Qt::UserRole);
+		classModel->appendRow(classItem);
+	}
+
+	ui->classComboBox->setCurrentIndex(1);
 }

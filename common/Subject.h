@@ -9,6 +9,7 @@ class Subject : public QObject
 	Q_OBJECT
 	public:
 		Subject(QString const &name, QString const &shortName, int frequency, QColor color = Qt::lightGray);
+		Subject(Subject const &subject, int frequency);
 		QString getName() const;
 		QString getShortName() const;
 		int getFrequency() const;

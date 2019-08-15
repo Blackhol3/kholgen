@@ -7,6 +7,7 @@
 
 OptionsTab::OptionsTab(QWidget *parent) :
 	Tab(parent),
+	options(nullptr),
 	ui(new Ui::OptionsTab)
 {
 	ui->setupUi(this);
