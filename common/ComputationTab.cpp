@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QtConcurrent>
+#include "CsvExporter.h"
 #include "ExcelExporter.h"
 #include "Groups.h"
 #include "Options.h"
@@ -260,15 +261,26 @@ void ComputationTab::exportResult()
 		this,
 		tr("Exporter"),
 		"",
-		tr("Classeur Microsoft Excel (*.xlsx)")
+		tr("Classeur Microsoft Excel (*.xlsx);;Fichier CSV (*.csv)")
 	);
 
 	if (filePath.isEmpty()) {
 		return;
 	}
 
-	ExcelExporter excelExporter(subjects, teachers, groups, solver);
-	excelExporter.save(filePath);
+	Exporter *exporter;
+	if (filePath.endsWith(".xlsx")) {
+		exporter = new ExcelExporter(subjects, teachers, groups, solver);
+	}
+	else if (filePath.endsWith(".csv")) {
+		exporter = new CsvExporter(subjects, teachers, groups, solver);
+	}
+	else {
+		return;
+	}
+
+	exporter->save(filePath);
+	delete exporter;
 
 	QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
 }

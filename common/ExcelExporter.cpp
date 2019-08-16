@@ -9,23 +9,14 @@
 #include "Teacher.h"
 #include "Teachers.h"
 
-ExcelExporter::ExcelExporter(
-		Subjects const* const subjects,
-		Teachers const* const teachers,
-		Groups const* const groups,
-		Solver const* const solver
-	): subjects(subjects), teachers(teachers), groups(groups), solver(solver)
-{
-
-}
-
-void ExcelExporter::save(QString filePath)
+bool ExcelExporter::save(QString filePath)
 {
 	initWorkbook();
 	createTeachersWorksheet();
 	createGroupsWorksheet();
 
 	workbook->save(filePath.toStdString());
+	return true;
 }
 
 void ExcelExporter::initWorkbook()
@@ -184,13 +175,13 @@ void ExcelExporter::createGroupsWorksheet()
 	thickBottomBorder.side(xlnt::border_side::bottom, xlnt::border::border_property().style(xlnt::border_style::medium));
 
 	auto const colles = solver->getColles();
-	int const maximalNumberOfCollesByWeek = getMaximalNumberOfCollesByWeek();
+	auto const maximalNumberOfCollesByWeek = getMaximalNumberOfCollesByWeek();
 
 	// Print the groups
 	for (int idGroup = 0; idGroup < groups->size(); ++idGroup)
 	{
-		auto firstRow = static_cast<xlnt::row_t>(maximalNumberOfCollesByWeek * idGroup) + firstSlotRow;
-		auto lastRow = static_cast<xlnt::row_t>(maximalNumberOfCollesByWeek * (idGroup + 1) - 1) + firstSlotRow;
+		auto firstRow = maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idGroup) + firstSlotRow;
+		auto lastRow = maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idGroup + 1) - 1 + firstSlotRow;
 		worksheet.merge_cells(xlnt::range_reference(groupColumn, firstRow, groupColumn, lastRow));
 
 		auto cell = worksheet.cell(groupColumn, firstRow);
@@ -211,7 +202,7 @@ void ExcelExporter::createGroupsWorksheet()
 			for (int idSlot = 0; idSlot < slotsOfWeek->size(); ++idSlot)
 			{
 				auto slot = slotsOfWeek->at(idSlot);
-				auto cell = worksheet.cell(firstSlotColumn + idWeek, static_cast<xlnt::row_t>(maximalNumberOfCollesByWeek * idGroup + idSlot) + firstSlotRow);
+				auto cell = worksheet.cell(firstSlotColumn + idWeek, maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idGroup) + static_cast<xlnt::row_t>(idSlot) + firstSlotRow);
 
 				cell.value(
 					QObject::tr("%1%2 %3%4")
@@ -239,7 +230,7 @@ void ExcelExporter::createGroupsWorksheet()
 	// Print the borders
 	QVector<xlnt::row_t> bottomBorderedRows{weekRow};
 	for (int idGroup = 0; idGroup < groups->size(); ++idGroup) {
-		bottomBorderedRows << static_cast<xlnt::row_t>(maximalNumberOfCollesByWeek * (idGroup + 1) - 1) + firstSlotRow;
+		bottomBorderedRows << maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idGroup + 1) - 1 + firstSlotRow;
 	}
 
 	for (auto const &row: bottomBorderedRows)
@@ -247,99 +238,6 @@ void ExcelExporter::createGroupsWorksheet()
 		worksheet.range(xlnt::range_reference(firstSlotColumn, row, firstSlotColumn + static_cast<xlnt::row_t>(nbWeeks - 1), row)).border(thickBottomBorder);
 		worksheet.cell(groupColumn, row).border(thickBottomBorder);
 	}
-}
-
-QHash<Slot, xlnt::row_t> ExcelExporter::getRowBySlot() const
-{
-	QHash<Slot, xlnt::row_t> rowBySlot;
-
-	auto colles = solver->getColles();
-
-	std::sort(colles.begin(), colles.end(), [&] (auto const &a, auto const &b) {
-		if (a.getTeacher()->getSubject() != b.getTeacher()->getSubject()) { return subjects->indexOf(a.getTeacher()->getSubject()) < subjects->indexOf(b.getTeacher()->getSubject()); }
-		if (a.getTeacher() != b.getTeacher()) { return teachers->indexOf(a.getTeacher()) < teachers->indexOf(b.getTeacher()); }
-		return a.getTimeslot() < b.getTimeslot();
-	});
-
-	colles.erase(std::unique(colles.begin(), colles.end(), [] (auto const &a, auto const &b) {
-		return a.getTeacher() == b.getTeacher() && a.getTimeslot() == b.getTimeslot();
-	}), colles.end());
-
-	xlnt::row_t row = 0;
-	for (auto const &colle: colles) {
-		rowBySlot[Slot(colle.getTeacher(), colle.getTimeslot())] = row;
-		++row;
-	}
-
-	return rowBySlot;
-}
-
-QHash<const Teacher *, QVector<xlnt::row_t> > ExcelExporter::getRowsByTeacher() const
-{
-	QHash<Teacher const*, QVector<xlnt::row_t>> rowsByTeacher;
-	auto const rowBySlot = getRowBySlot();
-
-	for (auto row = rowBySlot.cbegin(); row != rowBySlot.cend(); ++row) {
-		rowsByTeacher[row.key().getTeacher()] << *row;
-	}
-
-	return rowsByTeacher;
-}
-
-QHash<const Subject *, QVector<xlnt::row_t> > ExcelExporter::getRowsBySubject() const
-{
-	QHash<Subject const*, QVector<xlnt::row_t>> rowsBySubject;
-	auto const rowsByTeacher = getRowsByTeacher();
-
-	for (auto rows = rowsByTeacher.cbegin(); rows != rowsByTeacher.cend(); ++rows) {
-		rowsBySubject[rows.key()->getSubject()] << *rows;
-	}
-
-	return rowsBySubject;
-}
-
-int ExcelExporter::getMaximalNumberOfCollesByWeek() const
-{
-	auto const colles = solver->getColles();
-
-	auto maximalNumberOfCollesByWeek = 0;
-	for (auto const &group: *groups)
-	{
-		auto numberOfCollesInFirstWeek = std::count_if(colles.cbegin(), colles.cend(), [&] (auto const &colle) { return colle.getGroup() == group && colle.getWeek().getId() == 0; });
-		if (maximalNumberOfCollesByWeek < numberOfCollesInFirstWeek) {
-			maximalNumberOfCollesByWeek = static_cast<int>(numberOfCollesInFirstWeek);
-		}
-	}
-
-	return maximalNumberOfCollesByWeek;
-}
-
-QHash<const Subject *, QVector<const Teacher *> > ExcelExporter::getTeachersBySubject() const
-{
-	QHash<const Subject*, QVector<const Teacher*>> teachersBySubject;
-	auto const rowsByTeacher = getRowsByTeacher();
-
-	for (auto const &subject: *subjects) {
-		for (auto const &teacher: teachers->ofSubject(subject)) {
-			if (rowsByTeacher.contains(teacher)) {
-				teachersBySubject[subject] << teacher;
-			}
-		}
-	}
-
-	return teachersBySubject;
-}
-
-QHash<Group const*, QHash<Week, QVector<Slot> > > ExcelExporter::getSlotsByGroupAndWeek() const
-{
-	QHash<Group const*, QHash<Week, QVector<Slot>>> slotsByGroupAndWeek;
-	auto const colles = solver->getColles();
-
-	for (auto const &colle: colles) {
-		slotsByGroupAndWeek[colle.getGroup()][colle.getWeek()] << Slot(colle.getTeacher(), colle.getTimeslot());
-	}
-
-	return slotsByGroupAndWeek;
 }
 
 void ExcelExporter::printWeekHeaderCell(xlnt::cell cell, int idWeek) const

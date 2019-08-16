@@ -7,7 +7,9 @@ CONFIG += c++17 qt
 SOURCES += \
         $$COMMON_PATH/Colle.cpp \
         $$COMMON_PATH/ComputationTab.cpp \
+        $$COMMON_PATH/CsvExporter.cpp \
         $$COMMON_PATH/ExcelExporter.cpp \
+        $$COMMON_PATH/Exporter.cpp \
         $$COMMON_PATH/Group.cpp \
         $$COMMON_PATH/Groups.cpp \
         $$COMMON_PATH/GroupsTab.cpp \
@@ -35,7 +37,9 @@ SOURCES += \
 HEADERS += \
     $$COMMON_PATH/Colle.h \
     $$COMMON_PATH/ComputationTab.h \
+    $$COMMON_PATH/CsvExporter.h \
     $$COMMON_PATH/ExcelExporter.h \
+    $$COMMON_PATH/Exporter.h \
     $$COMMON_PATH/Group.h \
     $$COMMON_PATH/Groups.h \
     $$COMMON_PATH/GroupsTab.h \

@@ -349,6 +349,7 @@ QVector<Colle> Solver::getColles() const
 
 void Solver::updateColles()
 {
+	colles.clear();
 	for (auto const &week: weeks) {
 		for (auto const &teacher: *teachers) {
 			for (auto const &group: groups->withSubject(teacher->getSubject())) {
