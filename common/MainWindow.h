@@ -27,6 +27,8 @@ class MainWindow : public QMainWindow
 		Solver solver;
 		QUndoStack undoStack;
 
+		void setDefaultData();
+
 	private:
 		Ui::MainWindow *ui;
 };

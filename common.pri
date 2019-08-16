@@ -96,3 +96,6 @@ else:win32:CONFIG(debug, debug|release): LIBS += -L$$XLNT/lib/ -lxlntd
 
 INCLUDEPATH += $$XLNT/include
 DEPENDPATH += $$XLNT/include
+
+RESOURCES += \
+    $$PWD/resources.qrc

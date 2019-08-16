@@ -17,17 +17,19 @@
 #include "Teachers.h"
 #include "UndoCommand.h"
 
-QIcon const ComputationTab::inProgressIcon("../../image/cogs.svg");
-QIcon const ComputationTab::successIcon("../../image/check.svg");
-QIcon const ComputationTab::errorIcon("../../image/error.svg");
-
 ComputationTab::ComputationTab(QWidget *parent) :
 	Tab(parent),
+
 	groups(nullptr),
 	options(nullptr),
 	solver(nullptr),
 	subjects(nullptr),
 	teachers(nullptr),
+
+	inProgressIcon(":/image/cogs.svg"),
+	successIcon(":/image/check.svg"),
+	errorIcon(":/image/error.svg"),
+
 	ui(new Ui::ComputationTab)
 {
 	ui->setupUi(this);

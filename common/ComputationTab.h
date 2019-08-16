@@ -3,6 +3,7 @@
 #include "Tab.h"
 
 #include <QFutureWatcher>
+#include <QIcon>
 #include "Options.h"
 
 namespace Ui {
@@ -34,9 +35,9 @@ class ComputationTab : public Tab
 		QFutureWatcher<void> computationWatcher;
 		int numberOfWeeks;
 
-		static QIcon const inProgressIcon;
-		static QIcon const successIcon;
-		static QIcon const errorIcon;
+		QIcon inProgressIcon;
+		QIcon successIcon;
+		QIcon errorIcon;
 
 		void reconstruct();
 		void updateNumberOfWeeks();
