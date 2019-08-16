@@ -15,8 +15,13 @@ bool ExcelExporter::save(QString filePath)
 	createTeachersWorksheet();
 	createGroupsWorksheet();
 
-	workbook->save(filePath.toStdString());
-	return true;
+	try {
+		workbook->save(filePath.toStdString());
+		return true;
+	}
+	catch (std::exception const &) {
+		return false;
+	}
 }
 
 void ExcelExporter::initWorkbook()

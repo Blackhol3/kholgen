@@ -180,7 +180,7 @@ void ComputationTab::onFinished(bool success)
 	{
 		updateIcons();
 		printTable();
-		ui->exportButton->setDisabled(false);
+		ui->exportButton->setDisabled(solver->getColles().empty());
 	}
 	else
 	{
@@ -257,11 +257,16 @@ void ComputationTab::printTable()
 
 void ComputationTab::exportResult()
 {
+	QStringList filters{
+		tr("Classeur Microsoft Excel (*.xlsx)"),
+		tr("Fichier CSV (*.csv)"),
+	};
+
 	QString filePath = QFileDialog::getSaveFileName(
 		this,
 		tr("Exporter"),
-		"",
-		tr("Classeur Microsoft Excel (*.xlsx);;Fichier CSV (*.csv)")
+		QString(),
+		filters.join(";;")
 	);
 
 	if (filePath.isEmpty()) {
@@ -276,11 +281,23 @@ void ComputationTab::exportResult()
 		exporter = new CsvExporter(subjects, teachers, groups, solver);
 	}
 	else {
+		throw std::runtime_error("File extension not supported.");
+	}
+
+	if (exporter->save(filePath))
+	{
+		QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+		delete exporter;
 		return;
 	}
 
-	exporter->save(filePath);
-	delete exporter;
+	QMessageBox messageBox;
+	messageBox.setIcon(QMessageBox::Critical);
+	messageBox.setText(tr("Le fichier n'a pas pu être ouvert en écriture."));
+	messageBox.setInformativeText(tr("Vérifiez que le fichier n'est pas ouvert dans une autre application, puis réessayez l'exportation."));
+	messageBox.setStandardButtons(QMessageBox::Ok);
+	messageBox.setDefaultButton(QMessageBox::Ok);
+	messageBox.exec();
 
-	QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+	exportResult();
 }
