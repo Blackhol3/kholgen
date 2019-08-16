@@ -28,6 +28,7 @@ SOURCES += \
         $$COMMON_PATH/Teachers.cpp \
         $$COMMON_PATH/TeachersTab.cpp \
         $$COMMON_PATH/Timeslot.cpp \
+        $$COMMON_PATH/TransparentItemDelegate.cpp \
         $$COMMON_PATH/UndoCommand.cpp \
         $$COMMON_PATH/Week.cpp
 
@@ -55,6 +56,7 @@ HEADERS += \
     $$COMMON_PATH/Teachers.h \
     $$COMMON_PATH/TeachersTab.h \
     $$COMMON_PATH/Timeslot.h \
+    $$COMMON_PATH/TransparentItemDelegate.h \
     $$COMMON_PATH/UndoCommand.h \
     $$COMMON_PATH/Week.h
 

@@ -31,6 +31,7 @@ class TeacherDialog : public QDialog
 		Teacher* teacher;
 
 		void toggleAvailability(int row, int column);
+		void toggleSelected();
 		QSet<Timeslot> getAvailableTimeslots() const;
 
 	private:

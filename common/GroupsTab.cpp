@@ -4,32 +4,12 @@
 #include <QInputDialog>
 #include <QPainter>
 #include <QShortcut>
-#include <QStyledItemDelegate>
 #include "Group.h"
 #include "Groups.h"
 #include "Subject.h"
 #include "Subjects.h"
+#include "TransparentItemDelegate.h"
 #include "UndoCommand.h"
-
-class StyledItemDelegate: public QStyledItemDelegate
-{
-	public:
-		StyledItemDelegate(QObject *parent = nullptr): QStyledItemDelegate(parent) {}
-
-		void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
-		{
-			auto unselectedOption = option;
-			unselectedOption.state.setFlag(QStyle::State_Selected, false);
-
-			if (option.state.testFlag(QStyle::State_Selected)) {
-				QColor color(Qt::darkBlue);
-				color.setAlpha(20);
-				painter->fillRect(option.rect, color);
-			}
-
-			QStyledItemDelegate::paint(painter, unselectedOption, index);
-		}
-};
 
 GroupsTab::GroupsTab(QWidget *parent) :
 	Tab(parent),
@@ -39,7 +19,7 @@ GroupsTab::GroupsTab(QWidget *parent) :
 {
 	ui->setupUi(this);
 	ui->table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	ui->table->setItemDelegate(new StyledItemDelegate(ui->table));
+	ui->table->setItemDelegate(new TransparentItemDelegate(20, ui->table));
 
 	connect(ui->addButton, &QPushButton::clicked, this, &GroupsTab::append);
 	connect(ui->removeButton, &QPushButton::clicked, this, &GroupsTab::deleteSelected);

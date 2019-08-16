@@ -14,6 +14,7 @@
 #include "Subjects.h"
 #include "Teacher.h"
 #include "Teachers.h"
+#include "TransparentItemDelegate.h"
 #include "UndoCommand.h"
 
 SubjectsTab::SubjectsTab(QWidget *parent) :
@@ -25,6 +26,7 @@ SubjectsTab::SubjectsTab(QWidget *parent) :
 {
 	ui->setupUi(this);
 	ui->table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui->table->setItemDelegateForColumn(ColumnColor, new TransparentItemDelegate(0, ui->table));
 
 	connect(ui->table, &QTableWidget::cellDoubleClicked, this, [&](int row, int column) { if (column == ColumnColor) { edit(row, column); } });
 	connect(ui->table, &QTableWidget::cellChanged, this, &SubjectsTab::edit);
@@ -319,7 +321,7 @@ void SubjectsTab::updateRow(int row) const
 
 	auto color = new QTableWidgetItem();
 	color->setBackground(subject->getColor());
-	color->setFlags(Qt::ItemIsEnabled);
+	color->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 	ui->table->setItem(row, ColumnColor, color);
 
 	auto name = new QTableWidgetItem();
