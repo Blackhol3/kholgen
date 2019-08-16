@@ -115,7 +115,7 @@ void Solver::createVariables(CpModelBuilder &modelBuilder)
 	}
 }
 
-void Solver::createConstraints(CpModelBuilder &modelBuilder, OptionsVariations const &optionsVariations) const
+void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 {
 	// Groups must have subject with the appropriate frequency
 	for (auto const &subject: *subjects) {
@@ -305,7 +305,7 @@ void Solver::compute(int const nbWeeks)
 	{
 		CpModelBuilder modelBuilder;
 		createVariables(modelBuilder);
-		createConstraints(modelBuilder, optionsVariations);
+		createConstraints(modelBuilder);
 
 		Model model;
 		model.GetOrCreate<TimeLimit>()->RegisterExternalBooleanAsLimit(&shouldComputationBeStopped);
@@ -325,6 +325,10 @@ void Solver::compute(int const nbWeeks)
 		}
 	}
 
+	if (success) {
+		updateColles();
+	}
+
 	emit finished(success);
 }
 
@@ -340,7 +344,11 @@ const OptionsVariations *Solver::getOptionsVariations() const
 
 QVector<Colle> Solver::getColles() const
 {
-	QVector<Colle> colles;
+	return colles;
+}
+
+void Solver::updateColles()
+{
 	for (auto const &week: weeks) {
 		for (auto const &teacher: *teachers) {
 			for (auto const &group: groups->withSubject(teacher->getSubject())) {
@@ -352,6 +360,4 @@ QVector<Colle> Solver::getColles() const
 			}
 		}
 	}
-
-	return colles;
 }

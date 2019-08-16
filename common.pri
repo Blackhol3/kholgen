@@ -72,6 +72,11 @@ FORMS += \
 INCLUDEPATH += \
     $$COMMON_PATH
 
+QMAKE_CXXFLAGS_WARN_ON -= -W3
+QMAKE_CXXFLAGS_WARN_ON += -W4 -WX
+QMAKE_CXXFLAGS += -experimental:external -external:anglebrackets -external:W0
+QMAKE_LFLAGS += /ignore:4217
+
 ORTOOLS = C:/Qt/Libraries/or-tools
 
 win32:CONFIG(release, debug|release): LIBS += -L$$ORTOOLS/lib/ -lortools

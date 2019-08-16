@@ -91,10 +91,7 @@ void TeacherDialog::setTeacher(Teacher* const newTeacher)
 
 Teacher* TeacherDialog::createTeacher()
 {
-	auto name = ui->name->text();
-	auto subject = subjects->at(ui->subject->currentIndex());
-
-	return new Teacher(name, subject, getAvailableTimeslots());
+	return new Teacher(name, subjects->at(idSubject), getAvailableTimeslots());
 }
 
 void TeacherDialog::updateTeacher()

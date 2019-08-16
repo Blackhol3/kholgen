@@ -164,7 +164,6 @@ void ComputationTab::start()
 {
 	ui->startButton->hide();
 	ui->stopButton->show();
-	ui->exportButton->setDisabled(true);
 	ui->progressBar->setMaximum(0);
 
 	computationWatcher.setFuture(QtConcurrent::run([&]() { solver->compute(numberOfWeeks); }));

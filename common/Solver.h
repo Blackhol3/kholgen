@@ -48,11 +48,13 @@ class Solver : public QObject
 		QHash<Week, QHash<Group const*, QHash<Subject const*, operations_research::sat::IntVar>>> idTeacherWithGroupForSubjectInWeek;
 		QHash<Week, QHash<Group const*, QHash<Subject const*, operations_research::sat::BoolVar>>> doesGroupHaveSubjectInWeek;
 
-		operations_research::sat::CpSolverResponse response;
 		std::atomic<bool> shouldComputationBeStopped;
+		operations_research::sat::CpSolverResponse response;
+		QVector<Colle> colles;
 
 		void initWeeks(int const nbWeeks);
 		void createVariables(operations_research::sat::CpModelBuilder &modelBuilder);
-		void createConstraints(operations_research::sat::CpModelBuilder &modelBuilder, OptionsVariations const &optionsVariations) const;
+		void createConstraints(operations_research::sat::CpModelBuilder &modelBuilder) const;
+		void updateColles();
 };
 
