@@ -2,6 +2,7 @@
 
 #include <QDialog>
 #include <QSet>
+#include <QUndoStack>
 #include "Timeslot.h"
 
 namespace Ui {
@@ -29,10 +30,18 @@ class TeacherDialog : public QDialog
 		Subjects const* subjects;
 		Teachers const* teachers;
 		Teacher* teacher;
+		QUndoStack undoStack;
 
+		QString name;
+		int idSubject;
+
+		void initAvailableTimeslots();
 		void toggleAvailability(int row, int column);
+		void toggleAvailabilityUndoable(int row, int column);
 		void toggleSelected();
 		QSet<Timeslot> getAvailableTimeslots() const;
+		void editName();
+		void editSubject();
 
 	private:
 		Ui::TeacherDialog *ui;

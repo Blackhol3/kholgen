@@ -3,7 +3,7 @@
 #include "Tab.h"
 
 UndoCommand::UndoCommand(const std::function<void ()> &redoLambda, const std::function<void ()> &undoLambda):
-	redoLambda(redoLambda), undoLambda(undoLambda)
+	tab(nullptr), redoLambda(redoLambda), undoLambda(undoLambda)
 {
 
 }
@@ -15,12 +15,18 @@ void UndoCommand::setTab(Tab *const newTab)
 
 void UndoCommand::redo()
 {
-	tab->setCurrentWidget();
+	if (tab != nullptr) {
+		tab->setCurrentWidget();
+	}
+
 	redoLambda();
 }
 
 void UndoCommand::undo()
 {
-	tab->setCurrentWidget();
+	if (tab != nullptr) {
+		tab->setCurrentWidget();
+	}
+
 	undoLambda();
 }
