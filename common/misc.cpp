@@ -53,5 +53,12 @@ QVector<QPair<T, T>> getAllConsecutivePairs(QVector<T> const &vector)
 	return allConsecutivePairs;
 }
 
+template<typename T>
+T divideCeil(T const &a, T const &b)
+{
+	return a/b + (a % b != 0);
+}
+
 template QVector<QPair<int, int>> getAllPairs(QVector<int> const &vector);
 template QVector<QPair<int, int>> getAllConsecutivePairs(QVector<int> const &vector);
+template int divideCeil(int const &a, int const &b);

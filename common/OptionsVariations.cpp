@@ -1,6 +1,7 @@
 #include "OptionsVariations.h"
 
 #include <QDebug>
+#include "misc.h"
 #include "Groups.h"
 #include "Subject.h"
 #include "Subjects.h"
@@ -21,7 +22,7 @@ void OptionsVariations::init()
 
 		for (int idSubject = 0; idSubject < subjects->size(); ++idSubject) {
 			auto subject = subjects->at(idSubject);
-			numberOfVariations[option][idSubject] = groups->withSubject(subject).size() / subject->getFrequency() + (groups->withSubject(subject).size() % subject->getFrequency() != 0);
+			numberOfVariations[option][idSubject] = divideCeil(groups->withSubject(subject).size(), subject->getFrequency());
 		}
 	}
 

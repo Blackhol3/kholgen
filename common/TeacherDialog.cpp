@@ -15,6 +15,7 @@ TeacherDialog::TeacherDialog(Subjects const* const subjects, Teachers const* con
 	subjects(subjects),
 	teachers(teachers),
 	teacher(nullptr),
+	idSubject(0),
 	ui(new Ui::TeacherDialog)
 {
 	ui->setupUi(this);
