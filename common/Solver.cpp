@@ -66,23 +66,19 @@ void Solver::createVariables(CpModelBuilder &modelBuilder)
 		}
 	}
 
-	idGroupWithTeacherAtTimeslotInWeek.clear();
 	doesTeacherUseTimeslotInWeek.clear();
 	for (auto const &week: weeks) {
 		for (auto const &teacher: *teachers) {
 			for (auto const &timeslot: teacher->getAvailableTimeslots()) {
-				idGroupWithTeacherAtTimeslotInWeek[week][teacher][timeslot] = modelBuilder.NewIntVar({-1, static_cast<int>(groups->size()) - 1});
 
 				LinearExpr nbCollesWithTeacherAtTimeslotInWeek(0);
 				for (auto const &group: groups->withSubject(teacher->getSubject())) {
-					modelBuilder.AddEquality(idGroupWithTeacherAtTimeslotInWeek[week][teacher][timeslot], groups->indexOf(group)).OnlyEnforceIf(isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot]);
 					nbCollesWithTeacherAtTimeslotInWeek.AddVar(isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot]);
 				}
 
 				doesTeacherUseTimeslotInWeek[week][teacher][timeslot] = modelBuilder.NewBoolVar();
+				modelBuilder.AddEquality(nbCollesWithTeacherAtTimeslotInWeek, 1).OnlyEnforceIf(doesTeacherUseTimeslotInWeek[week][teacher][timeslot]);
 				modelBuilder.AddEquality(nbCollesWithTeacherAtTimeslotInWeek, 0).OnlyEnforceIf(doesTeacherUseTimeslotInWeek[week][teacher][timeslot].Not());
-				modelBuilder.AddNotEqual(nbCollesWithTeacherAtTimeslotInWeek, 0).OnlyEnforceIf(doesTeacherUseTimeslotInWeek[week][teacher][timeslot]);
-				modelBuilder.AddEquality(idGroupWithTeacherAtTimeslotInWeek[week][teacher][timeslot], -1).OnlyEnforceIf(doesTeacherUseTimeslotInWeek[week][teacher][timeslot].Not());
 			}
 		}
 	}
@@ -216,16 +212,7 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 					LinearExpr nbEqualVariables(0);
 
 					for (auto const &idWeek: idWeekGroup) {
-						auto x = modelBuilder.NewBoolVar();
-						modelBuilder.AddEquality(
-							idGroupWithTeacherAtTimeslotInWeek[weeks[idWeek]][teacher][timeslot],
-							groups->indexOf(group)
-						).OnlyEnforceIf(x);
-						modelBuilder.AddNotEqual(
-							idGroupWithTeacherAtTimeslotInWeek[weeks[idWeek]][teacher][timeslot],
-							groups->indexOf(group)
-						).OnlyEnforceIf(x.Not());
-						nbEqualVariables.AddVar(x);
+						nbEqualVariables.AddVar(isGroupWithTeacherAtTimeslotInWeek[weeks[idWeek]][group][teacher][timeslot]);
 					}
 
 					int variation = optionsVariations.get(Option::SameTeacherAndTimeslotOnlyOnceInCycle, subjects->indexOf(teacher->getSubject())) + 1;
