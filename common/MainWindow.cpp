@@ -68,6 +68,7 @@ MainWindow::MainWindow() : QMainWindow(), solver(&subjects, &teachers, &groups, 
 
 MainWindow::~MainWindow()
 {
+	delete ui->tabWidget;
 	delete ui;
 }
 
