@@ -1,6 +1,5 @@
 #pragma once
 
-#define NOMINMAX
 #include <ortools/sat/cp_model.h>
 #include <QHash>
 #include <QVector>
@@ -25,12 +24,13 @@ class Solver : public QObject
 		void compute(int const nbWeeks);
 		void stopComputation();
 
-		OptionsVariations const* getOptionsVariations() const;
+		bool checkOption(Option option) const;
+		bool checkOption(Option option, Subject const* const subject) const;
 		QVector<Colle> getColles() const;
 
 	signals:
 		void started();
-		void optionFreezed();
+		void solutionFound();
 		void finished(bool success);
 
 	protected:
@@ -54,6 +54,7 @@ class Solver : public QObject
 		void initWeeks(int const nbWeeks);
 		void createVariables(operations_research::sat::CpModelBuilder &modelBuilder);
 		void createConstraints(operations_research::sat::CpModelBuilder &modelBuilder) const;
+		bool isSuccessful() const;
 		void updateColles();
 };
 

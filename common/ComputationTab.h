@@ -42,7 +42,8 @@ class ComputationTab : public Tab
 		void reconstruct();
 		void updateNumberOfWeeks();
 		void updateIcons();
-		QIcon const &getIcon(Option option, int subOption = 0) const;
+		QIcon const &getIcon(Option option) const;
+		QIcon const &getIcon(Option option, int subOption) const;
 
 		void start();
 		void onFinished(bool success);

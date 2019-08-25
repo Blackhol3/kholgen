@@ -2,7 +2,7 @@
 
 #include <ortools/sat/model.h>
 #include <ortools/util/time_limit.h>
-#include <QDebug>
+#include <QThread>
 #include "misc.h"
 #include "Groups.h"
 #include "Options.h"
@@ -18,6 +18,7 @@ using operations_research::sat::CpModelBuilder;
 using operations_research::sat::CpSolverStatus;
 using operations_research::sat::LinearExpr;
 using operations_research::sat::Model;
+using operations_research::sat::NewFeasibleSolutionObserver;
 
 Solver::Solver(
 		Subjects const* const subjects,
@@ -105,6 +106,8 @@ void Solver::createVariables(CpModelBuilder &modelBuilder)
 			}
 		}
 	}
+
+	optionsVariations.createVariables(modelBuilder);
 }
 
 void Solver::createConstraints(CpModelBuilder &modelBuilder) const
@@ -157,26 +160,28 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 	for (auto const &week: weeks) {
 		for (auto const &group: *groups) {
 			for (auto const &timeslot1: timeslots) {
-				LinearExpr nbCollesWithGroupInWeekAtExtendedTimeslot(0);
-				for (auto const &timeslot2: timeslots) {
-					bool condition = timeslot1 == timeslot2;
-					if (optionsVariations.shouldEnforce(Option::NoConsecutiveColles)) {
-						condition = condition || timeslot1.isAdjacentTo(timeslot2);
-					}
-					if (optionsVariations.shouldEnforce(Option::OnlyOneCollePerDay)) {
-						condition = condition || timeslot1.getDay() == timeslot2.getDay();
-					}
+				LinearExpr nbCollesWithGroupInWeekAtTimeslot(0);
+				LinearExpr nbCollesWithGroupInWeekAtTimeslotAndAdjacentTimeslot(0);
+				LinearExpr nbCollesWithGroupInWeekInDay(0);
 
-					if (condition)
-					{
-						for (auto const &teacher: *teachers) {
-							if (group->hasSubject(teacher->getSubject()) && teacher->getAvailableTimeslots().contains(timeslot2)) {
-								nbCollesWithGroupInWeekAtExtendedTimeslot.AddVar(isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot2]);
-							}
+				for (auto const &timeslot2: timeslots) {
+					bool condition1 = timeslot1 == timeslot2;
+					bool condition2 = timeslot1 == timeslot2 || timeslot1.isAdjacentTo(timeslot2);
+					bool condition3 = timeslot1.getDay() == timeslot2.getDay();
+
+					for (auto const &teacher: *teachers) {
+						if (group->hasSubject(teacher->getSubject()) && teacher->getAvailableTimeslots().contains(timeslot2)) {
+							auto x = isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot2];
+							if (condition1) { nbCollesWithGroupInWeekAtTimeslot.AddVar(x); }
+							if (condition2) { nbCollesWithGroupInWeekAtTimeslotAndAdjacentTimeslot.AddVar(x); }
+							if (condition3) { nbCollesWithGroupInWeekInDay.AddVar(x); }
 						}
 					}
 				}
-				modelBuilder.AddLessOrEqual(nbCollesWithGroupInWeekAtExtendedTimeslot, 1);
+
+				modelBuilder.AddLessOrEqual(nbCollesWithGroupInWeekAtTimeslot, 1);
+				modelBuilder.AddLessOrEqual(nbCollesWithGroupInWeekAtTimeslotAndAdjacentTimeslot, 1).OnlyEnforceIf(optionsVariations.get(Option::NoConsecutiveColles));
+				modelBuilder.AddLessOrEqual(nbCollesWithGroupInWeekInDay, 1).OnlyEnforceIf(optionsVariations.get(Option::OnlyOneCollePerDay));
 			}
 		}
 	}
@@ -207,15 +212,16 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 
 		for (auto const &timeslot: teacher->getAvailableTimeslots()) {
 			for (auto const &group: *groups) {
-				for (auto const &idWeekGroup: idWeekGroups)
-				{
+				for (auto const &idWeekGroup: idWeekGroups) {
 					LinearExpr nbEqualVariables(0);
 
 					for (auto const &idWeek: idWeekGroup) {
 						nbEqualVariables.AddVar(isGroupWithTeacherAtTimeslotInWeek[weeks[idWeek]][group][teacher][timeslot]);
 					}
 
-					int variation = optionsVariations.get(Option::SameTeacherAndTimeslotOnlyOnceInCycle, subjects->indexOf(teacher->getSubject())) + 1;
+					auto variation = LinearExpr(optionsVariations.get(Option::SameTeacherAndTimeslotOnlyOnceInCycle, teacher->getSubject()));
+					variation.AddConstant(1);
+
 					modelBuilder.AddLessOrEqual(nbEqualVariables, variation).OnlyEnforceIf(doesTeacherUseTimeslot[teacher][timeslot]);
 				}
 			}
@@ -249,7 +255,9 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 					}
 
 					auto x = doesGroupHaveSubjectInWeek[weeks[idWeekGroup.first()]][group][subject];
-					int variation = optionsVariations.get(Option::SameTeacherOnlyOnceInCycle, subjects->indexOf(subject)) + 1;
+					auto variation = LinearExpr(optionsVariations.get(Option::SameTeacherOnlyOnceInCycle, subject));
+					variation.AddConstant(1);
+
 					modelBuilder.AddLessOrEqual(nbEqualVariables, variation).OnlyEnforceIf(x);
 				}
 			}
@@ -282,53 +290,46 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 				}
 
 				auto x = doesGroupHaveSubjectInWeek[weeks[idWeekGroup.first()]][group][subject];
-				int variation = optionsVariations.get(Option::NoSameTeacherConsecutively, subjects->indexOf(subject));
+				auto variation = optionsVariations.get(Option::NoSameTeacherConsecutively, subject);
 				modelBuilder.AddLessOrEqual(nbEqualVariables, variation).OnlyEnforceIf(x);
 			}
 		}
 	}
+
+	optionsVariations.createConstraints(modelBuilder);
 }
 
 void Solver::compute(int const nbWeeks)
 {
 	initWeeks(nbWeeks);
-
+	response.Clear();
 	shouldComputationBeStopped = false;
-	operations_research::sat::CpSolverResponse lastResponse;
-	bool success = false;
-
 	optionsVariations.init();
 	emit started();
 
-	while (!shouldComputationBeStopped && !optionsVariations.exhausted())
-	{
-		CpModelBuilder modelBuilder;
-		createVariables(modelBuilder);
-		createConstraints(modelBuilder);
+	CpModelBuilder modelBuilder;
+	createVariables(modelBuilder);
+	createConstraints(modelBuilder);
 
-		Model model;
-		model.GetOrCreate<TimeLimit>()->RegisterExternalBooleanAsLimit(&shouldComputationBeStopped);
+	operations_research::sat::SatParameters parameters;
+	parameters.set_num_search_workers(QThread::idealThreadCount());
 
-		lastResponse = SolveCpModel(modelBuilder.Build(), &model);
-		if (lastResponse.status() == CpSolverStatus::FEASIBLE)
-		{
-			response = lastResponse;
-			optionsVariations.freeze();
-			optionsVariations.reset();
-			emit optionFreezed();
-			success = true;
-			//qDebug().noquote() << QString::fromStdString(CpSolverResponseStats(response));
-		}
-		else {
-			optionsVariations.increment();
-		}
-	}
+	Model model;
+	model.GetOrCreate<TimeLimit>()->RegisterExternalBooleanAsLimit(&shouldComputationBeStopped);
+	model.Add(NewSatParameters(parameters));
+	model.Add(NewFeasibleSolutionObserver([&](auto const &lastResponse) {
+		response = lastResponse;
+		emit solutionFound();
+	}));
 
-	if (success) {
-		updateColles();
-	}
+	SolveCpModel(modelBuilder.Build(), &model);
+	updateColles();
+	emit finished(isSuccessful());
+}
 
-	emit finished(success);
+bool Solver::isSuccessful() const
+{
+	return response.status() == CpSolverStatus::OPTIMAL || response.status() == CpSolverStatus::FEASIBLE;
 }
 
 void Solver::stopComputation()
@@ -336,9 +337,14 @@ void Solver::stopComputation()
 	shouldComputationBeStopped = true;
 }
 
-const OptionsVariations *Solver::getOptionsVariations() const
+bool Solver::checkOption(Option option) const
 {
-	return &optionsVariations;
+	return isSuccessful() && SolutionBooleanValue(response, optionsVariations.get(option));
+}
+
+bool Solver::checkOption(Option option, Subject const* const subject) const
+{
+	return isSuccessful() && SolutionIntegerValue(response, optionsVariations.get(option, subject)) == 0;
 }
 
 QVector<Colle> Solver::getColles() const
@@ -348,6 +354,10 @@ QVector<Colle> Solver::getColles() const
 
 void Solver::updateColles()
 {
+	if (!isSuccessful()) {
+		return;
+	}
+
 	colles.clear();
 	for (auto const &week: weeks) {
 		for (auto const &teacher: *teachers) {

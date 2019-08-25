@@ -1,10 +1,12 @@
 #include "OptionsVariations.h"
 
-#include <QDebug>
 #include "misc.h"
 #include "Groups.h"
 #include "Subject.h"
 #include "Subjects.h"
+
+using operations_research::sat::CpModelBuilder;
+using operations_research::sat::LinearExpr;
 
 OptionsVariations::OptionsVariations(Groups const* const groups, Options const* const options, Subjects const* const subjects): groups(groups), options(options), subjects(subjects)
 {
@@ -12,105 +14,74 @@ OptionsVariations::OptionsVariations(Groups const* const groups, Options const* 
 
 void OptionsVariations::init()
 {
-	numberOfVariations.clear();
+	maximalValues.clear();
 	for (auto const &option: *options)
 	{
 		if (!option.isDefinedBySubject()) {
-			numberOfVariations[option][0] = 2;
+			maximalValues[option][nullptr] = 1;
 			continue;
 		}
 
-		for (int idSubject = 0; idSubject < subjects->size(); ++idSubject) {
-			auto subject = subjects->at(idSubject);
-			numberOfVariations[option][idSubject] = divideCeil(groups->withSubject(subject).size(), subject->getFrequency());
+		for (auto const &subject: *subjects) {
+			maximalValues[option][subject] = divideCeil(groups->withSubject(subject).size(), subject->getFrequency()) - 1;
 		}
 	}
-
-	variations = numberOfVariations;
-	for (auto &variation: variations) {
-		for (auto &subVariation: variation) {
-			subVariation = 0;
-		}
-	}
-
-	lastIncrementedOption = {options->last(), 0};
-	freezedOption = {options->first(), variations[options->first()].size()};
 }
 
-bool OptionsVariations::exhausted() const
+void OptionsVariations::createVariables(CpModelBuilder& modelBuilder)
 {
-	return lastIncrementedOption.option == freezedOption.option && lastIncrementedOption.subOption == freezedOption.subOption;
-}
+	booleanConstraints.clear();
+	integerConstraints.clear();
 
-/**
- * @brief Return the identifiant (as a non-negative integer) of the variation of the option at the current index.
- * For instance, with binary option, 0 means that the constraint should be enforced, and 1 that it should be relaxed.
- * With tertiary option, 0 means that the constraint should be enforced, 1 partially enforced and 2 relaxed.
- */
-int OptionsVariations::get(Option option, int subOption) const
-{
-	return variations[option][subOption];
-}
-
-bool OptionsVariations::shouldEnforce(Option option, int subOption) const
-{
-	return get(option, subOption) == 0;
-}
-
-void OptionsVariations::increment()
-{
-	for (int idOption = options->size() - 1; idOption >= options->indexOf(freezedOption.option); --idOption)
+	for (auto const &option: *options)
 	{
-		auto option = options->at(idOption);
+		if (!option.isDefinedBySubject()) {
+			booleanConstraints[option] = modelBuilder.NewBoolVar();
+			continue;
+		}
 
-		QVector<int> subOptions(option == freezedOption.option ? freezedOption.subOption : variations[option].size());
-		std::iota(subOptions.begin(), subOptions.end(), 0);
-		std::stable_sort(subOptions.begin(), subOptions.end(), [&](int a, int b) { return variations[option][a] < variations[option][b]; });
-
-		for (auto const &subOption: subOptions)
-		{
-			if (variations[option][subOption] < numberOfVariations[option][subOption] - 1)
-			{
-				++variations[option][subOption];
-				qDebug().noquote() << QString("%1 | %2 => %3").arg(option.getName(), QString::number(subOption), QString::number(variations[option][subOption]));
-				lastIncrementedOption = {option, subOption};
-				return;
-			}
+		for (auto const &subject: *subjects) {
+			integerConstraints[option][subject] = modelBuilder.NewIntVar({0, maximalValues[option][subject]});
 		}
 	}
-
-	lastIncrementedOption = freezedOption;
 }
 
-void OptionsVariations::freeze()
+void OptionsVariations::createConstraints(CpModelBuilder& modelBuilder) const
 {
-	freezedOption = lastIncrementedOption;
-}
+	LinearExpr constraintLevel(0);
 
-void OptionsVariations::reset()
-{
-	for (int idOption = options->size() - 1; idOption >= options->indexOf(freezedOption.option); --idOption)
+	for (auto const &option: *options)
 	{
-		auto option = options->at(idOption);
-		int subOptionsSize = option == freezedOption.option ? freezedOption.subOption : variations[option].size();
+		if (!option.isDefinedBySubject()) {
+			constraintLevel.AddTerm(booleanConstraints[option], getFactor(option));
+			continue;
+		}
 
-		for (int subOption = 0; subOption < subOptionsSize; ++subOption) {
-			variations[option][subOption] = 0;
+		for (auto const &subject: *subjects) {
+			constraintLevel.AddTerm(integerConstraints[option][subject], getFactor(option));
 		}
 	}
 
-	lastIncrementedOption = {options->last(), 0};
+	modelBuilder.Minimize(constraintLevel);
 }
 
-bool OptionsVariations::isOptionFreezed(Option option, int subOption) const
+operations_research::sat::BoolVar OptionsVariations::get(Option option) const
 {
-	if (options->indexOf(option) < options->indexOf(freezedOption.option)) {
-		return true;
+	return booleanConstraints[option].Not();
+}
+
+operations_research::sat::IntVar OptionsVariations::get(Option option, const Subject* subject) const
+{
+	return integerConstraints[option][subject];
+}
+
+int OptionsVariations::getFactor(Option option) const
+{
+	int const idOption = options->indexOf(option);
+	if (idOption == options->size() - 1) {
+		return 1;
 	}
 
-	if (option == freezedOption.option) {
-		return subOption >= freezedOption.subOption;
-	}
-
-	return false;
+	auto const previousOption = options->at(idOption + 1);
+	return getFactor(previousOption) * (1 + std::accumulate(maximalValues[previousOption].cbegin(), maximalValues[previousOption].cend(), 0));
 }

@@ -1,37 +1,32 @@
 #pragma once
 
 #include <QHash>
+#include <ortools/sat/cp_model.h>
 #include "Options.h"
 
 class Groups;
+class Subject;
 class Subjects;
-
-struct OptionsVariationIndex
-{
-	Option option;
-	int subOption;
-};
 
 class OptionsVariations
 {
 	public:
 		OptionsVariations(Groups const* const groups, Options const* const options, Subjects const* const subjects);
 		void init();
-		bool exhausted() const;
-		int get(Option option, int subOption = 0) const;
-		bool shouldEnforce(Option option, int subOption = 0) const;
-		void increment();
-		void freeze();
-		void reset();
-		bool isOptionFreezed(Option option, int subOption = 0) const;
+		void createVariables(operations_research::sat::CpModelBuilder &modelBuilder);
+		void createConstraints(operations_research::sat::CpModelBuilder &modelBuilder) const;
+
+		operations_research::sat::BoolVar get(Option option) const;
+		operations_research::sat::IntVar get(Option option, Subject const* subject) const;
 
 	protected:
 		Groups const* groups;
 		Options const* options;
 		Subjects const* subjects;
 
-		QHash<Option, QMap<int, int>> variations;
-		QHash<Option, QMap<int, int>> numberOfVariations;
-		OptionsVariationIndex lastIncrementedOption;
-		OptionsVariationIndex freezedOption;
+		QHash<Option, QHash<Subject const*, int>> maximalValues;
+		QHash<Option, operations_research::sat::BoolVar> booleanConstraints;
+		QHash<Option, QHash<Subject const*, operations_research::sat::IntVar>> integerConstraints;
+
+		int getFactor(Option option) const;
 };

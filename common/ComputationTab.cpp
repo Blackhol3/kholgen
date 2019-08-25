@@ -77,7 +77,7 @@ void ComputationTab::setData(
 	});
 	connect(ui->stopButton, &QPushButton::clicked, solver, &Solver::stopComputation);
 	connect(solver, &Solver::started, this, &ComputationTab::updateIcons);
-	connect(solver, &Solver::optionFreezed, this, &ComputationTab::updateIcons);
+	connect(solver, &Solver::solutionFound, this, &ComputationTab::updateIcons);
 	connect(solver, &Solver::finished, this, &ComputationTab::onFinished);
 
 	connect(subjects, &Subjects::inserted, this, &ComputationTab::reconstruct);
@@ -153,14 +153,14 @@ void ComputationTab::updateIcons()
 	}
 }
 
+const QIcon &ComputationTab::getIcon(Option option) const
+{
+	return solver->checkOption(option) ? successIcon : errorIcon;
+}
+
 const QIcon &ComputationTab::getIcon(Option option, int subOption) const
 {
-	auto optionsVariations = solver->getOptionsVariations();
-	if (optionsVariations->isOptionFreezed(option, subOption)) {
-		return optionsVariations->shouldEnforce(option, subOption) ? successIcon : errorIcon;
-	}
-
-	return computationWatcher.isRunning() ? inProgressIcon : errorIcon;
+	return solver->checkOption(option, subjects->at(subOption)) ? successIcon : errorIcon;
 }
 
 void ComputationTab::start()

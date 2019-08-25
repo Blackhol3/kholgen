@@ -76,6 +76,8 @@ FORMS += \
 INCLUDEPATH += \
     $$COMMON_PATH
 
+DEFINES += NOMINMAX
+
 QMAKE_CXXFLAGS_WARN_ON -= -W3
 QMAKE_CXXFLAGS_WARN_ON += -W4 -WX
 QMAKE_CXXFLAGS += -experimental:external -external:anglebrackets -external:W0
