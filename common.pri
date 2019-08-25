@@ -1,6 +1,6 @@
 COMMON_PATH = $$PWD/common/
 
-QT += widgets concurrent
+QT += widgets concurrent winextras
 
 CONFIG += c++17 qt
 

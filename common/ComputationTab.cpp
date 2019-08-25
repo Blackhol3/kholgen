@@ -4,6 +4,8 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QWinTaskbarButton>
+#include <QWinTaskbarProgress>
 #include <QtConcurrent>
 #include "CsvExporter.h"
 #include "ExcelExporter.h"
@@ -30,7 +32,8 @@ ComputationTab::ComputationTab(QWidget *parent) :
 	successIcon(":/image/check.svg"),
 	errorIcon(":/image/error.svg"),
 
-	ui(new Ui::ComputationTab)
+	ui(new Ui::ComputationTab),
+	taskbarProgress(nullptr)
 {
 	ui->setupUi(this);
 	ui->stopButton->hide();
@@ -40,6 +43,12 @@ ComputationTab::ComputationTab(QWidget *parent) :
 	connect(ui->numberOfWeeksSpinBox, &QSpinBox::editingFinished, this, &ComputationTab::updateNumberOfWeeks);
 
 	numberOfWeeks = ui->numberOfWeeksSpinBox->value();
+
+	QTimer::singleShot(0, this, [&]() {
+		auto taskbarButton = new QWinTaskbarButton(window());
+		taskbarButton->setWindow(window()->windowHandle());
+		taskbarProgress = taskbarButton->progress();
+	});
 }
 
 void ComputationTab::setData(
@@ -168,6 +177,8 @@ void ComputationTab::start()
 	ui->startButton->hide();
 	ui->stopButton->show();
 	ui->progressBar->setMaximum(0);
+	taskbarProgress->setMaximum(0);
+	taskbarProgress->show();
 
 	computationWatcher.setFuture(QtConcurrent::run([&]() { solver->compute(numberOfWeeks); }));
 }
@@ -177,6 +188,8 @@ void ComputationTab::onFinished(bool success)
 	ui->stopButton->hide();
 	ui->startButton->show();
 	ui->progressBar->setMaximum(100);
+	taskbarProgress->setMaximum(100);
+	taskbarProgress->hide();
 
 	if (success)
 	{

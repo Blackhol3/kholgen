@@ -11,6 +11,7 @@ class ComputationTab;
 }
 
 class QTreeWidgetItem;
+class QWinTaskbarProgress;
 class Groups;
 class Solver;
 class Subjects;
@@ -52,5 +53,6 @@ class ComputationTab : public Tab
 
 	private:
 		Ui::ComputationTab *ui;
+		QWinTaskbarProgress *taskbarProgress;
 };
 
