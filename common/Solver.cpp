@@ -13,11 +13,13 @@
 #include "Teachers.h"
 
 using operations_research::TimeLimit;
+using operations_research::sat::BoolVar;
 using operations_research::sat::CpModelBuilder;
 using operations_research::sat::CpSolverStatus;
 using operations_research::sat::LinearExpr;
 using operations_research::sat::Model;
 using operations_research::sat::NewFeasibleSolutionObserver;
+using operations_research::sat::SatParameters;
 
 Solver::Solver(
 		Subjects const* const subjects,
@@ -39,12 +41,19 @@ void Solver::initWeeks(int const nbWeeks)
 void Solver::createVariables(CpModelBuilder &modelBuilder)
 {
 	isGroupWithTeacherAtTimeslotInWeek.clear();
+	doesGroupHaveTeacherInWeek.clear();
 	for (auto const &week: weeks) {
 		for (auto const &teacher: *teachers) {
 			for (auto const &group: groups->withSubject(teacher->getSubject())) {
+				LinearExpr nbCollesOfGroupWithTeacherInWeek(0);
 				for (auto const &timeslot: teacher->getAvailableTimeslots()) {
 					isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot] = modelBuilder.NewBoolVar();
+					nbCollesOfGroupWithTeacherInWeek.AddVar(isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot]);
 				}
+
+				doesGroupHaveTeacherInWeek[week][group][teacher] = modelBuilder.NewBoolVar();
+				modelBuilder.AddEquality(nbCollesOfGroupWithTeacherInWeek, 1).OnlyEnforceIf(doesGroupHaveTeacherInWeek[week][group][teacher]);
+				modelBuilder.AddEquality(nbCollesOfGroupWithTeacherInWeek, 0).OnlyEnforceIf(doesGroupHaveTeacherInWeek[week][group][teacher].Not());
 			}
 		}
 	}
@@ -81,10 +90,14 @@ void Solver::createVariables(CpModelBuilder &modelBuilder)
 					}
 				}
 
-				doesGroupHaveSubjectInWeek[week][group][subject] = modelBuilder.NewBoolVar();
-				modelBuilder.AddEquality(nbCollesOfGroupForSubjectInWeek, 0).OnlyEnforceIf(doesGroupHaveSubjectInWeek[week][group][subject].Not());
-				modelBuilder.AddEquality(nbCollesOfGroupForSubjectInWeek, 1).OnlyEnforceIf(doesGroupHaveSubjectInWeek[week][group][subject]);
-				modelBuilder.AddEquality(idTeacherWithGroupForSubjectInWeek[week][group][subject], -1).OnlyEnforceIf(doesGroupHaveSubjectInWeek[week][group][subject].Not());
+				auto firstWeek = weeks[week.getId() % subject->getFrequency()];
+				if (week == firstWeek) {
+					doesGroupHaveSubjectInWeek[week][group][subject] = modelBuilder.NewBoolVar();
+				}
+
+				modelBuilder.AddEquality(nbCollesOfGroupForSubjectInWeek, 0).OnlyEnforceIf(doesGroupHaveSubjectInWeek[firstWeek][group][subject].Not());
+				modelBuilder.AddEquality(nbCollesOfGroupForSubjectInWeek, 1).OnlyEnforceIf(doesGroupHaveSubjectInWeek[firstWeek][group][subject]);
+				modelBuilder.AddEquality(idTeacherWithGroupForSubjectInWeek[week][group][subject], -1).OnlyEnforceIf(doesGroupHaveSubjectInWeek[firstWeek][group][subject].Not());
 			}
 		}
 	}
@@ -97,15 +110,12 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 	// Groups must have subject with the appropriate frequency
 	for (auto const &subject: *subjects) {
 		for (auto const &group: groups->withSubject(subject)) {
-			for (int idWeek = 0; idWeek < weeks.size() - subject->getFrequency() + 1; ++idWeek) {
-				LinearExpr nbCollesOfGroupForSubjectInPeriodicWeek(0);
-
-				for (int offsetWeek = 0; offsetWeek < subject->getFrequency(); ++offsetWeek) {
-					nbCollesOfGroupForSubjectInPeriodicWeek.AddVar(doesGroupHaveSubjectInWeek[weeks[idWeek + offsetWeek]][group][subject]);
-				}
-
-				modelBuilder.AddEquality(nbCollesOfGroupForSubjectInPeriodicWeek, 1);
+			LinearExpr nbCollesOfGroupForSubjectInPeriodicWeek(0);
+			for (int idWeek = 0; idWeek < subject->getFrequency(); ++idWeek) {
+				nbCollesOfGroupForSubjectInPeriodicWeek.AddVar(doesGroupHaveSubjectInWeek[weeks[idWeek]][group][subject]);
 			}
+
+			modelBuilder.AddEquality(nbCollesOfGroupForSubjectInPeriodicWeek, 1);
 		}
 	}
 
@@ -114,7 +124,7 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 		for (auto const &week: weeks) {
 			LinearExpr nbCollesOfSubjectInWeek(0);
 			for (auto const &group: groups->withSubject(subject)) {
-				nbCollesOfSubjectInWeek.AddVar(doesGroupHaveSubjectInWeek[week][group][subject]);
+				nbCollesOfSubjectInWeek.AddVar(doesGroupHaveSubjectInWeek[weeks[week.getId() % subject->getFrequency()]][group][subject]);
 			}
 
 			int nbCollesExpected = groups->withSubject(subject).size() / subject->getFrequency();
@@ -229,19 +239,10 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 					LinearExpr nbEqualVariables(0);
 
 					for (auto const &idWeek: idWeekGroup) {
-						auto x = modelBuilder.NewBoolVar();
-						modelBuilder.AddEquality(
-							idTeacherWithGroupForSubjectInWeek[weeks[idWeek]][group][subject],
-							teachers->indexOf(teacher)
-						).OnlyEnforceIf(x);
-						modelBuilder.AddNotEqual(
-							idTeacherWithGroupForSubjectInWeek[weeks[idWeek]][group][subject],
-							teachers->indexOf(teacher)
-						).OnlyEnforceIf(x.Not());
-						nbEqualVariables.AddVar(x);
+						nbEqualVariables.AddVar(doesGroupHaveTeacherInWeek[weeks[idWeek]][group][teacher]);
 					}
 
-					auto x = doesGroupHaveSubjectInWeek[weeks[idWeekGroup.first()]][group][subject];
+					auto x = doesGroupHaveSubjectInWeek[weeks[idWeekGroup.first() % subject->getFrequency()]][group][subject];
 					auto variation = LinearExpr(optionsVariations.get(Option::SameTeacherOnlyOnceInCycle, subject));
 					variation.AddConstant(1);
 
@@ -260,23 +261,31 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 		auto const idWeekGroups = getIntegerGroups(0, weeks.size() - 1, expectedNumberOfSlots, expectedFrequency);
 
 		for (auto const &group: groups->withSubject(subject)) {
+			QHash<Week, QHash<Week, BoolVar>> isTeacherWithGroupForSubjectIdenticalInBothWeeks;
+
 			for (auto const &idWeekGroup: idWeekGroups) {
 				LinearExpr nbEqualVariables(0);
 
 				for (auto const &idWeeks: getAllConsecutivePairs(idWeekGroup)) {
-					auto x = modelBuilder.NewBoolVar();
-					modelBuilder.AddEquality(
-						idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.first]][group][subject],
-						idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.second]][group][subject]
-					).OnlyEnforceIf(x);
-					modelBuilder.AddNotEqual(
-						idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.first]][group][subject],
-						idTeacherWithGroupForSubjectInWeek[weeks[idWeeks.second]][group][subject]
-					).OnlyEnforceIf(x.Not());
-					nbEqualVariables.AddVar(x);
+					auto week1 = weeks[idWeeks.first];
+					auto week2 = weeks[idWeeks.second];
+
+					if (isTeacherWithGroupForSubjectIdenticalInBothWeeks[week1][week2].index() == 0) {
+						isTeacherWithGroupForSubjectIdenticalInBothWeeks[week1][week2] = modelBuilder.NewBoolVar();
+						modelBuilder.AddEquality(
+							idTeacherWithGroupForSubjectInWeek[week1][group][subject],
+							idTeacherWithGroupForSubjectInWeek[week2][group][subject]
+						).OnlyEnforceIf(isTeacherWithGroupForSubjectIdenticalInBothWeeks[week1][week2]);
+						modelBuilder.AddNotEqual(
+							idTeacherWithGroupForSubjectInWeek[week1][group][subject],
+							idTeacherWithGroupForSubjectInWeek[week2][group][subject]
+						).OnlyEnforceIf(isTeacherWithGroupForSubjectIdenticalInBothWeeks[week1][week2].Not());
+					}
+
+					nbEqualVariables.AddVar(isTeacherWithGroupForSubjectIdenticalInBothWeeks[week1][week2]);
 				}
 
-				auto x = doesGroupHaveSubjectInWeek[weeks[idWeekGroup.first()]][group][subject];
+				auto x = doesGroupHaveSubjectInWeek[weeks[idWeekGroup.first() % subject->getFrequency()]][group][subject];
 				auto variation = optionsVariations.get(Option::NoSameTeacherConsecutively, subject);
 				modelBuilder.AddLessOrEqual(nbEqualVariables, variation).OnlyEnforceIf(x);
 			}
@@ -298,7 +307,7 @@ void Solver::compute(int const nbWeeks)
 	createVariables(modelBuilder);
 	createConstraints(modelBuilder);
 
-	operations_research::sat::SatParameters parameters;
+	SatParameters parameters;
 	parameters.set_num_search_workers(getNumberOfPhysicalCores());
 
 	Model model;

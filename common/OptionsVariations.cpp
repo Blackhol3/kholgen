@@ -5,8 +5,11 @@
 #include "Subject.h"
 #include "Subjects.h"
 
+using absl::Span;
 using operations_research::sat::CpModelBuilder;
+using operations_research::sat::DecisionStrategyProto;
 using operations_research::sat::LinearExpr;
+using operations_research::sat::IntVar;
 
 OptionsVariations::OptionsVariations(Groups const* const groups, Options const* const options, Subjects const* const subjects): groups(groups), options(options), subjects(subjects)
 {
@@ -57,8 +60,16 @@ void OptionsVariations::createConstraints(CpModelBuilder& modelBuilder) const
 			continue;
 		}
 
+		auto minimalValue = modelBuilder.NewIntVar({0, *std::max_element(maximalValues[option].cbegin(), maximalValues[option].cend())});
+		auto variables = integerConstraints[option].values().toVector();
+		modelBuilder.AddMinEquality(minimalValue, Span<const IntVar>(variables.data(), static_cast<unsigned int>(variables.size())));
+
+		auto maximalValue = LinearExpr(minimalValue);
+		maximalValue.AddConstant(1);
+
 		for (auto const &subject: *subjects) {
 			constraintLevel.AddTerm(integerConstraints[option][subject], getFactor(option));
+			modelBuilder.AddLessOrEqual(integerConstraints[option][subject], maximalValue);
 		}
 	}
 

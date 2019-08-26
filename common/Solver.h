@@ -42,6 +42,7 @@ class Solver : public QObject
 		OptionsVariations optionsVariations;
 
 		QHash<Week, QHash<Group const*, QHash<Teacher const*, QHash<Timeslot, operations_research::sat::BoolVar>>>> isGroupWithTeacherAtTimeslotInWeek;
+		QHash<Week, QHash<Group const*, QHash<Teacher const*, operations_research::sat::BoolVar>>> doesGroupHaveTeacherInWeek;
 		QHash<Teacher const*, QHash<Timeslot, operations_research::sat::BoolVar>> doesTeacherUseTimeslot;
 		QHash<Week, QHash<Group const*, QHash<Subject const*, operations_research::sat::IntVar>>> idTeacherWithGroupForSubjectInWeek;
 		QHash<Week, QHash<Group const*, QHash<Subject const*, operations_research::sat::BoolVar>>> doesGroupHaveSubjectInWeek;
