@@ -2,7 +2,6 @@
 
 #include <ortools/sat/model.h>
 #include <ortools/util/time_limit.h>
-#include <QThread>
 #include "misc.h"
 #include "Groups.h"
 #include "Options.h"
@@ -300,7 +299,7 @@ void Solver::compute(int const nbWeeks)
 	createConstraints(modelBuilder);
 
 	operations_research::sat::SatParameters parameters;
-	parameters.set_num_search_workers(QThread::idealThreadCount());
+	parameters.set_num_search_workers(getNumberOfPhysicalCores());
 
 	Model model;
 	model.GetOrCreate<TimeLimit>()->RegisterExternalBooleanAsLimit(&shouldComputationBeStopped);

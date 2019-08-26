@@ -13,3 +13,5 @@ QVector<QPair<T, T>> getAllConsecutivePairs(QVector<T> const &vector);
 
 template<typename T>
 T divideCeil(T const &a, T const &b);
+
+int getNumberOfPhysicalCores();
