@@ -93,6 +93,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>numberOfWeeksSpinBox</tabstop>
+  <tabstop>optionsTree</tabstop>
+  <tabstop>table</tabstop>
+  <tabstop>exportButton</tabstop>
+  <tabstop>startButton</tabstop>
+  <tabstop>stopButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
