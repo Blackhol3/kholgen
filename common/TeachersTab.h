@@ -18,7 +18,7 @@ class TeachersTab : public Tab
 	public:
 		explicit TeachersTab(QWidget *parent = nullptr);
 		void setData(Subjects const* const newSubjects, Teachers* const newTeachers);
-		~TeachersTab();
+		~TeachersTab() override;
 
 	protected:
 		Subjects const* subjects;
@@ -30,6 +30,7 @@ class TeachersTab : public Tab
 		void editNewTeacher();
 		void editTeacher(QTreeWidgetItem* item);
 		void updateSubject(int row) const;
+		bool eventFilter(QObject* object, QEvent* event) override;
 
 	private:
 		Ui::TeachersTab *ui;

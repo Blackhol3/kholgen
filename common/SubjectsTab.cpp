@@ -2,8 +2,8 @@
 #include "ui_SubjectsTab.h"
 
 #include <QColorDialog>
-#include <QDebug>
 #include <QMessageBox>
+#include <QMouseEvent>
 #include <QRandomGenerator>
 #include <QShortcut>
 #include <QStandardItemModel>
@@ -27,6 +27,7 @@ SubjectsTab::SubjectsTab(QWidget *parent) :
 	ui->setupUi(this);
 	ui->table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->table->setItemDelegateForColumn(ColumnColor, new TransparentItemDelegate(0, ui->table));
+	ui->table->viewport()->installEventFilter(this);
 
 	connect(ui->table, &QTableWidget::cellDoubleClicked, this, [&](int row, int column) { if (column == ColumnColor) { edit(row, column); } });
 	connect(ui->table, &QTableWidget::cellChanged, this, &SubjectsTab::edit);
@@ -386,6 +387,24 @@ void SubjectsTab::useClassSubject()
 	);
 	addUndoCommand(command);
 	endUndoMacro();
+}
+
+bool SubjectsTab::eventFilter(QObject* object, QEvent* event)
+{
+	if (object != ui->table->viewport() || event->type() != QEvent::MouseButtonDblClick) {
+		return false;
+	}
+
+	auto doubleClickEvent = static_cast<QMouseEvent*>(event);
+	if (doubleClickEvent->button() != Qt::LeftButton) {
+		return false;
+	}
+
+	if (ui->table->itemAt(doubleClickEvent->pos()) == nullptr) {
+		append();
+	}
+
+	return false;
 }
 
 void SubjectsTab::setClassesSubjects()

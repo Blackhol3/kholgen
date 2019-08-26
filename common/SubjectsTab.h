@@ -20,7 +20,7 @@ class SubjectsTab : public Tab
 	public:
 		SubjectsTab(QWidget *parent = nullptr);
 		void setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers);
-		~SubjectsTab();
+		~SubjectsTab() override;
 
 	protected:
 		Groups* groups;
@@ -42,6 +42,7 @@ class SubjectsTab : public Tab
 		void insert(int row);
 		void updateRow(int row) const;
 		void useClassSubject();
+		bool eventFilter(QObject* object, QEvent* event) override;
 
 		enum Column {
 			ColumnColor = 0,

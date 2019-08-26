@@ -1,6 +1,7 @@
 #include "TeachersTab.h"
 #include "ui_TeachersTab.h"
 
+#include <QMouseEvent>
 #include <QShortcut>
 #include "Subject.h"
 #include "Subjects.h"
@@ -17,6 +18,7 @@ TeachersTab::TeachersTab(QWidget *parent) :
 {
 	ui->setupUi(this);
 	ui->tree->header()->setSectionResizeMode(QHeaderView::Stretch);
+	ui->tree->viewport()->installEventFilter(this);
 
 	connect(ui->tree, &QTreeWidget::itemDoubleClicked, this, [&](QTreeWidgetItem *item) {
 		int indexSubject = ui->tree->indexOfTopLevelItem(item);
@@ -158,4 +160,22 @@ void TeachersTab::updateSubject(int row) const
 	item->setData(0, Qt::ForegroundRole, qGray(subject->getColor().rgb()) < 128 ? QColor(Qt::white) : QColor(Qt::black));
 	item->setFlags(Qt::ItemIsEnabled);
 	item->setExpanded(true);
+}
+
+bool TeachersTab::eventFilter(QObject* object, QEvent* event)
+{
+	if (object != ui->tree->viewport() || event->type() != QEvent::MouseButtonDblClick) {
+		return false;
+	}
+
+	auto doubleClickEvent = static_cast<QMouseEvent*>(event);
+	if (doubleClickEvent->button() != Qt::LeftButton) {
+		return false;
+	}
+
+	if (ui->tree->itemAt(doubleClickEvent->pos()) == nullptr) {
+		editNewTeacher();
+	}
+
+	return false;
 }

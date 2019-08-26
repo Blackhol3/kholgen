@@ -2,6 +2,7 @@
 #include "ui_GroupsTab.h"
 
 #include <QInputDialog>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QShortcut>
 #include "Group.h"
@@ -20,6 +21,7 @@ GroupsTab::GroupsTab(QWidget *parent) :
 	ui->setupUi(this);
 	ui->table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->table->setItemDelegate(new TransparentItemDelegate(20, ui->table));
+	ui->table->viewport()->installEventFilter(this);
 
 	connect(ui->addButton, &QPushButton::clicked, this, &GroupsTab::append);
 	connect(ui->removeButton, &QPushButton::clicked, this, &GroupsTab::deleteSelected);
@@ -167,4 +169,22 @@ void GroupsTab::deleteSelected()
 		addUndoCommand(command);
 	}
 	endUndoMacro();
+}
+
+bool GroupsTab::eventFilter(QObject* object, QEvent* event)
+{
+	if (object != ui->table->viewport() || event->type() != QEvent::MouseButtonDblClick) {
+		return false;
+	}
+
+	auto doubleClickEvent = static_cast<QMouseEvent*>(event);
+	if (doubleClickEvent->button() != Qt::LeftButton) {
+		return false;
+	}
+
+	if (ui->table->itemAt(doubleClickEvent->pos()) == nullptr) {
+		append();
+	}
+
+	return false;
 }

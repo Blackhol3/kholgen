@@ -16,7 +16,7 @@ class GroupsTab : public Tab
 	public:
 		explicit GroupsTab(QWidget *parent = nullptr);
 		void setData(Groups* const newGroups, Subjects const* const newSubjects);
-		~GroupsTab();
+		~GroupsTab() override;
 
 	protected:
 		Groups* groups;
@@ -28,6 +28,7 @@ class GroupsTab : public Tab
 		void toggleSubject(int row, int column);
 		void toggleSelected();
 		void deleteSelected();
+		bool eventFilter(QObject* object, QEvent* event) override;
 
 	private:
 		Ui::GroupsTab *ui;
