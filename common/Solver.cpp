@@ -67,23 +67,6 @@ void Solver::createVariables(CpModelBuilder &modelBuilder)
 		}
 	}
 
-	doesTeacherUseTimeslotInWeek.clear();
-	for (auto const &week: weeks) {
-		for (auto const &teacher: *teachers) {
-			for (auto const &timeslot: teacher->getAvailableTimeslots()) {
-
-				LinearExpr nbCollesWithTeacherAtTimeslotInWeek(0);
-				for (auto const &group: groups->withSubject(teacher->getSubject())) {
-					nbCollesWithTeacherAtTimeslotInWeek.AddVar(isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot]);
-				}
-
-				doesTeacherUseTimeslotInWeek[week][teacher][timeslot] = modelBuilder.NewBoolVar();
-				modelBuilder.AddEquality(nbCollesWithTeacherAtTimeslotInWeek, 1).OnlyEnforceIf(doesTeacherUseTimeslotInWeek[week][teacher][timeslot]);
-				modelBuilder.AddEquality(nbCollesWithTeacherAtTimeslotInWeek, 0).OnlyEnforceIf(doesTeacherUseTimeslotInWeek[week][teacher][timeslot].Not());
-			}
-		}
-	}
-
 	idTeacherWithGroupForSubjectInWeek.clear();
 	doesGroupHaveSubjectInWeek.clear();
 	for (auto const &week: weeks) {
@@ -150,7 +133,12 @@ void Solver::createConstraints(CpModelBuilder &modelBuilder) const
 	for (auto const &week: weeks) {
 		for (auto const &teacher: *teachers) {
 			for (auto const &timeslot: teacher->getAvailableTimeslots()) {
-				modelBuilder.AddLessOrEqual(doesTeacherUseTimeslotInWeek[week][teacher][timeslot], 1);
+				LinearExpr nbCollesWithTeacherAtTimeslotInWeek(0);
+				for (auto const &group: groups->withSubject(teacher->getSubject())) {
+					nbCollesWithTeacherAtTimeslotInWeek.AddVar(isGroupWithTeacherAtTimeslotInWeek[week][group][teacher][timeslot]);
+				}
+
+				modelBuilder.AddLessOrEqual(nbCollesWithTeacherAtTimeslotInWeek, 1);
 			}
 		}
 	}
