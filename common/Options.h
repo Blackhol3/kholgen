@@ -11,6 +11,7 @@ class Options : public QObject
 	Q_OBJECT
 	public:
 		Options();
+
 		Option at(int i) const;
 		QVector<Option>::const_iterator begin() const;
 		QVector<Option>::const_iterator cbegin() const;
@@ -24,12 +25,16 @@ class Options : public QObject
 		int size() const;
 		Option operator[](int i) const;
 
+		bool preventSleepMode() const;
+		void setPreventSleepMode(bool value);
+
 	signals:
 		void moved(int from, int to);
 
 	protected:
 		QVector<Option> options;
 		QPair<Option, Option> lastErrorPair;
+		bool shouldPreventSleepMode;
 
 		bool isStateIncoherent();
 };

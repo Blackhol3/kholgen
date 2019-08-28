@@ -301,6 +301,7 @@ void Solver::compute(int const nbWeeks)
 	response.Clear();
 	shouldComputationBeStopped = false;
 	optionsVariations.init();
+	preventSleepMode(options->preventSleepMode());
 	emit started();
 
 	CpModelBuilder modelBuilder;
@@ -319,6 +320,8 @@ void Solver::compute(int const nbWeeks)
 	}));
 
 	SolveCpModel(modelBuilder.Build(), &model);
+
+	preventSleepMode(false);
 	updateColles();
 	emit finished(isSuccessful());
 }

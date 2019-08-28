@@ -64,8 +64,26 @@
      </item>
     </layout>
    </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="preventSleepMode">
+     <property name="text">
+      <string>Empêcher le système d'entrer automatiquement en veille pendant la résolution ?</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>list</tabstop>
+  <tabstop>preventSleepMode</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

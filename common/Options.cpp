@@ -8,7 +8,8 @@ Options::Options():
 		Option::SameTeacherAndTimeslotOnlyOnceInCycle,
 		Option::SameTeacherOnlyOnceInCycle,
 		Option::OnlyOneCollePerDay,
-	}
+	},
+	shouldPreventSleepMode(true)
 {
 
 }
@@ -80,6 +81,16 @@ int Options::size() const
 Option Options::operator[](int i) const
 {
 	return options[i];
+}
+
+bool Options::preventSleepMode() const
+{
+	return shouldPreventSleepMode;
+}
+
+void Options::setPreventSleepMode(bool value)
+{
+	shouldPreventSleepMode = value;
 }
 
 bool Options::isStateIncoherent()

@@ -12,10 +12,13 @@ OptionsTab::OptionsTab(QWidget *parent) :
 {
 	ui->setupUi(this);
 
-	connect(ui->list->model(), &QAbstractItemModel::rowsMoved, [&](auto, int source, auto, auto, int destination) {
+	connect(ui->list->model(), &QAbstractItemModel::rowsMoved, this, [&](auto, int source, auto, auto, int destination) {
 		ui->list->blockSignals(true);
 		move(source, destination > source ? destination - 1 : destination);
 		ui->list->blockSignals(false);
+	});
+	connect(ui->preventSleepMode, &QCheckBox::toggled, this, [&](auto state) {
+		options->setPreventSleepMode(state);
 	});
 }
 
@@ -29,6 +32,7 @@ void OptionsTab::setData(Options *const newOptions)
 
 	reconstruct();
 	connect(options, &Options::moved, this, &OptionsTab::reconstruct);
+	ui->preventSleepMode->setChecked(options->preventSleepMode());
 }
 
 OptionsTab::~OptionsTab()

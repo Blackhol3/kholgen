@@ -119,3 +119,17 @@ int getNumberOfPhysicalCores()
 		return QThread::idealThreadCount();
 	#endif
 }
+
+void preventSleepMode(bool shouldPreventSleepMode)
+{
+	if (shouldPreventSleepMode) {
+		#ifdef Q_OS_WIN
+			SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+		#endif
+	}
+	else {
+		#ifdef Q_OS_WIN
+			SetThreadExecutionState(ES_CONTINUOUS);
+		#endif
+	}
+}
