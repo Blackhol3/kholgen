@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Veuillez renseigner ici les différentes matières de votre colloscope. La &lt;span style=&quot; font-weight:600;&quot;&gt;fréquence&lt;/span&gt; correspond au nombre de colles par semaine et par groupe.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Veuillez renseigner ici les différentes matières de votre colloscope. La &lt;span style=&quot; font-weight:600;&quot;&gt;fréquence&lt;/span&gt; correspond au nombre de colles par semaine et par trinôme.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>

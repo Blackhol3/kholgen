@@ -1,10 +1,10 @@
 #include "CsvExporter.h"
 
 #include <QFile>
-#include "Groups.h"
 #include "Solver.h"
 #include "Subject.h"
 #include "Teacher.h"
+#include "Trios.h"
 
 bool CsvExporter::save(QString filePath)
 {
@@ -16,7 +16,7 @@ bool CsvExporter::save(QString filePath)
 	textStream.setDevice(&file);
 	textStream << "sep=,";
 	textStream << "\n"; createTeachersPart();
-	textStream << "\n"; createGroupsPart();
+	textStream << "\n"; createTriosPart();
 	textStream.flush();
 
 	return true;
@@ -28,10 +28,10 @@ void CsvExporter::createTeachersPart()
 	unsigned int const teacherCodeColumn(subjectColumn + 1);
 	unsigned int const teacherNameColumn(teacherCodeColumn + 1);
 	unsigned int const timeslotColumn(teacherNameColumn + 1);
-	unsigned int const firstGroupColumn(timeslotColumn + 1);
+	unsigned int const firstTrioColumn(timeslotColumn + 1);
 
 	unsigned int const weekRow(0);
-	unsigned int const firstGroupRow(weekRow + 1);
+	unsigned int const firstTrioRow(weekRow + 1);
 
 	QMap<unsigned int, QMap<unsigned int, QString>> contents;
 
@@ -40,7 +40,7 @@ void CsvExporter::createTeachersPart()
 	for (auto rows = rowsBySubject.cbegin(); rows != rowsBySubject.cend(); ++rows)
 	{
 		auto subject = rows.key();
-		auto firstRow = *std::min_element(rows->cbegin(), rows->cend()) + firstGroupRow;
+		auto firstRow = *std::min_element(rows->cbegin(), rows->cend()) + firstTrioRow;
 		contents[firstRow][subjectColumn] = subject->getName();
 	}
 
@@ -50,7 +50,7 @@ void CsvExporter::createTeachersPart()
 	for (auto rows = rowsByTeacher.cbegin(); rows != rowsByTeacher.cend(); ++rows)
 	{
 		auto teacher = rows.key();
-		auto firstRow = *std::min_element(rows->cbegin(), rows->cend()) + firstGroupRow;
+		auto firstRow = *std::min_element(rows->cbegin(), rows->cend()) + firstTrioRow;
 
 		contents[firstRow][teacherCodeColumn] = QObject::tr("%1%2")
 		   .arg(teacher->getSubject()->getShortName())
@@ -65,31 +65,31 @@ void CsvExporter::createTeachersPart()
 	for (auto row = rowBySlot.cbegin(); row != rowBySlot.cend(); ++row)
 	{
 		auto timeslot = row.key().getTimeslot();
-		contents[*row + firstGroupRow][timeslotColumn] = QObject::tr("%1 à %2h00").arg(timeslot.getDayName()).arg(timeslot.getHour());
+		contents[*row + firstTrioRow][timeslotColumn] = QObject::tr("%1 à %2h00").arg(timeslot.getDayName()).arg(timeslot.getHour());
 	}
 
-	// Print the groups
+	// Print the Trios
 	auto const colles = solver->getColles();
 	for (auto const &colle: colles)
 	{
 		auto row = rowBySlot[Slot(colle.getTeacher(), colle.getTimeslot())];
-		auto column = firstGroupColumn + static_cast<unsigned int>(colle.getWeek().getId());
-		contents[row + firstGroupRow][column] = QString::number(groups->indexOf(colle.getGroup()) + 1);
+		auto column = firstTrioColumn + static_cast<unsigned int>(colle.getWeek().getId());
+		contents[row + firstTrioRow][column] = QString::number(trios->indexOf(colle.getTrio()) + 1);
 	}
 
 	// Print the weeks
 	int const nbWeeks = std::max_element(colles.cbegin(), colles.cend(), [] (auto const &a, auto const &b) { return a.getWeek().getId() < b.getWeek().getId(); })->getWeek().getId() + 1;
 	for (int idWeek = 0; idWeek < nbWeeks; ++idWeek) {
-		contents[weekRow][firstGroupColumn + static_cast<unsigned int>(idWeek)] = QObject::tr("S%1").arg(idWeek + 1);
+		contents[weekRow][firstTrioColumn + static_cast<unsigned int>(idWeek)] = QObject::tr("S%1").arg(idWeek + 1);
 	}
 
 	writeContents(contents);
 }
 
-void CsvExporter::createGroupsPart()
+void CsvExporter::createTriosPart()
 {
-	unsigned int const groupColumn(0);
-	unsigned int const firstSlotColumn(groupColumn + 1);
+	unsigned int const TrioColumn(0);
+	unsigned int const firstSlotColumn(TrioColumn + 1);
 
 	unsigned int const weekRow(1);
 	unsigned int const firstSlotRow(weekRow + 1);
@@ -99,26 +99,26 @@ void CsvExporter::createGroupsPart()
 	auto const colles = solver->getColles();
 	auto const maximalNumberOfCollesByWeek = getMaximalNumberOfCollesByWeek();
 
-	// Print the groups
-	for (int idGroup = 0; idGroup < groups->size(); ++idGroup)
+	// Print the Trios
+	for (int idTrio = 0; idTrio < trios->size(); ++idTrio)
 	{
-		auto firstRow = maximalNumberOfCollesByWeek * static_cast<unsigned int>(idGroup) + firstSlotRow;
-		contents[firstRow][groupColumn] = QObject::tr("G%1").arg(idGroup + 1);
+		auto firstRow = maximalNumberOfCollesByWeek * static_cast<unsigned int>(idTrio) + firstSlotRow;
+		contents[firstRow][TrioColumn] = QObject::tr("G%1").arg(idTrio + 1);
 	}
 
 	// Print the slots
 	auto const teachersBySubject = getTeachersBySubject();
-	auto const slotsByGroupAndWeek = getSlotsByGroupAndWeek();
-	for (auto slotsByWeek = slotsByGroupAndWeek.cbegin(); slotsByWeek != slotsByGroupAndWeek.cend(); ++slotsByWeek)
+	auto const slotsByTrioAndWeek = getSlotsByTrioAndWeek();
+	for (auto slotsByWeek = slotsByTrioAndWeek.cbegin(); slotsByWeek != slotsByTrioAndWeek.cend(); ++slotsByWeek)
 	{
-		auto idGroup = groups->indexOf(slotsByWeek.key());
+		auto idTrio = trios->indexOf(slotsByWeek.key());
 		for (auto slotsOfWeek = slotsByWeek->cbegin(); slotsOfWeek != slotsByWeek->cend(); ++slotsOfWeek)
 		{
 			auto idWeek = static_cast<unsigned int>(slotsOfWeek.key().getId());
 			for (int idSlot = 0; idSlot < slotsOfWeek->size(); ++idSlot)
 			{
 				auto slot = slotsOfWeek->at(idSlot);
-				contents[maximalNumberOfCollesByWeek * static_cast<unsigned int>(idGroup) + static_cast<unsigned int>(idSlot) + firstSlotRow][firstSlotColumn + idWeek] =
+				contents[maximalNumberOfCollesByWeek * static_cast<unsigned int>(idTrio) + static_cast<unsigned int>(idSlot) + firstSlotRow][firstSlotColumn + idWeek] =
 					QObject::tr("%1%2 %3%4")
 					.arg(slot.getTeacher()->getSubject()->getShortName())
 					.arg(teachersBySubject[slot.getTeacher()->getSubject()].indexOf(slot.getTeacher()) + 1)

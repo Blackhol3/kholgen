@@ -8,19 +8,19 @@
 #include "Timeslot.h"
 #include "Week.h"
 
-class Group;
-class Groups;
 class Options;
 class Subject;
 class Subjects;
 class Teacher;
 class Teachers;
+class Trio;
+class Trios;
 
 class Solver : public QObject
 {
 	Q_OBJECT
 	public:
-		Solver(Subjects const* const subjects, Teachers const* const teachers, Groups const* const groups, Options const* const options);
+		Solver(Subjects const* const subjects, Teachers const* const teachers, Trios const* const trios, Options const* const options);
 		void compute(int const nbWeeks);
 		void stopComputation();
 
@@ -36,16 +36,16 @@ class Solver : public QObject
 	protected:
 		Subjects const* subjects;
 		Teachers const* teachers;
-		Groups const* groups;
+		Trios const* trios;
 		QVector<Week> weeks;
 		Options const* options;
 		OptionsVariations optionsVariations;
 
-		QHash<Week, QHash<Group const*, QHash<Teacher const*, QHash<Timeslot, operations_research::sat::BoolVar>>>> isGroupWithTeacherAtTimeslotInWeek;
-		QHash<Week, QHash<Group const*, QHash<Teacher const*, operations_research::sat::BoolVar>>> doesGroupHaveTeacherInWeek;
+		QHash<Week, QHash<Trio const*, QHash<Teacher const*, QHash<Timeslot, operations_research::sat::BoolVar>>>> isTrioWithTeacherAtTimeslotInWeek;
+		QHash<Week, QHash<Trio const*, QHash<Teacher const*, operations_research::sat::BoolVar>>> doesTrioHaveTeacherInWeek;
 		QHash<Teacher const*, QHash<Timeslot, operations_research::sat::BoolVar>> doesTeacherUseTimeslot;
-		QHash<Week, QHash<Group const*, QHash<Subject const*, operations_research::sat::IntVar>>> idTeacherWithGroupForSubjectInWeek;
-		QHash<Week, QHash<Group const*, QHash<Subject const*, operations_research::sat::BoolVar>>> doesGroupHaveSubjectInWeek;
+		QHash<Week, QHash<Trio const*, QHash<Subject const*, operations_research::sat::IntVar>>> idTeacherWithTrioForSubjectInWeek;
+		QHash<Week, QHash<Trio const*, QHash<Subject const*, operations_research::sat::BoolVar>>> doesTrioHaveSubjectInWeek;
 
 		std::atomic<bool> shouldComputationBeStopped;
 		operations_research::sat::CpSolverResponse response;

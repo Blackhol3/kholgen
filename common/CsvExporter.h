@@ -13,6 +13,6 @@ class CsvExporter : public Exporter
 		QTextStream textStream;
 
 		void createTeachersPart();
-		void createGroupsPart();
+		void createTriosPart();
 		void writeContents(QMap<unsigned int, QMap<unsigned int, QString>> const &contents);
 };

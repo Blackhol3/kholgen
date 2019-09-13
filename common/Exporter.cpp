@@ -1,17 +1,17 @@
 #include "Exporter.h"
 
-#include "Groups.h"
 #include "Solver.h"
 #include "Subjects.h"
 #include "Teacher.h"
 #include "Teachers.h"
+#include "Trios.h"
 
 Exporter::Exporter(
 		Subjects const* const subjects,
 		Teachers const* const teachers,
-		Groups const* const groups,
+		Trios const* const trios,
 		Solver const* const solver
-	): subjects(subjects), teachers(teachers), groups(groups), solver(solver)
+	): subjects(subjects), teachers(teachers), trios(trios), solver(solver)
 {
 }
 
@@ -69,9 +69,9 @@ unsigned int Exporter::getMaximalNumberOfCollesByWeek() const
 	auto const colles = solver->getColles();
 
 	unsigned int maximalNumberOfCollesByWeek = 0;
-	for (auto const &group: *groups)
+	for (auto const &trio: *trios)
 	{
-		auto numberOfCollesInFirstWeek = std::count_if(colles.cbegin(), colles.cend(), [&] (auto const &colle) { return colle.getGroup() == group && colle.getWeek().getId() == 0; });
+		auto numberOfCollesInFirstWeek = std::count_if(colles.cbegin(), colles.cend(), [&] (auto const &colle) { return colle.getTrio() == trio && colle.getWeek().getId() == 0; });
 		if (maximalNumberOfCollesByWeek < numberOfCollesInFirstWeek) {
 			maximalNumberOfCollesByWeek = static_cast<unsigned int>(numberOfCollesInFirstWeek);
 		}
@@ -96,16 +96,16 @@ QHash<const Subject *, QVector<const Teacher *>> Exporter::getTeachersBySubject(
 	return teachersBySubject;
 }
 
-QHash<Group const*, QHash<Week, QVector<Slot>>> Exporter::getSlotsByGroupAndWeek() const
+QHash<Trio const*, QHash<Week, QVector<Slot>>> Exporter::getSlotsByTrioAndWeek() const
 {
-	QHash<Group const*, QHash<Week, QVector<Slot>>> slotsByGroupAndWeek;
+	QHash<Trio const*, QHash<Week, QVector<Slot>>> slotsByTrioAndWeek;
 	auto const colles = solver->getColles();
 
 	for (auto const &colle: colles) {
-		slotsByGroupAndWeek[colle.getGroup()][colle.getWeek()] << Slot(colle.getTeacher(), colle.getTimeslot());
+		slotsByTrioAndWeek[colle.getTrio()][colle.getWeek()] << Slot(colle.getTeacher(), colle.getTimeslot());
 	}
 
-	return slotsByGroupAndWeek;
+	return slotsByTrioAndWeek;
 }
 
 Exporter::~Exporter()

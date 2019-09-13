@@ -12,7 +12,7 @@ class ComputationTab;
 
 class QTreeWidgetItem;
 class QWinTaskbarProgress;
-class Groups;
+class Trios;
 class Solver;
 class Subjects;
 class Teachers;
@@ -23,11 +23,11 @@ class ComputationTab : public Tab
 
 	public:
 		explicit ComputationTab(QWidget *parent = nullptr);
-		void setData(Groups const* const newGroups, Options const* const newOptions, Solver* const newSolver, Subjects const* const newSubjects, Teachers const* const newTeachers);
+		void setData(Trios const* const newTrios, Options const* const newOptions, Solver* const newSolver, Subjects const* const newSubjects, Teachers const* const newTeachers);
 		~ComputationTab();
 
 	protected:
-		Groups const* groups;
+		Trios const* trios;
 		Options const* options;
 		Solver* solver;
 		Subjects const* subjects;

@@ -15,7 +15,7 @@ class ExcelExporter : public Exporter
 
 		void initWorkbook();
 		void createTeachersWorksheet();
-		void createGroupsWorksheet();
+		void createTriosWorksheet();
 
 		void printWeekHeaderCell(xlnt::cell cell, int idWeek) const;
 };

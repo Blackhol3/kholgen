@@ -5,11 +5,11 @@
 
 class Subject;
 
-class Group : public QObject
+class Trio : public QObject
 {
 	Q_OBJECT
 	public:
-		Group(QSet<Subject const*> subjects);
+		Trio(QSet<Subject const*> subjects);
 		bool hasSubject(Subject const* const subject) const;
 		void addSubject(Subject const* const subject);
 		void removeSubject(Subject const* const subject);

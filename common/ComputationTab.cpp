@@ -9,7 +9,6 @@
 #include <QtConcurrent>
 #include "CsvExporter.h"
 #include "ExcelExporter.h"
-#include "Groups.h"
 #include "Options.h"
 #include "OptionsVariations.h"
 #include "Solver.h"
@@ -17,12 +16,13 @@
 #include "Subjects.h"
 #include "Teacher.h"
 #include "Teachers.h"
+#include "Trios.h"
 #include "UndoCommand.h"
 
 ComputationTab::ComputationTab(QWidget *parent) :
 	Tab(parent),
 
-	groups(nullptr),
+	trios(nullptr),
 	options(nullptr),
 	solver(nullptr),
 	subjects(nullptr),
@@ -52,7 +52,7 @@ ComputationTab::ComputationTab(QWidget *parent) :
 }
 
 void ComputationTab::setData(
-	Groups const* const newGroups,
+	Trios const* const newTrios,
 	const Options *const newOptions,
 	Solver* const newSolver,
 	Subjects const* const newSubjects,
@@ -72,7 +72,7 @@ void ComputationTab::setData(
 		subjects->disconnect(this);
 	}
 
-	groups = newGroups;
+	trios = newTrios;
 	options = newOptions;
 	solver = newSolver;
 	subjects = newSubjects;
@@ -263,9 +263,9 @@ void ComputationTab::printTable()
 
 	for (auto const &colle: colles)
 	{
-		auto idGroup = groups->indexOf(colle.getGroup());
-		auto item = new QTableWidgetItem(QString::number(idGroup + 1));
-		item->setBackground(QColor::fromHsv(360 * idGroup / groups->size(), 70, 255));
+		auto idTrio = trios->indexOf(colle.getTrio());
+		auto item = new QTableWidgetItem(QString::number(idTrio + 1));
+		item->setBackground(QColor::fromHsv(360 * idTrio / trios->size(), 70, 255));
 		ui->table->setItem(creneaux.indexOf(Slot(colle.getTeacher(), colle.getTimeslot())), colle.getWeek().getId(), item);
 	}
 }
@@ -290,10 +290,10 @@ void ComputationTab::exportResult()
 
 	Exporter *exporter;
 	if (filePath.endsWith(".xlsx")) {
-		exporter = new ExcelExporter(subjects, teachers, groups, solver);
+		exporter = new ExcelExporter(subjects, teachers, trios, solver);
 	}
 	else if (filePath.endsWith(".csv")) {
-		exporter = new CsvExporter(subjects, teachers, groups, solver);
+		exporter = new CsvExporter(subjects, teachers, trios, solver);
 	}
 	else {
 		throw std::runtime_error("File extension not supported.");

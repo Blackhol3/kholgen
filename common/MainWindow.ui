@@ -27,9 +27,9 @@
         <string>Enseignants</string>
        </attribute>
       </widget>
-      <widget class="GroupsTab" name="groupsTab">
+      <widget class="TriosTab" name="triosTab">
        <attribute name="title">
-        <string>Groupes</string>
+        <string>Trinômes</string>
        </attribute>
       </widget>
       <widget class="OptionsTab" name="optionsTab">
@@ -88,9 +88,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>GroupsTab</class>
+   <class>TriosTab</class>
    <extends>QWidget</extends>
-   <header>GroupsTab.h</header>
+   <header>TriosTab.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

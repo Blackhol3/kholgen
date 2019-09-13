@@ -17,22 +17,22 @@ QSet<T> extract(QVector<T> const &list, QVector<int> const &indexes)
 	return extractedList;
 }
 
-MainWindow::MainWindow() : QMainWindow(), solver(&subjects, &teachers, &groups, &options), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : QMainWindow(), solver(&subjects, &teachers, &trios, &options), ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
 	//setDefaultData();
 
 	ui->subjectsTab->setUndoStack(&undoStack);
 	ui->teachersTab->setUndoStack(&undoStack);
-	ui->groupsTab->setUndoStack(&undoStack);
+	ui->triosTab->setUndoStack(&undoStack);
 	ui->optionsTab->setUndoStack(&undoStack);
 	ui->computationTab->setUndoStack(&undoStack);
 
-	ui->subjectsTab->setData(&groups, &subjects, &teachers);
+	ui->subjectsTab->setData(&trios, &subjects, &teachers);
 	ui->teachersTab->setData(&subjects, &teachers);
-	ui->groupsTab->setData(&groups, &subjects);
+	ui->triosTab->setData(&trios, &subjects);
 	ui->optionsTab->setData(&options);
-	ui->computationTab->setData(&groups, &options, &solver, &subjects, &teachers);
+	ui->computationTab->setData(&trios, &options, &solver, &subjects, &teachers);
 
 	auto undoAction = undoStack.createUndoAction(this, tr("&Annuler"));
 	undoAction->setShortcuts(QKeySequence::Undo);

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <QString>
-#include "Group.h"
 #include "Timeslot.h"
+#include "Trio.h"
 #include "Week.h"
 
 class Teacher;
@@ -10,15 +10,15 @@ class Teacher;
 class Colle
 {
 	public:
-		Colle(Teacher const* const teacher, Timeslot const &timeslot, Group const* const group, Week const &week);
+		Colle(Teacher const* const teacher, Timeslot const &timeslot, Trio const* const trio, Week const &week);
 		Teacher const* getTeacher() const;
 		Timeslot const &getTimeslot() const;
-		Group const* getGroup() const;
+		Trio const* getTrio() const;
 		Week const &getWeek() const;
 
 	protected:
 		Teacher const* teacher;
 		Timeslot timeslot;
-		Group const* group;
+		Trio const* trio;
 		Week week;
 };

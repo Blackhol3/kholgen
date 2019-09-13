@@ -4,14 +4,14 @@
 #include <ortools/sat/cp_model.h>
 #include "Options.h"
 
-class Groups;
 class Subject;
 class Subjects;
+class Trios;
 
 class OptionsVariations
 {
 	public:
-		OptionsVariations(Groups const* const groups, Options const* const options, Subjects const* const subjects);
+		OptionsVariations(Trios const* const trios, Options const* const options, Subjects const* const subjects);
 		void init();
 		void createVariables(operations_research::sat::CpModelBuilder &modelBuilder);
 		void createConstraints(operations_research::sat::CpModelBuilder &modelBuilder) const;
@@ -20,7 +20,7 @@ class OptionsVariations
 		operations_research::sat::IntVar get(Option option, Subject const* subject) const;
 
 	protected:
-		Groups const* groups;
+		Trios const* trios;
 		Options const* options;
 		Subjects const* subjects;
 

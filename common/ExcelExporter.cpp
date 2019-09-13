@@ -1,8 +1,8 @@
 #include "ExcelExporter.h"
 
 #include <QCoreApplication>
-#include "Group.h"
-#include "Groups.h"
+#include "Trio.h"
+#include "Trios.h"
 #include "Solver.h"
 #include "Subject.h"
 #include "Subjects.h"
@@ -13,7 +13,7 @@ bool ExcelExporter::save(QString filePath)
 {
 	initWorkbook();
 	createTeachersWorksheet();
-	createGroupsWorksheet();
+	createTriosWorksheet();
 
 	try {
 		workbook->save(filePath.toStdString());
@@ -45,10 +45,10 @@ void ExcelExporter::createTeachersWorksheet()
 	xlnt::column_t const teacherCodeColumn(subjectColumn + 1);
 	xlnt::column_t const teacherNameColumn(teacherCodeColumn + 1);
 	xlnt::column_t const timeslotColumn(teacherNameColumn + 1);
-	xlnt::column_t const firstGroupColumn(timeslotColumn + 1);
+	xlnt::column_t const firstTrioColumn(timeslotColumn + 1);
 
 	xlnt::row_t const weekRow(1);
-	xlnt::row_t const firstGroupRow(weekRow + 1);
+	xlnt::row_t const firstTrioRow(weekRow + 1);
 
 	auto worksheet = workbook->sheet_by_index(0);
 	worksheet.title(QObject::tr("Professeurs").toStdString());
@@ -65,8 +65,8 @@ void ExcelExporter::createTeachersWorksheet()
 	for (auto rows = rowsBySubject.cbegin(); rows != rowsBySubject.cend(); ++rows)
 	{
 		auto subject = rows.key();
-		auto firstRow = *std::min_element(rows->cbegin(), rows->cend()) + firstGroupRow;
-		auto lastRow = *std::max_element(rows->cbegin(), rows->cend()) + firstGroupRow;
+		auto firstRow = *std::min_element(rows->cbegin(), rows->cend()) + firstTrioRow;
+		auto lastRow = *std::max_element(rows->cbegin(), rows->cend()) + firstTrioRow;
 		worksheet.merge_cells(xlnt::range_reference(subjectColumn, firstRow, subjectColumn, lastRow));
 
 		auto cell = worksheet.cell(subjectColumn, firstRow);
@@ -82,8 +82,8 @@ void ExcelExporter::createTeachersWorksheet()
 	for (auto rows = rowsByTeacher.cbegin(); rows != rowsByTeacher.cend(); ++rows)
 	{
 		auto teacher = rows.key();
-		auto firstRow = *std::min_element(rows->cbegin(), rows->cend()) + firstGroupRow;
-		auto lastRow = *std::max_element(rows->cbegin(), rows->cend()) + firstGroupRow;
+		auto firstRow = *std::min_element(rows->cbegin(), rows->cend()) + firstTrioRow;
+		auto lastRow = *std::max_element(rows->cbegin(), rows->cend()) + firstTrioRow;
 
 		worksheet.merge_cells(xlnt::range_reference(teacherCodeColumn, firstRow, teacherCodeColumn, lastRow));
 		worksheet.merge_cells(xlnt::range_reference(teacherNameColumn, firstRow, teacherNameColumn, lastRow));
@@ -109,19 +109,19 @@ void ExcelExporter::createTeachersWorksheet()
 	for (auto row = rowBySlot.cbegin(); row != rowBySlot.cend(); ++row)
 	{
 		auto timeslot = row.key().getTimeslot();
-		auto cell = worksheet.cell(timeslotColumn, *row + firstGroupRow);
+		auto cell = worksheet.cell(timeslotColumn, *row + firstTrioRow);
 		cell.value(QObject::tr("%1 à %2h00").arg(timeslot.getDayName()).arg(timeslot.getHour()).toStdString());
 		cell.alignment(centerAlignement);
 		cell.font(xlnt::font().size(10));
 	}
 
-	// Print the groups
+	// Print the Trios
 	auto const colles = solver->getColles();
 	for (auto const &colle: colles)
 	{
 		auto row = rowBySlot[Slot(colle.getTeacher(), colle.getTimeslot())];
-		auto cell = worksheet.cell(firstGroupColumn + static_cast<unsigned int>(colle.getWeek().getId()), row + firstGroupRow);
-		cell.value(groups->indexOf(colle.getGroup()) + 1);
+		auto cell = worksheet.cell(firstTrioColumn + static_cast<unsigned int>(colle.getWeek().getId()), row + firstTrioRow);
+		cell.value(trios->indexOf(colle.getTrio()) + 1);
 		cell.alignment(centerAlignement);
 		cell.font(xlnt::font().size(10));
 	}
@@ -130,7 +130,7 @@ void ExcelExporter::createTeachersWorksheet()
 	int const nbWeeks = std::max_element(colles.cbegin(), colles.cend(), [] (auto const &a, auto const &b) { return a.getWeek().getId() < b.getWeek().getId(); })->getWeek().getId() + 1;
 	for (int idWeek = 0; idWeek < nbWeeks; ++idWeek)
 	{
-		auto column = firstGroupColumn + static_cast<unsigned int>(idWeek);
+		auto column = firstTrioColumn + static_cast<unsigned int>(idWeek);
 		worksheet.column_properties(column).width = 3;
 		printWeekHeaderCell(worksheet.cell(column, weekRow), idWeek);
 	}
@@ -138,12 +138,12 @@ void ExcelExporter::createTeachersWorksheet()
 	// Print the borders
 	QVector<xlnt::row_t> bottomBorderedRows{weekRow};
 	for (auto const &rows: rowsBySubject) {
-		bottomBorderedRows << *std::max_element(rows.cbegin(), rows.cend()) + firstGroupRow;
+		bottomBorderedRows << *std::max_element(rows.cbegin(), rows.cend()) + firstTrioRow;
 	}
 
 	for (auto const &row: bottomBorderedRows)
 	{
-		worksheet.range(xlnt::range_reference(firstGroupColumn, row, firstGroupColumn + static_cast<xlnt::row_t>(nbWeeks - 1), row)).border(thickBottomBorder);
+		worksheet.range(xlnt::range_reference(firstTrioColumn, row, firstTrioColumn + static_cast<xlnt::row_t>(nbWeeks - 1), row)).border(thickBottomBorder);
 		worksheet.cell(subjectColumn, row).border(thickBottomBorder);
 		worksheet.cell(teacherCodeColumn, row).border(thickBottomBorder);
 		worksheet.cell(teacherNameColumn, row).border(thickBottomBorder);
@@ -161,10 +161,10 @@ void ExcelExporter::createTeachersWorksheet()
 	worksheet.column_properties(timeslotColumn).width = dayWithLongerName->size() + 5;
 }
 
-void ExcelExporter::createGroupsWorksheet()
+void ExcelExporter::createTriosWorksheet()
 {
-	xlnt::column_t const groupColumn("A");
-	xlnt::column_t const firstSlotColumn(groupColumn + 1);
+	xlnt::column_t const TrioColumn("A");
+	xlnt::column_t const firstSlotColumn(TrioColumn + 1);
 
 	xlnt::row_t const weekRow(1);
 	xlnt::row_t const firstSlotRow(weekRow + 1);
@@ -182,32 +182,32 @@ void ExcelExporter::createGroupsWorksheet()
 	auto const colles = solver->getColles();
 	auto const maximalNumberOfCollesByWeek = getMaximalNumberOfCollesByWeek();
 
-	// Print the groups
-	for (int idGroup = 0; idGroup < groups->size(); ++idGroup)
+	// Print the Trios
+	for (int idTrio = 0; idTrio < trios->size(); ++idTrio)
 	{
-		auto firstRow = maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idGroup) + firstSlotRow;
-		auto lastRow = maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idGroup + 1) - 1 + firstSlotRow;
-		worksheet.merge_cells(xlnt::range_reference(groupColumn, firstRow, groupColumn, lastRow));
+		auto firstRow = maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idTrio) + firstSlotRow;
+		auto lastRow = maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idTrio + 1) - 1 + firstSlotRow;
+		worksheet.merge_cells(xlnt::range_reference(TrioColumn, firstRow, TrioColumn, lastRow));
 
-		auto cell = worksheet.cell(groupColumn, firstRow);
-		cell.value(QObject::tr("G%1").arg(idGroup + 1).toStdString());
+		auto cell = worksheet.cell(TrioColumn, firstRow);
+		cell.value(QObject::tr("G%1").arg(idTrio + 1).toStdString());
 		cell.alignment(centerAlignement);
 		cell.font(xlnt::font().size(10));
 	}
 
 	// Print the slots
 	auto const teachersBySubject = getTeachersBySubject();
-	auto const slotsByGroupAndWeek = getSlotsByGroupAndWeek();
-	for (auto slotsByWeek = slotsByGroupAndWeek.cbegin(); slotsByWeek != slotsByGroupAndWeek.cend(); ++slotsByWeek)
+	auto const slotsByTrioAndWeek = getSlotsByTrioAndWeek();
+	for (auto slotsByWeek = slotsByTrioAndWeek.cbegin(); slotsByWeek != slotsByTrioAndWeek.cend(); ++slotsByWeek)
 	{
-		auto idGroup = groups->indexOf(slotsByWeek.key());
+		auto idTrio = trios->indexOf(slotsByWeek.key());
 		for (auto slotsOfWeek = slotsByWeek->cbegin(); slotsOfWeek != slotsByWeek->cend(); ++slotsOfWeek)
 		{
 			auto idWeek = static_cast<unsigned int>(slotsOfWeek.key().getId());
 			for (int idSlot = 0; idSlot < slotsOfWeek->size(); ++idSlot)
 			{
 				auto slot = slotsOfWeek->at(idSlot);
-				auto cell = worksheet.cell(firstSlotColumn + idWeek, maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idGroup) + static_cast<xlnt::row_t>(idSlot) + firstSlotRow);
+				auto cell = worksheet.cell(firstSlotColumn + idWeek, maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idTrio) + static_cast<xlnt::row_t>(idSlot) + firstSlotRow);
 
 				cell.value(
 					QObject::tr("%1%2 %3%4")
@@ -234,14 +234,14 @@ void ExcelExporter::createGroupsWorksheet()
 
 	// Print the borders
 	QVector<xlnt::row_t> bottomBorderedRows{weekRow};
-	for (int idGroup = 0; idGroup < groups->size(); ++idGroup) {
-		bottomBorderedRows << maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idGroup + 1) - 1 + firstSlotRow;
+	for (int idTrio = 0; idTrio < trios->size(); ++idTrio) {
+		bottomBorderedRows << maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idTrio + 1) - 1 + firstSlotRow;
 	}
 
 	for (auto const &row: bottomBorderedRows)
 	{
 		worksheet.range(xlnt::range_reference(firstSlotColumn, row, firstSlotColumn + static_cast<xlnt::row_t>(nbWeeks - 1), row)).border(thickBottomBorder);
-		worksheet.cell(groupColumn, row).border(thickBottomBorder);
+		worksheet.cell(TrioColumn, row).border(thickBottomBorder);
 	}
 }
 

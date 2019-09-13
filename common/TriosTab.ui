@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GroupsTab</class>
- <widget class="QWidget" name="GroupsTab">
+ <class>TriosTab</class>
+ <widget class="QWidget" name="TriosTab">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;Veuillez renseigner ici les différents groupes intervenant dans votre colloscope. Vous pouvez modifier les matières assignées à chaque groupe en double-cliquant sur la case correspondante, ou en appuyant sur la touche «&amp;nbsp;Entrée&amp;nbsp;».&lt;/html&gt;</string>
+      <string>&lt;html&gt;Veuillez renseigner ici les différents trinômes intervenant dans votre colloscope. Vous pouvez modifier les matières assignées à chaque trinôme en double-cliquant sur la case correspondante, ou en appuyant sur la touche «&amp;nbsp;Entrée&amp;nbsp;».&lt;/html&gt;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignJustify|Qt::AlignVCenter</set>
@@ -48,14 +48,14 @@
      <item>
       <widget class="QPushButton" name="removeButton">
        <property name="text">
-        <string>Retirer un groupe</string>
+        <string>Retirer un trinôme</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="addButton">
        <property name="text">
-        <string>Ajouter un groupe</string>
+        <string>Ajouter un trinôme</string>
        </property>
       </widget>
      </item>

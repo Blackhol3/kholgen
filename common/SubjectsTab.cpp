@@ -8,8 +8,8 @@
 #include <QShortcut>
 #include <QStandardItemModel>
 #include <QUndoStack>
-#include "Group.h"
-#include "Groups.h"
+#include "Trio.h"
+#include "Trios.h"
 #include "Subject.h"
 #include "Subjects.h"
 #include "Teacher.h"
@@ -19,7 +19,7 @@
 
 SubjectsTab::SubjectsTab(QWidget *parent) :
 	Tab(parent),
-	groups(nullptr),
+	trios(nullptr),
 	subjects(nullptr),
 	teachers(nullptr),
 	ui(new Ui::SubjectsTab)
@@ -40,13 +40,13 @@ SubjectsTab::SubjectsTab(QWidget *parent) :
 	setClassesSubjects();
 }
 
-void SubjectsTab::setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers)
+void SubjectsTab::setData(Trios* const newTrios, Subjects* const newSubjects, Teachers* const newTeachers)
 {
 	if (subjects != nullptr) {
 		subjects->disconnect(this);
 	}
 
-	groups = newGroups;
+	trios = newTrios;
 	subjects = newSubjects;
 	teachers = newTeachers;
 
@@ -82,8 +82,8 @@ void SubjectsTab::append()
 	}
 
 	auto subject = new Subject(name.arg(i), name.arg(i), 1, QColor::fromHsv(QRandomGenerator::global()->bounded(0, 360), 192, 192));
-	for (auto const &group: *groups) {
-		group->addSubject(subject);
+	for (auto const &trio: *trios) {
+		trio->addSubject(subject);
 	}
 
 	auto command = new UndoCommand(
@@ -151,14 +151,14 @@ void SubjectsTab::deleteSubject(int row)
 		idTeachersOfSubject << teachers->indexOf(teacher);
 	}
 
-	auto groupsWithSubject = groups->withSubject(subject);
+	auto triosWithSubject = trios->withSubject(subject);
 	auto command = new UndoCommand(
 		[=]() {
 			for (int i = teachersOfSubject.size() - 1; i >= 0; --i) {
 				teachers->remove(idTeachersOfSubject[i]);
 			}
-			for (auto const &group: groupsWithSubject) {
-				group->removeSubject(subject);
+			for (auto const &Trio: triosWithSubject) {
+				Trio->removeSubject(subject);
 			}
 			subjects->remove(row);
 		},
@@ -166,8 +166,8 @@ void SubjectsTab::deleteSubject(int row)
 			for (int i = 0; i < teachersOfSubject.size(); ++i) {
 				teachers->insert(idTeachersOfSubject[i], teachersOfSubject[i]);
 			}
-			for (auto const &group: groupsWithSubject) {
-				group->addSubject(subject);
+			for (auto const &Trio: triosWithSubject) {
+				Trio->addSubject(subject);
 			}
 			subjects->insert(row, subject);
 		}

@@ -3,23 +3,23 @@
 #include "Tab.h"
 
 namespace Ui {
-class GroupsTab;
+class TriosTab;
 }
 
-class Groups;
 class Subjects;
+class Trios;
 
-class GroupsTab : public Tab
+class TriosTab : public Tab
 {
 	Q_OBJECT
 
 	public:
-		explicit GroupsTab(QWidget *parent = nullptr);
-		void setData(Groups* const newGroups, Subjects const* const newSubjects);
-		~GroupsTab() override;
+		explicit TriosTab(QWidget *parent = nullptr);
+		void setData(Trios* const newTrios, Subjects const* const newSubjects);
+		~TriosTab() override;
 
 	protected:
-		Groups* groups;
+		Trios* trios;
 		Subjects const* subjects;
 
 		void reconstruct();
@@ -31,6 +31,6 @@ class GroupsTab : public Tab
 		bool eventFilter(QObject* object, QEvent* event) override;
 
 	private:
-		Ui::GroupsTab *ui;
+		Ui::TriosTab *ui;
 };
 

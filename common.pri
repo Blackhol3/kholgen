@@ -11,9 +11,6 @@ SOURCES += \
         $$COMMON_PATH/CsvExporter.cpp \
         $$COMMON_PATH/ExcelExporter.cpp \
         $$COMMON_PATH/Exporter.cpp \
-        $$COMMON_PATH/Group.cpp \
-        $$COMMON_PATH/Groups.cpp \
-        $$COMMON_PATH/GroupsTab.cpp \
         $$COMMON_PATH/MainWindow.cpp \
         $$COMMON_PATH/misc.cpp \
         $$COMMON_PATH/Option.cpp \
@@ -32,6 +29,9 @@ SOURCES += \
         $$COMMON_PATH/TeachersTab.cpp \
         $$COMMON_PATH/Timeslot.cpp \
         $$COMMON_PATH/TransparentItemDelegate.cpp \
+        $$COMMON_PATH/Trio.cpp \
+        $$COMMON_PATH/Trios.cpp \
+        $$COMMON_PATH/TriosTab.cpp \
         $$COMMON_PATH/UndoCommand.cpp \
         $$COMMON_PATH/Week.cpp
 
@@ -42,9 +42,6 @@ HEADERS += \
     $$COMMON_PATH/CsvExporter.h \
     $$COMMON_PATH/ExcelExporter.h \
     $$COMMON_PATH/Exporter.h \
-    $$COMMON_PATH/Group.h \
-    $$COMMON_PATH/Groups.h \
-    $$COMMON_PATH/GroupsTab.h \
     $$COMMON_PATH/MainWindow.h \
     $$COMMON_PATH/misc.h \
     $$COMMON_PATH/Option.h \
@@ -63,17 +60,20 @@ HEADERS += \
     $$COMMON_PATH/TeachersTab.h \
     $$COMMON_PATH/Timeslot.h \
     $$COMMON_PATH/TransparentItemDelegate.h \
+    $$COMMON_PATH/Trio.h \
+    $$COMMON_PATH/Trios.h \
+    $$COMMON_PATH/TriosTab.h \
     $$COMMON_PATH/UndoCommand.h \
     $$COMMON_PATH/Week.h
 
 FORMS += \
     $$COMMON_PATH/ComputationTab.ui \
-    $$COMMON_PATH/GroupsTab.ui \
     $$COMMON_PATH/MainWindow.ui \
     $$COMMON_PATH/OptionsTab.ui \
     $$COMMON_PATH/SubjectsTab.ui \
     $$COMMON_PATH/TeacherDialog.ui \
-    $$COMMON_PATH/TeachersTab.ui
+    $$COMMON_PATH/TeachersTab.ui \
+    $$COMMON_PATH/TriosTab.ui
 
 INCLUDEPATH += \
     $$COMMON_PATH

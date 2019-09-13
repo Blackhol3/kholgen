@@ -1,9 +1,9 @@
 #include "OptionsVariations.h"
 
 #include "misc.h"
-#include "Groups.h"
 #include "Subject.h"
 #include "Subjects.h"
+#include "Trios.h"
 
 using absl::Span;
 using operations_research::sat::CpModelBuilder;
@@ -11,7 +11,7 @@ using operations_research::sat::DecisionStrategyProto;
 using operations_research::sat::LinearExpr;
 using operations_research::sat::IntVar;
 
-OptionsVariations::OptionsVariations(Groups const* const groups, Options const* const options, Subjects const* const subjects): groups(groups), options(options), subjects(subjects)
+OptionsVariations::OptionsVariations(Trios const* const trios, Options const* const options, Subjects const* const subjects): trios(trios), options(options), subjects(subjects)
 {
 }
 
@@ -26,7 +26,7 @@ void OptionsVariations::init()
 		}
 
 		for (auto const &subject: *subjects) {
-			maximalValues[option][subject] = divideCeil(groups->withSubject(subject).size(), subject->getFrequency()) - 1;
+			maximalValues[option][subject] = divideCeil(trios->withSubject(subject).size(), subject->getFrequency()) - 1;
 		}
 	}
 }

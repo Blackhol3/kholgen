@@ -8,10 +8,10 @@ namespace Ui {
 class SubjectsTab;
 }
 
-class Groups;
 class Subject;
 class Subjects;
 class Teachers;
+class Trios;
 
 class SubjectsTab : public Tab
 {
@@ -19,11 +19,11 @@ class SubjectsTab : public Tab
 
 	public:
 		SubjectsTab(QWidget *parent = nullptr);
-		void setData(Groups* const newGroups, Subjects* const newSubjects, Teachers* const newTeachers);
+		void setData(Trios* const newTrios, Subjects* const newSubjects, Teachers* const newTeachers);
 		~SubjectsTab() override;
 
 	protected:
-		Groups* groups;
+		Trios* trios;
 		Subjects* subjects;
 		Teachers* teachers;
 

@@ -2,10 +2,10 @@
 
 #include <QMainWindow>
 #include <QUndoStack>
-#include "Groups.h"
 #include "Options.h"
 #include "Subjects.h"
 #include "Teachers.h"
+#include "Trios.h"
 #include "Solver.h"
 
 namespace Ui {
@@ -21,7 +21,7 @@ class MainWindow : public QMainWindow
 
 	protected:
 		Options options;
-		Groups groups;
+		Trios trios;
 		Subjects subjects;
 		Teachers teachers;
 		Solver solver;

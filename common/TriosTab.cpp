@@ -1,69 +1,69 @@
-#include "GroupsTab.h"
-#include "ui_GroupsTab.h"
+#include "TriosTab.h"
+#include "ui_TriosTab.h"
 
 #include <QInputDialog>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QShortcut>
-#include "Group.h"
-#include "Groups.h"
 #include "Subject.h"
 #include "Subjects.h"
 #include "TransparentItemDelegate.h"
+#include "Trio.h"
+#include "Trios.h"
 #include "UndoCommand.h"
 
-GroupsTab::GroupsTab(QWidget *parent) :
+TriosTab::TriosTab(QWidget *parent) :
 	Tab(parent),
-	groups(nullptr),
+	trios(nullptr),
 	subjects(nullptr),
-	ui(new Ui::GroupsTab)
+	ui(new Ui::TriosTab)
 {
 	ui->setupUi(this);
 	ui->table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->table->setItemDelegate(new TransparentItemDelegate(20, ui->table));
 	ui->table->viewport()->installEventFilter(this);
 
-	connect(ui->addButton, &QPushButton::clicked, this, &GroupsTab::append);
-	connect(ui->removeButton, &QPushButton::clicked, this, &GroupsTab::deleteSelected);
-	connect(new QShortcut(QKeySequence(QKeySequence::Delete), this), &QShortcut::activated, this, &GroupsTab::deleteSelected);
+	connect(ui->addButton, &QPushButton::clicked, this, &TriosTab::append);
+	connect(ui->removeButton, &QPushButton::clicked, this, &TriosTab::deleteSelected);
+	connect(new QShortcut(QKeySequence(QKeySequence::Delete), this), &QShortcut::activated, this, &TriosTab::deleteSelected);
 
-	connect(ui->table, &QTableWidget::cellDoubleClicked, this, &GroupsTab::toggleSubject);
-	connect(new QShortcut(QKeySequence(Qt::Key_Enter), this), &QShortcut::activated, this, &GroupsTab::toggleSelected);
-	connect(new QShortcut(QKeySequence(Qt::Key_Return), this), &QShortcut::activated, this, &GroupsTab::toggleSelected);
+	connect(ui->table, &QTableWidget::cellDoubleClicked, this, &TriosTab::toggleSubject);
+	connect(new QShortcut(QKeySequence(Qt::Key_Enter), this), &QShortcut::activated, this, &TriosTab::toggleSelected);
+	connect(new QShortcut(QKeySequence(Qt::Key_Return), this), &QShortcut::activated, this, &TriosTab::toggleSelected);
 }
 
-void GroupsTab::setData(Groups *const newGroups, Subjects const*const newSubjects)
+void TriosTab::setData(Trios *const newTrios, Subjects const*const newSubjects)
 {
-	if (groups != nullptr) {
-		groups->disconnect(this);
+	if (trios != nullptr) {
+		trios->disconnect(this);
 	}
 
 	if (subjects != nullptr) {
 		subjects->disconnect(this);
 	}
 
-	groups = newGroups;
+	trios = newTrios;
 	subjects = newSubjects;
 
 	reconstruct();
-	connect(groups, &Groups::inserted, this, &GroupsTab::reconstruct);
-	connect(groups, &Groups::changed, this, &GroupsTab::updateRow);
-	connect(groups, &Groups::removed, this, &GroupsTab::reconstruct);
+	connect(trios, &Trios::inserted, this, &TriosTab::reconstruct);
+	connect(trios, &Trios::changed, this, &TriosTab::updateRow);
+	connect(trios, &Trios::removed, this, &TriosTab::reconstruct);
 
-	connect(subjects, &Subjects::inserted, this, &GroupsTab::reconstruct);
-	connect(subjects, &Subjects::changed, this, &GroupsTab::reconstruct);
-	connect(subjects, &Subjects::removed, this, &GroupsTab::reconstruct);
+	connect(subjects, &Subjects::inserted, this, &TriosTab::reconstruct);
+	connect(subjects, &Subjects::changed, this, &TriosTab::reconstruct);
+	connect(subjects, &Subjects::removed, this, &TriosTab::reconstruct);
 }
 
-GroupsTab::~GroupsTab()
+TriosTab::~TriosTab()
 {
 	delete ui;
 }
 
-void GroupsTab::reconstruct()
+void TriosTab::reconstruct()
 {
 	ui->table->clear();
-	ui->table->setRowCount(groups->size());
+	ui->table->setRowCount(trios->size());
 	ui->table->setColumnCount(subjects->size());
 
 	QStringList horizontalHeaderLabels;
@@ -72,14 +72,14 @@ void GroupsTab::reconstruct()
 	}
 	ui->table->setHorizontalHeaderLabels(horizontalHeaderLabels);
 
-	for (int row = 0; row < groups->size(); ++row) {
+	for (int row = 0; row < trios->size(); ++row) {
 		updateRow(row);
 	}
 }
 
-void GroupsTab::updateRow(int row)
+void TriosTab::updateRow(int row)
 {
-	auto group = groups->at(row);
+	auto trio = trios->at(row);
 	for (int column = 0; column < subjects->size(); ++column)
 	{
 		auto itemAlreadyDefined = ui->table->item(row, column) != nullptr;
@@ -87,7 +87,7 @@ void GroupsTab::updateRow(int row)
 		auto item = itemAlreadyDefined ? ui->table->item(row, column) : new QTableWidgetItem();
 
 		item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-		item->setBackground(group->hasSubject(subject) ? QBrush(subject->getColor(), Qt::BDiagPattern) : QBrush());
+		item->setBackground(trio->hasSubject(subject) ? QBrush(subject->getColor(), Qt::BDiagPattern) : QBrush());
 
 		if (!itemAlreadyDefined) {
 			ui->table->setItem(row, column, item);
@@ -95,13 +95,13 @@ void GroupsTab::updateRow(int row)
 	}
 }
 
-void GroupsTab::append()
+void TriosTab::append()
 {
 	bool ok;
-	int numberOfGroupsToAppend = QInputDialog::getInt(
+	int numberOfTriosToAppend = QInputDialog::getInt(
 		this,
-		tr("Ajouter un groupe"),
-		tr("Veuillez indiquer le nombre de groupes que vous souhaitez ajouter :"),
+		tr("Ajouter un trinôme"),
+		tr("Veuillez indiquer le nombre de trinômes que vous souhaitez ajouter :"),
 		1, 1, 99, 1,
 		&ok
 	);
@@ -116,28 +116,28 @@ void GroupsTab::append()
 	}
 
 	beginUndoMacro();
-	for (int idNewGroup = 0; idNewGroup < numberOfGroupsToAppend; ++idNewGroup)
+	for (int idNewTrio = 0; idNewTrio < numberOfTriosToAppend; ++idNewTrio)
 	{
 		auto command = new UndoCommand(
-			[=]() { groups->append(new Group(allSubjects)); },
-			[=]() { groups->remove(groups->size() - 1); }
+			[=]() { trios->append(new Trio(allSubjects)); },
+			[=]() { trios->remove(trios->size() - 1); }
 		);
 		addUndoCommand(command);
 	}
 	endUndoMacro();
 }
 
-void GroupsTab::toggleSubject(int row, int column)
+void TriosTab::toggleSubject(int row, int column)
 {
 	auto subject = subjects->at(column);
 	auto command = new UndoCommand(
-		[=]() { groups->at(row)->toggleSubject(subject); },
-		[=]() { groups->at(row)->toggleSubject(subject); }
+		[=]() { trios->at(row)->toggleSubject(subject); },
+		[=]() { trios->at(row)->toggleSubject(subject); }
 	);
 	addUndoCommand(command);
 }
 
-void GroupsTab::toggleSelected()
+void TriosTab::toggleSelected()
 {
 	auto selectedIndexes = ui->table->selectionModel()->selectedIndexes();
 	for (auto const &selectedIndex: selectedIndexes) {
@@ -145,7 +145,7 @@ void GroupsTab::toggleSelected()
 	}
 }
 
-void GroupsTab::deleteSelected()
+void TriosTab::deleteSelected()
 {
 	auto selectedIndexes = ui->table->selectionModel()->selectedIndexes();
 
@@ -161,17 +161,17 @@ void GroupsTab::deleteSelected()
 	std::sort(rowsToDelete.rbegin(), rowsToDelete.rend());
 	for (int rowToDelete: rowsToDelete)
 	{
-		auto group = groups->at(rowToDelete);
+		auto trio = trios->at(rowToDelete);
 		auto command = new UndoCommand(
-			[=]() { groups->remove(rowToDelete); },
-			[=]() { groups->insert(rowToDelete, group); }
+			[=]() { trios->remove(rowToDelete); },
+			[=]() { trios->insert(rowToDelete, trio); }
 		);
 		addUndoCommand(command);
 	}
 	endUndoMacro();
 }
 
-bool GroupsTab::eventFilter(QObject* object, QEvent* event)
+bool TriosTab::eventFilter(QObject* object, QEvent* event)
 {
 	if (object != ui->table->viewport() || event->type() != QEvent::MouseButtonDblClick) {
 		return false;
