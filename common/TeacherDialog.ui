@@ -46,7 +46,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTableWidget" name="availableTimeslots"/>
+    <widget class="AvailableTimeslotsTable" name="availableTimeslots"/>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -60,6 +60,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AvailableTimeslotsTable</class>
+   <extends>QTableWidget</extends>
+   <header>AvailableTimeslotsTable.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>name</tabstop>
   <tabstop>subject</tabstop>

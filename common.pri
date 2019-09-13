@@ -5,6 +5,7 @@ QT += widgets concurrent winextras
 CONFIG += c++17 qt
 
 SOURCES += \
+        $$COMMON_PATH/AvailableTimeslotsTable.cpp \
         $$COMMON_PATH/Colle.cpp \
         $$COMMON_PATH/ComputationTab.cpp \
         $$COMMON_PATH/CsvExporter.cpp \
@@ -35,6 +36,7 @@ SOURCES += \
         $$COMMON_PATH/Week.cpp
 
 HEADERS += \
+    $$COMMON_PATH/AvailableTimeslotsTable.h \
     $$COMMON_PATH/Colle.h \
     $$COMMON_PATH/ComputationTab.h \
     $$COMMON_PATH/CsvExporter.h \

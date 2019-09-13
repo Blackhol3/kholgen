@@ -7,7 +7,6 @@
 #include "Subjects.h"
 #include "Teacher.h"
 #include "Teachers.h"
-#include "TransparentItemDelegate.h"
 #include "UndoCommand.h"
 
 TeacherDialog::TeacherDialog(Subjects const* const subjects, Teachers const* const teachers, QWidget *parent) :
@@ -19,6 +18,7 @@ TeacherDialog::TeacherDialog(Subjects const* const subjects, Teachers const* con
 	ui(new Ui::TeacherDialog)
 {
 	ui->setupUi(this);
+	ui->availableTimeslots->setUndoStack(&undoStack);
 
 	for (auto const &subject: *subjects)
 	{
@@ -28,14 +28,8 @@ TeacherDialog::TeacherDialog(Subjects const* const subjects, Teachers const* con
 		ui->subject->addItem(pixmap, subject->getName());
 	}
 
-	initAvailableTimeslots();
-
 	connect(ui->name, &QLineEdit::editingFinished, this, &TeacherDialog::editName);
 	connect(ui->subject, qOverload<int>(&QComboBox::currentIndexChanged), this, &TeacherDialog::editSubject);
-
-	connect(ui->availableTimeslots, &QTableWidget::cellDoubleClicked, this, &TeacherDialog::toggleAvailabilityUndoable);
-	connect(new QShortcut(QKeySequence(Qt::Key_Enter), ui->availableTimeslots, nullptr, nullptr, Qt::WidgetWithChildrenShortcut), &QShortcut::activated, this, &TeacherDialog::toggleSelected);
-	connect(new QShortcut(QKeySequence(Qt::Key_Return), ui->availableTimeslots, nullptr, nullptr, Qt::WidgetWithChildrenShortcut), &QShortcut::activated, this, &TeacherDialog::toggleSelected);
 
 	connect(new QShortcut(QKeySequence::Undo, this), &QShortcut::activated, &undoStack, &QUndoStack::undo);
 	connect(new QShortcut(QKeySequence::Redo, this), &QShortcut::activated, &undoStack, &QUndoStack::redo);
@@ -84,101 +78,24 @@ void TeacherDialog::setTeacher(Teacher* const newTeacher)
 	ui->subject->blockSignals(true);
 	ui->subject->setCurrentIndex(idSubject);
 	ui->subject->blockSignals(false);
-
-	for (auto const &timeslot: teacher->getAvailableTimeslots()) {
-		toggleAvailability(timeslot.getHour() - Timeslot::firstHour, static_cast<int>(timeslot.getDay()));
-	}
+	ui->availableTimeslots->setAvailableTimeslots(teacher->getAvailableTimeslots());
 }
 
 Teacher* TeacherDialog::createTeacher()
 {
-	return new Teacher(name, subjects->at(idSubject), getAvailableTimeslots());
+	return new Teacher(name, subjects->at(idSubject), ui->availableTimeslots->getAvailableTimeslots());
 }
 
 void TeacherDialog::updateTeacher()
 {
 	teacher->setName(name);
 	teacher->setSubject(subjects->at(idSubject));
-	teacher->setAvailableTimeslots(getAvailableTimeslots());
+	teacher->setAvailableTimeslots(ui->availableTimeslots->getAvailableTimeslots());
 }
 
 TeacherDialog::~TeacherDialog()
 {
 	delete ui;
-}
-
-void TeacherDialog::initAvailableTimeslots()
-{
-	ui->availableTimeslots->setItemDelegate(new TransparentItemDelegate(20, ui->availableTimeslots));
-	ui->availableTimeslots->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	ui->availableTimeslots->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
-	ui->availableTimeslots->setRowCount(Timeslot::lastHour - Timeslot::firstHour + 1);
-	ui->availableTimeslots->setColumnCount(Timeslot::dayNames.size());
-
-	QStringList verticalHeaderLabels;
-	for (int hour = Timeslot::firstHour; hour <= Timeslot::lastHour; ++hour) {
-		verticalHeaderLabels << tr("%1h").arg(hour);
-	}
-	ui->availableTimeslots->setVerticalHeaderLabels(verticalHeaderLabels);
-
-	QStringList horizontalHeaderLabels;
-	for (auto const &dayName: Timeslot::dayNames) {
-		horizontalHeaderLabels << dayName;
-	}
-	ui->availableTimeslots->setHorizontalHeaderLabels(horizontalHeaderLabels);
-
-	for (int row = 0; row < ui->availableTimeslots->rowCount(); ++row) {
-		for (int column = 0; column < ui->availableTimeslots->columnCount(); ++column) {
-			auto item = new QTableWidgetItem();
-			item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-			ui->availableTimeslots->setItem(row, column, item);
-		}
-	}
-}
-
-void TeacherDialog::toggleAvailability(int row, int column)
-{
-	auto item = ui->availableTimeslots->item(row, column);
-	auto isAvailable = !item->data(Qt::UserRole).toBool();
-	item->setBackground(isAvailable ? Qt::BDiagPattern : Qt::NoBrush);
-	item->setData(Qt::UserRole, isAvailable);
-}
-
-void TeacherDialog::toggleAvailabilityUndoable(int row, int column)
-{
-	auto command = new UndoCommand(
-		[=]() { toggleAvailability(row, column); },
-		[=]() { toggleAvailability(row, column); }
-	);
-	undoStack.push(command);
-}
-
-void TeacherDialog::toggleSelected()
-{
-	undoStack.beginMacro("");
-	auto selectedIndexes = ui->availableTimeslots->selectionModel()->selectedIndexes();
-	for (auto const &selectedIndex: selectedIndexes) {
-		toggleAvailabilityUndoable(selectedIndex.row(), selectedIndex.column());
-	}
-	undoStack.endMacro();
-}
-
-QSet<Timeslot> TeacherDialog::getAvailableTimeslots() const
-{
-	QSet<Timeslot> availableTimeslots;
-	for (int row = 0; row < ui->availableTimeslots->rowCount(); ++row) {
-		for (int column = 0; column < ui->availableTimeslots->columnCount(); ++column) {
-			auto item = ui->availableTimeslots->item(row, column);
-			bool isAvailable = item->data(Qt::UserRole).toBool();
-
-			if (isAvailable) {
-				availableTimeslots << Timeslot(static_cast<Day>(column), row + Timeslot::firstHour);
-			}
-		}
-	}
-
-	return availableTimeslots;
 }
 
 void TeacherDialog::editName()

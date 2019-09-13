@@ -1,15 +1,12 @@
 #pragma once
 
 #include <QDialog>
-#include <QSet>
 #include <QUndoStack>
-#include "Timeslot.h"
 
 namespace Ui {
 class TeacherDialog;
 }
 
-class Subject;
 class Subjects;
 class Teacher;
 class Teachers;
@@ -35,11 +32,6 @@ class TeacherDialog : public QDialog
 		QString name;
 		int idSubject;
 
-		void initAvailableTimeslots();
-		void toggleAvailability(int row, int column);
-		void toggleAvailabilityUndoable(int row, int column);
-		void toggleSelected();
-		QSet<Timeslot> getAvailableTimeslots() const;
 		void editName();
 		void editSubject();
 
