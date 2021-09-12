@@ -17,7 +17,7 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 	public:
 		MainWindow();
-		~MainWindow();
+		~MainWindow() override;
 
 	protected:
 		Options options;
@@ -27,7 +27,7 @@ class MainWindow : public QMainWindow
 		Solver solver;
 		QUndoStack undoStack;
 
-		void setDefaultData();
+		void openFile();
 
 	private:
 		Ui::MainWindow *ui;

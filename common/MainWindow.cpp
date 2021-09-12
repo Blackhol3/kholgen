@@ -1,8 +1,10 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QVector>
+#include "JsonImporter.h"
 #include "Subject.h"
 #include "Teacher.h"
 
@@ -20,7 +22,6 @@ QSet<T> extract(QVector<T> const &list, QVector<int> const &indexes)
 MainWindow::MainWindow() : QMainWindow(), solver(&subjects, &teachers, &trios, &options), ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-	//setDefaultData();
 
 	ui->subjectsTab->setUndoStack(&undoStack);
 	ui->teachersTab->setUndoStack(&undoStack);
@@ -33,6 +34,13 @@ MainWindow::MainWindow() : QMainWindow(), solver(&subjects, &teachers, &trios, &
 	ui->triosTab->setData(&trios, &subjects);
 	ui->optionsTab->setData(&options);
 	ui->computationTab->setData(&trios, &options, &solver, &subjects, &teachers);
+
+	auto openAction = new QAction(tr("&Ouvrir…"), this);
+	openAction->setShortcut(QKeySequence::Open);
+	connect(openAction, &QAction::triggered, this, &MainWindow::openFile);
+
+	auto fileMenu = menuBar()->addMenu(tr("&Fichier"));
+	fileMenu->addAction(openAction);
 
 	auto undoAction = undoStack.createUndoAction(this, tr("&Annuler"));
 	undoAction->setShortcuts(QKeySequence::Undo);
@@ -72,35 +80,59 @@ MainWindow::~MainWindow()
 	delete ui;
 }
 
-void MainWindow::setDefaultData()
+void MainWindow::openFile()
 {
-	QVector<Timeslot> timeslots = {
-		Timeslot(Day::Monday, 17),
-		Timeslot(Day::Monday, 18),
-		Timeslot(Day::Tuesday, 12),
-		Timeslot(Day::Tuesday, 13),
-		Timeslot(Day::Thursday, 12),
-		Timeslot(Day::Thursday, 13),
-		Timeslot(Day::Thursday, 18),
-	};
+	QString filePath = QFileDialog::getOpenFileName(
+		this,
+		tr("Ouvrir"),
+		QString(),
+		tr("Fichier JSON (*.json)")
+	);
 
-	subjects
-		<< new Subject("Mathématiques", "M", 1, QColor::fromHsv(0, 192, 192))
-		<< new Subject("Physique", "φ", 2, QColor::fromHsv(90, 192, 192))
-		<< new Subject("Sciences de l'ingénieur", "SI", 2, QColor::fromHsv(180, 192, 192))
-		<< new Subject("Anglais", "A", 2, QColor::fromHsv(270, 192, 192))
-	;
+	if (filePath.isEmpty()) {
+		return;
+	}
 
-	teachers
-		<< new Teacher("M. Pillet", subjects[0], extract(timeslots, {0, 1, 2, 3, 4, 5, 6}))
-		<< new Teacher("M. Biton", subjects[0], extract(timeslots, {2, 3}))
-		<< new Teacher("M. Lambour", subjects[0], extract(timeslots, {2, 3}))
-		<< new Teacher("Mme Moreau", subjects[1], extract(timeslots, {2, 3, 4, 5, 6}))
-		<< new Teacher("M. Berthet", subjects[1], extract(timeslots, {6}))
-		<< new Teacher("M. Dalla Monta", subjects[2], extract(timeslots, {3, 4, 5, 6}))
-		<< new Teacher("M. Milhaud", subjects[2], extract(timeslots, {0, 1, 4, 5, 6}))
-		<< new Teacher("Mme Nouet", subjects[3], extract(timeslots, {0, 1, 2, 3}))
-		<< new Teacher("Colleur d'anglais n°1", subjects[3], extract(timeslots, {4}))
-		<< new Teacher("Colleur d'anglais n°2", subjects[3], extract(timeslots, {5}))
-	;
+	if (subjects.size() > 0 || teachers.size() > 0 || trios.size() > 0) {
+		QMessageBox messageBox;
+		messageBox.setIcon(QMessageBox::Question);
+		messageBox.setTextFormat(Qt::RichText);
+		messageBox.setText(tr("Une ou plusieurs matières, enseignant·es et groupes ont été définies."));
+		messageBox.setInformativeText(tr("Ils seront définitivement supprimés. Voulez-vous continuer malgré tout ?"));
+		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+		messageBox.setDefaultButton(QMessageBox::No);
+		auto clickedButton = messageBox.exec();
+
+		if (clickedButton == QMessageBox::No) {
+			return;
+		}
+
+		for (int i = trios.size() - 1; i >= 0; --i) {
+			trios.remove(i);
+		}
+
+		for (int i = teachers.size() - 1; i >= 0; --i) {
+			teachers.remove(i);
+		}
+
+		for (int i = subjects.size() - 1; i >= 0; --i) {
+			subjects.remove(i);
+		}
+
+		/** @todo Undo **/
+		undoStack.clear();
+	}
+
+	auto importer = JsonImporter(subjects, teachers);
+	if (importer.open(filePath)) {
+		return;
+	}
+
+	QMessageBox messageBox;
+	messageBox.setIcon(QMessageBox::Critical);
+	messageBox.setText(tr("Le fichier n'a pas pu être lu correctement."));
+	messageBox.setInformativeText(importer.getErrorString());
+	messageBox.setStandardButtons(QMessageBox::Ok);
+	messageBox.setDefaultButton(QMessageBox::Ok);
+	messageBox.exec();
 }

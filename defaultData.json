@@ -1,0 +1,80 @@
+{
+	"subjects": [
+		{
+			"name": "Mathématiques",
+			"shortName": "M",
+			"frequency": 1,
+			"color": "#c02f2f"
+		},
+		{
+			"name": "Physique",
+			"shortName": "φ",
+			"frequency": 2,
+			"color": "#78c02f"
+		},
+		{
+			"name": "Sciences de l'ingénieur",
+			"shortName": "SI",
+			"frequency": 2,
+			"color": "#2fc0c0"
+		},
+		{
+			"name": "Anglais",
+			"shortName": "A",
+			"frequency": 2,
+			"color": "#782fc0"
+		}
+	],
+	"teachers": [
+		{
+			"name": "M. Pillet",
+			"subject": "Mathématiques",
+			"availableTimeslots": ["l17", "l18", "m12", "m13", "j12", "j13", "j18"]
+		},
+		{
+			"name": "M. Biton",
+			"subject": "Mathématiques",
+			"availableTimeslots": ["m12", "m13"]
+		},
+		{
+			"name": "M. Lambour",
+			"subject": "Mathématiques",
+			"availableTimeslots": ["m12", "m13"]
+		},
+		{
+			"name": "Mme Moreau",
+			"subject": "Physique",
+			"availableTimeslots": ["m12", "m13", "j12", "j13", "j18"]
+		},
+		{
+			"name": "M. Berthet",
+			"subject": "Physique",
+			"availableTimeslots": ["j18"]
+		},
+		{
+			"name": "M. Dalla Monta",
+			"subject": "Sciences de l'ingénieur",
+			"availableTimeslots": ["m13", "j12", "j13", "j18"]
+		},
+		{
+			"name": "M. Milhaud",
+			"subject": "Sciences de l'ingénieur",
+			"availableTimeslots": ["l17", "l18", "j12", "j13", "j18"]
+		},
+		{
+			"name": "Mme Nouet",
+			"subject": "Anglais",
+			"availableTimeslots": ["l17", "l18", "m12", "m13"]
+		},
+		{
+			"name": "Colleur d'anglais n°1",
+			"subject": "Anglais",
+			"availableTimeslots": ["j12"]
+		},
+		{
+			"name": "Colleur d'anglais n°2",
+			"subject": "Anglais",
+			"availableTimeslots": ["j13"]
+		}
+	]
+}

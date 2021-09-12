@@ -11,6 +11,7 @@ SOURCES += \
         $$COMMON_PATH/CsvExporter.cpp \
         $$COMMON_PATH/ExcelExporter.cpp \
         $$COMMON_PATH/Exporter.cpp \
+        $$COMMON_PATH/JsonImporter.cpp \
         $$COMMON_PATH/MainWindow.cpp \
         $$COMMON_PATH/misc.cpp \
         $$COMMON_PATH/Option.cpp \
@@ -42,6 +43,7 @@ HEADERS += \
     $$COMMON_PATH/CsvExporter.h \
     $$COMMON_PATH/ExcelExporter.h \
     $$COMMON_PATH/Exporter.h \
+    $$COMMON_PATH/JsonImporter.h \
     $$COMMON_PATH/MainWindow.h \
     $$COMMON_PATH/misc.h \
     $$COMMON_PATH/Option.h \
