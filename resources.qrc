@@ -1,8 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-    <qresource>
-        <file>image/check.svg</file>
-        <file>image/cogs.svg</file>
-        <file>image/error.svg</file>
-        <file>image/icon.svg</file>
-    </qresource>
-</RCC>
