@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QColor>
+#include <QJsonObject>
 #include <QString>
 #include <functional>
 
@@ -13,6 +14,7 @@ class Subject
 		int getFrequency() const;
 		QColor const &getColor() const;
 
+		QJsonObject toJsonObject() const;
 		bool operator==(Subject const &) const = default;
 
 	protected:

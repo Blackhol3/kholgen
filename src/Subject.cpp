@@ -25,6 +25,16 @@ QColor const &Subject::getColor() const
 	return color;
 }
 
+QJsonObject Subject::toJsonObject() const
+{
+	return {
+		{"name", name},
+		{"shortName", shortName},
+		{"frequency", frequency},
+		{"color", color.name()},
+	};
+}
+
 size_t std::hash<Subject>::operator()(const Subject& subject) const
 {
 	return std::hash<QString>()(subject.getName());

@@ -29,3 +29,13 @@ const Week& Colle::getWeek() const
 {
 	return week;
 }
+
+QJsonObject Colle::toJsonObject() const
+{
+	return {
+		{"teacherName", teacher.getName()},
+		{"timeslot", timeslot.toJsonObject()},
+		{"trioId", trio.getId()},
+		{"weekId", week.getId()},
+	};
+}

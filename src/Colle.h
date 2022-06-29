@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QJsonObject>
 #include "Teacher.h"
 #include "Timeslot.h"
 #include "Trio.h"
@@ -14,6 +15,8 @@ class Colle
 		const Timeslot& getTimeslot() const;
 		const Trio& getTrio() const;
 		const Week& getWeek() const;
+
+		QJsonObject toJsonObject() const;
 
 	protected:
 		Teacher teacher;

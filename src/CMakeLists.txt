@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set (CMAKE_AUTORCC ON)
-find_package(Qt6 REQUIRED COMPONENTS Core Gui WebChannel WebSockets LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Concurrent Core Gui WebChannel WebSockets LinguistTools)
 qt_standard_project_setup()
 
 set(TS_FILES KholGen_fr_FR.ts)
@@ -18,7 +18,8 @@ add_executable(${PROJECT_NAME}
 
     Colle.cpp
     Colle.h
-    Core.h
+    Communication.cpp
+    Communication.h
     CsvExporter.cpp
     CsvExporter.h
     ExcelExporter.cpp
@@ -46,7 +47,7 @@ add_executable(${PROJECT_NAME}
     ${TS_FILES}
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt::Core Qt::Gui Qt::WebChannel Qt::WebSockets)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt::Concurrent Qt::Core Qt::Gui Qt::WebChannel Qt::WebSockets)
 qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 
 #[[

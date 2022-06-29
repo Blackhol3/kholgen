@@ -51,6 +51,14 @@ QString Timeslot::getDayShortName() const
 	return dayShortNames.at(day);
 }
 
+QJsonObject Timeslot::toJsonObject() const
+{
+	return {
+		{"day", static_cast<int>(day)},
+		{"hour", hour},
+	};
+}
+
 size_t std::hash<Timeslot>::operator()(const Timeslot& timeslot) const
 {
 	return std::hash<Day>()(timeslot.getDay()) ^ std::hash<int>()(timeslot.getHour());

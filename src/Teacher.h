@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QJsonObject>
 #include <QString>
 #include <functional>
 #include <set>
@@ -16,6 +17,7 @@ class Teacher
 
 		bool isAvailableAtTimeslot(Timeslot const &timeslot) const;
 
+		QJsonObject toJsonObject() const;
 		bool operator==(Teacher const &) const = default;
 
 	protected:

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QJsonObject>
 #include <functional>
 
 class Trio
@@ -8,6 +9,7 @@ class Trio
 		Trio(int id);
 		int getId() const;
 
+		QJsonObject toJsonObject() const;
 		bool operator==(Trio const &) const = default;
 
 	protected:

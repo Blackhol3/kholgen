@@ -1,13 +1,15 @@
 #include <QLocale>
 #include <QCoreApplication>
 #include <QDebug>
+#include <QFutureWatcher>
 #include <QTimer>
 #include <QTranslator>
 #include <QWebChannel>
 #include <QWebSocketServer>
+#include <QtConcurrent>
 #include <vector>
 #include "misc.h"
-#include "Core.h"
+#include "Communication.h"
 #include "JsonImporter.h"
 #include "Solver.h"
 #include "Subject.h"
@@ -44,10 +46,12 @@ int main(int argc, char *argv[])
 		channel.connectTo(new WebSocketTransport(server.nextPendingConnection()));
 	});
 
-	Core core;
-	channel.registerObject("core", &core);
+	Communication communication;
+	channel.registerObject("communication", &communication);
 
-	QTimer::singleShot(5000, [&]() { core.sendText("Essai d'envoi");qStdout() << "Message envoyé !" << Qt::endl; });
+	QEventLoop loop;
+	QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+	loop.exec();
 
 	initStdout();
 
@@ -57,8 +61,13 @@ int main(int argc, char *argv[])
 		return a.exec();
 	}
 
+	communication.sendSettings(importer.getSubjects(), importer.getTeachers(), importer.getTrios(), 20);
+
 	Solver solver(importer.getSubjects(), importer.getTeachers(), importer.getTrios(), 20);
-	solver.compute();
+	QObject::connect(&solver, &Solver::solutionFound, &communication, &Communication::sendColles);
+
+	QFutureWatcher<void> watcher;
+	watcher.setFuture(QtConcurrent::run([&]() { solver.compute(); }));
 
 	return a.exec();
 }

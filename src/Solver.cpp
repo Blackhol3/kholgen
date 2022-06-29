@@ -1,16 +1,16 @@
 #include "Solver.h"
 
-#include <ortools/sat/cp_model.h>
 #include <QDebug>
 #include <algorithm>
 #include <numeric>
 #include <unordered_set>
 #include "ExcelExporter.h"
-#include "Colle.h"
 #include "Timeslot.h"
 
 using operations_research::sat::BoolVar;
 using operations_research::sat::CpModelBuilder;
+using operations_research::sat::CpSolverResponse;
+using operations_research::sat::CpSolverResponseStats;
 using operations_research::sat::CpSolverStatus;
 using operations_research::sat::CpSolverStatus_Name;
 using operations_research::sat::LinearExpr;
@@ -210,6 +210,7 @@ void Solver::compute() const
 		qDebug() << "--- Objective 1 :" << SolutionIntegerValue(response, objective1);
 		qDebug() << "--- Objective 2 :" << SolutionIntegerValue(response, objective2);
 		qDebug() << "--- Objective 3 :" << SolutionIntegerValue(response, objective3);
+		emit solutionFound(getColles(response, isTrioWithTeacherAtTimeslotInWeek));
 	}));
 	auto response = SolveCpModel(modelBuilder.Build(), &model);
 
@@ -218,25 +219,14 @@ void Solver::compute() const
 	qDebug() << "Objective 1 :" << SolutionIntegerValue(response, objective1);
 	qDebug() << "Objective 2 :" << SolutionIntegerValue(response, objective2);
 	qDebug() << "Objective 3 :" << SolutionIntegerValue(response, objective3);
+	qDebug().noquote() << QString::fromStdString(CpSolverResponseStats(response)).replace("\n", "\n\t");
 
 	qDebug() << "Status :" << QString::fromStdString(CpSolverStatus_Name(response.status()));
 	if (response.status() != CpSolverStatus::FEASIBLE && response.status() != CpSolverStatus::OPTIMAL) {
 		return;
 	}
 
-	std::vector<Colle> colles;
-	for (auto const &week: weeks) {
-		for (auto const &teacher: teachers) {
-			for (auto const &trio: trios) {
-				for (auto const &timeslot: teacher.getAvailableTimeslots()) {
-					if (SolutionBooleanValue(response, isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week])) {
-						colles.push_back(Colle(teacher, timeslot, trio, week));
-					}
-				}
-			}
-		}
-	}
-
+	auto colles = getColles(response, isTrioWithTeacherAtTimeslotInWeek);
 	ExcelExporter exporter(subjects, teachers, trios, colles);
 	exporter.save("../test.xlsx");
 }
@@ -348,4 +338,22 @@ std::vector<std::pair<Slot,  Slot>> Solver::getConsecutiveSlotsWithDifferentSubj
 	}
 
 	return consecutiveSlots;
+}
+
+std::vector<Colle> Solver::getColles(CpSolverResponse const &response, unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> const &isTrioWithTeacherAtTimeslotInWeek) const
+{
+	std::vector<Colle> colles;
+	for (auto const &week: weeks) {
+		for (auto const &teacher: teachers) {
+			for (auto const &trio: trios) {
+				for (auto const &timeslot: teacher.getAvailableTimeslots()) {
+					if (SolutionBooleanValue(response, isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week))) {
+						colles.push_back(Colle(teacher, timeslot, trio, week));
+					}
+				}
+			}
+		}
+	}
+
+	return colles;
 }

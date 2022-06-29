@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QJsonObject>
 #include <QString>
 #include <functional>
 #include <map>
@@ -20,6 +21,7 @@ class Timeslot
 		QString getDayName() const;
 		QString getDayShortName() const;
 
+		QJsonObject toJsonObject() const;
 		auto operator<=>(Timeslot const &) const = default;
 
 		static int const firstHour;
