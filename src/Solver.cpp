@@ -18,16 +18,21 @@ using operations_research::sat::Model;
 using operations_research::sat::NewFeasibleSolutionObserver;
 using std::unordered_map;
 
-Solver::Solver(std::vector<Subject> const &subjects, std::vector<Teacher> const &teachers, std::vector<Trio> const &trios, int nbWeeks):
-	subjects(subjects), teachers(teachers), trios(trios)
+Solver::Solver(QObject *parent): QObject(parent)
 {
+}
+
+void Solver::compute(std::vector<Subject> const &newSubjects, std::vector<Teacher> const &newTeachers, std::vector<Trio> const &newTrios, int nbWeeks)
+{
+	subjects = newSubjects;
+	teachers = newTeachers;
+	trios = newTrios;
+
+	weeks.clear();
 	for (int i = 0; i < nbWeeks; ++i) {
 		weeks.push_back(Week(i));
 	}
-}
 
-void Solver::compute() const
-{
 	CpModelBuilder modelBuilder;
 
 	unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> isTrioWithTeacherAtTimeslotInWeek;

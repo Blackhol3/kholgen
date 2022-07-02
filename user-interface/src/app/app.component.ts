@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { QWebChannel } from 'qwebchannel';
+
+import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
 
 import { Colle } from './colle';
 import { Subject } from './subject';
@@ -20,15 +23,34 @@ export class AppComponent {
 	trios: Trio[] = [];
 	weeks: Week[] = [];
 	
-	constructor() {
+	constructor(public dialog: MatDialog) {
+		this.connect();
+	}
+	
+	protected connect() {
+		if (this.dialog.getDialogById('connection') === undefined) {
+			this.dialog.open(ConnectionDialogComponent, { id: 'connection' });
+		}
+		 
 		let websocket = new WebSocket('ws://localhost:4201');
 		websocket.addEventListener('open', () => {
 			new QWebChannel(websocket, (channel: any) => {
 				let communication = channel.objects.communication;
-				communication.sendJsonColles.connect((jsonColles: any[]) => this.importJsonColles(jsonColles));
-				communication.sendJsonSettings.connect((jsonSettings: any) => this.importJsonSettings(jsonSettings));
+				communication.newColles.connect((jsonColles: any[]) => this.importJsonColles(jsonColles));
+				communication.newSettings.connect((jsonSettings: any) => {
+					this.importJsonSettings(jsonSettings);
+					communication.compute();
+				});
+				
+				communication.initialize();
 			});
+			
+			let dialog = this.dialog.getDialogById('connection');
+			if (dialog !== undefined) {
+				dialog.close();
+			}
 		});
+		websocket.addEventListener('close', () => { this.connect(); });
 	}
 	
 	protected importJsonColles(jsonColles: any[]) {

@@ -1,21 +1,13 @@
 #include <QLocale>
 #include <QCoreApplication>
-#include <QDebug>
-#include <QFutureWatcher>
-#include <QTimer>
 #include <QTranslator>
 #include <QWebChannel>
 #include <QWebSocketServer>
-#include <QtConcurrent>
-#include <vector>
+#include <memory>
 #include "misc.h"
 #include "Communication.h"
 #include "JsonImporter.h"
 #include "Solver.h"
-#include "Subject.h"
-#include "Teacher.h"
-#include "Timeslot.h"
-#include "Trio.h"
 #include "WebSocketTransport.h"
 
 int main(int argc, char *argv[])
@@ -34,6 +26,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	initStdout();
+
 	QWebSocketServer server(QCoreApplication::tr("Serveur KhôlGen"), QWebSocketServer::NonSecureMode);
 	int const port = 4201;
 	if (!server.listen(QHostAddress::LocalHost, port)) {
@@ -41,33 +35,17 @@ int main(int argc, char *argv[])
 		return a.exec();
 	}
 
+	/* @todo Only accepts a single connection */
 	QWebChannel channel;
 	QObject::connect(&server, &QWebSocketServer::newConnection, [&]() {
 		channel.connectTo(new WebSocketTransport(server.nextPendingConnection()));
 	});
 
-	Communication communication;
+	auto solver = std::make_shared<Solver>();
+	auto importer = std::make_shared<JsonImporter>();
+
+	Communication communication(importer, solver);
 	channel.registerObject("communication", &communication);
-
-	QEventLoop loop;
-	QTimer::singleShot(3000, &loop, &QEventLoop::quit);
-	loop.exec();
-
-	initStdout();
-
-	JsonImporter importer;
-	if (!importer.open("../test0.json")) {
-		qStdout() << importer.getErrorString() << Qt::endl;
-		return a.exec();
-	}
-
-	communication.sendSettings(importer.getSubjects(), importer.getTeachers(), importer.getTrios(), 20);
-
-	Solver solver(importer.getSubjects(), importer.getTeachers(), importer.getTrios(), 20);
-	QObject::connect(&solver, &Solver::solutionFound, &communication, &Communication::sendColles);
-
-	QFutureWatcher<void> watcher;
-	watcher.setFuture(QtConcurrent::run([&]() { solver.compute(); }));
 
 	return a.exec();
 }
