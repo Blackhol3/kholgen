@@ -1,8 +1,8 @@
 export class Subject {
 	constructor(
-		readonly name: string,
-		readonly shortName: string,
-		readonly frequency: number,
-		readonly color: string,
+		public name: string,
+		public shortName: string,
+		public frequency: number,
+		public color: string,
 	) {}
 }

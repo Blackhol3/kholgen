@@ -1,11 +1,15 @@
 import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -29,6 +33,8 @@ import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
 	imports: [
 		BrowserModule,
 		BrowserAnimationsModule,
+		FormsModule,
+		ReactiveFormsModule,
 		RouterModule.forRoot([
 			{path: 'subjects', component: SubjectsPageComponent},
 			{path: 'computation', component: ComputationPageComponent},
@@ -37,7 +43,10 @@ import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
 		
 		MatButtonModule,
 		MatDialogModule,
+		MatDividerModule,
+		MatFormFieldModule,
 		MatIconModule,
+		MatInputModule,
 		MatListModule,
 		MatProgressSpinnerModule,
 		MatSidenavModule,

@@ -1,1 +1,36 @@
-<p>Subjects-page</p>
+<div>
+	<div>
+		<button mat-raised-button [disabled]="true">Ajouter <mat-icon>add</mat-icon></button>
+		<button mat-raised-button [disabled]="true">Supprimer <mat-icon>remove</mat-icon></button>
+	</div>
+	<mat-selection-list #subjectsList (selectionChange)="selectionChange($event)" [multiple]="false">
+		<mat-list-option *ngFor="let subject of settings.subjects" [value]="subject" [style]="{color: subject.color}">
+			<p>{{subject.name}}</p>
+		</mat-list-option>
+	</mat-selection-list>
+</div>
+<mat-divider [vertical]="true" *ngIf="selectedSubject !== null"></mat-divider>
+<form [formGroup]="subjectForm" *ngIf="selectedSubject !== null">
+	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+		<mat-label>Nom</mat-label>
+		<input matInput type="text" formControlName="name">
+		<mat-error *ngIf="subjectForm.controls.name.hasError('existingName')">Une autre matière porte déjà ce nom.</mat-error>
+	</mat-form-field>
+	
+	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+		<mat-label>Abréviation</mat-label>
+		<input matInput type="text" formControlName="shortName">
+	</mat-form-field>
+	
+	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+		<mat-label>Fréquence</mat-label>
+		<input matInput type="number" formControlName="frequency" min="1">
+		<mat-error *ngIf="subjectForm.controls.frequency.hasError('pattern')">La fréquence doit être un entier.</mat-error>
+		<mat-error *ngIf="subjectForm.controls.frequency.hasError('min')">La fréquence doit être supérieure ou égale à 1.</mat-error>
+	</mat-form-field>
+	
+	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+		<mat-label>Couleur</mat-label>
+		<input matInput type="color" formControlName="color">
+	</mat-form-field>
+</form>
