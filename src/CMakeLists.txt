@@ -50,15 +50,15 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt::Concurrent Qt::Core Qt::Gui Qt::WebChannel Qt::WebSockets)
 qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 
-#[[
 include(FetchContent)
+set(ABSL_PROPAGATE_CXX_STD ON)
 set(BUILD_DEPS ON)
 set(BUILD_SAMPLES OFF)
 set(BUILD_EXAMPLES OFF)
 FetchContent_Declare(
     or-tools
     GIT_REPOSITORY https://github.com/google/or-tools.git
-    GIT_TAG        49b6301e1e1e231d654d79b6032e79809868a70e # v9.3
+    GIT_TAG        4c82ba21928b093a3190417ac2630b69ec47a179 # main
 )
 FetchContent_Declare(
     xlnt
@@ -66,22 +66,7 @@ FetchContent_Declare(
     GIT_TAG        d88c901faa539f9272a81ba0bab72def70ca18d7 # master
 )
 FetchContent_MakeAvailable(or-tools xlnt)
-target_link_libraries(${PROJECT_NAME} PRIVATE or-tools xlnt)
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${ortools_SOURCE_DIR})
-]]
-
-find_library(ORTOOLS_PATH ortools HINTS C:/Qt/Libraries/or-tools/lib)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${ORTOOLS_PATH})
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE C:/Qt/Libraries/or-tools)
-
-include(FetchContent)
-FetchContent_Declare(
-    xlnt
-    GIT_REPOSITORY https://github.com/tfussell/xlnt.git
-    GIT_TAG        d88c901faa539f9272a81ba0bab72def70ca18d7 # master
-)
-FetchContent_MakeAvailable(xlnt)
-target_link_libraries(${PROJECT_NAME} PRIVATE xlnt)
+target_link_libraries(${PROJECT_NAME} PRIVATE ortools::ortools xlnt)
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
