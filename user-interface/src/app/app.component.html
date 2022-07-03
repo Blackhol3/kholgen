@@ -4,6 +4,14 @@
 	<input #importFileInput type="file" accept="application/json" (change)="importFile()" />
 </mat-toolbar>
 
-<section>
-	<app-colloscope [colles]="colles" [subjects]="subjects" [teachers]="teachers" [weeks]="weeks"></app-colloscope>
-</section>
+<mat-sidenav-container fullscreen>
+	<mat-sidenav mode="side" role="navigation" disableClose="true" opened>
+		<mat-nav-list>
+			<a mat-list-item routerLink="/subjects" routerLinkActive="active">Matières</a>
+			<a mat-list-item routerLink="/computation" routerLinkActive="active">Calcul</a>
+		</mat-nav-list>
+	</mat-sidenav>
+	<mat-sidenav-content>
+		<router-outlet></router-outlet>
+	</mat-sidenav-content>
+</mat-sidenav-container>

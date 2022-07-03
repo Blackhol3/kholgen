@@ -1,12 +1,37 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+$palette: mat.define-palette(mat.$indigo-palette);
+
 mat-toolbar {
 	justify-content: space-between;
+	
+	input[type=file] {
+		display: none;
+	}
 }
 
-input[type=file] {
-	display: none;
+mat-sidenav-container {
+	top: 64px !important;
 }
 
-section {
+@media(max-width: 599px) {
+	mat-sidenav-container {
+		top: 56px !important;
+	}
+}
+
+mat-sidenav {
+	width: 200px;
+	
+	.active {
+		color: map.get($palette, 500);
+		background: map.get($palette, 50);
+	}
+}
+
+mat-sidenav-content {
 	display: flex;
 	justify-content: center;
+	
+	padding: 16px;
 }
