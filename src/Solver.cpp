@@ -22,16 +22,12 @@ Solver::Solver(QObject *parent): QObject(parent)
 {
 }
 
-void Solver::compute(std::vector<Subject> const &newSubjects, std::vector<Teacher> const &newTeachers, std::vector<Trio> const &newTrios, int nbWeeks)
+void Solver::compute(std::vector<Subject> const &newSubjects, std::vector<Teacher> const &newTeachers, std::vector<Trio> const &newTrios, std::vector<Week> const &newWeeks)
 {
 	subjects = newSubjects;
 	teachers = newTeachers;
 	trios = newTrios;
-
-	weeks.clear();
-	for (int i = 0; i < nbWeeks; ++i) {
-		weeks.push_back(Week(i));
-	}
+	weeks = newWeeks;
 
 	CpModelBuilder modelBuilder;
 

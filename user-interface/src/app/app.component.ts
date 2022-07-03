@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { QWebChannel } from 'qwebchannel';
 
@@ -23,7 +23,60 @@ export class AppComponent {
 	trios: Trio[] = [];
 	weeks: Week[] = [];
 	
+	@ViewChild('importFileInput') importFileInput!: ElementRef<HTMLInputElement>;
+	
 	constructor(public dialog: MatDialog) {
+		//this.connect();
+	}
+	
+	startImportFile() {
+		this.importFileInput.nativeElement.click();
+	}
+	
+	importFile() {
+		let files = this.importFileInput.nativeElement.files;
+		if (files === null || files[0] === undefined) {
+			return;
+		}
+		
+		files[0]
+			.text()
+			.then(JSON.parse)
+			.then((jsonObject: any) => this.import(jsonObject))
+			.catch((exception: any) => {
+				/** @todo Display an error dialog **/
+				if (exception instanceof SyntaxError) {
+					console.error(exception.message);
+				}
+				else {
+					throw exception;
+				}
+			})
+		;
+	}
+	
+	/** @todo Throw better error messages **/
+	import(jsonObject: any) {
+		this.subjects = jsonObject.subjects.map((subject: any) => new Subject(
+			subject.name, subject.shortName, subject.frequency, subject.color
+		));
+		
+		this.teachers = jsonObject.teachers.map((teacher: any) => new Teacher(
+			teacher.name,
+			this.subjects.find(subject => subject.name === teacher.subject) as Subject,
+			teacher.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
+		));
+		
+		this.trios = [];
+		for (let i = 0; i < jsonObject.numberOfTrios; ++i) {
+			this.trios.push(new Trio(i));
+		}
+		
+		this.weeks = [];
+		for (let i = 0; i < 20; ++i) {
+			this.weeks.push(new Week(i));
+		}
+		
 		this.connect();
 	}
 	
@@ -37,12 +90,13 @@ export class AppComponent {
 			new QWebChannel(websocket, (channel: any) => {
 				let communication = channel.objects.communication;
 				communication.newColles.connect((jsonColles: any[]) => this.importJsonColles(jsonColles));
-				communication.newSettings.connect((jsonSettings: any) => {
-					this.importJsonSettings(jsonSettings);
-					communication.compute();
-				});
 				
-				communication.initialize();
+				communication.compute({
+					subjects: this.subjects,
+					teachers: this.teachers,
+					numberOfTrios: this.trios.length,
+					numberOfWeeks: this.weeks.length,
+				});
 			});
 			
 			let dialog = this.dialog.getDialogById('connection');
@@ -60,28 +114,5 @@ export class AppComponent {
 			this.trios[colle.trioId],
 			this.weeks[colle.weekId],
 		));
-	}
-	
-	protected importJsonSettings(jsonSettings: any) {
-		this.subjects = jsonSettings.subjects.map((subject: any) => new Subject(
-			subject.name, subject.shortName, subject.frequency, subject.color
-		));
-		
-		this.teachers = jsonSettings.teachers.map((teacher: any) => new Teacher(
-			teacher.name,
-			this.subjects.find(subject => subject.name === teacher.subjectName) as Subject,
-			teacher.availableTimeslots.map((timeslot: any) => new Timeslot(timeslot.day, timeslot.hour)),
-		));
-		
-		this.trios = jsonSettings.trios.map((trio: any) => new Trio(
-			trio.id,
-		));
-		
-		this.weeks = [];
-		for (let i = 0; i < jsonSettings.nbWeeks; ++i) {
-			this.weeks.push(new Week(i));
-		}
-		
-		this.colles = [];
 	}
 }

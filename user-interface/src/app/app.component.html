@@ -1,5 +1,7 @@
 <mat-toolbar color="primary">
 	<span>KhôlGen</span>
+	<button mat-raised-button (click)="startImportFile()">Importer <mat-icon>file_download</mat-icon></button>
+	<input #importFileInput type="file" accept="application/json" (change)="importFile()" />
 </mat-toolbar>
 
 <section>

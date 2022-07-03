@@ -18,7 +18,7 @@ class Solver : public QObject
 
 	public:
 		Solver(QObject *parent = nullptr);
-		void compute(std::vector<Subject> const &newSubjects, std::vector<Teacher> const &newTeachers, std::vector<Trio> const &newTrios, int nbWeeks);
+		void compute(std::vector<Subject> const &newSubjects, std::vector<Teacher> const &newTeachers, std::vector<Trio> const &newTrios, std::vector<Week> const &newWeeks);
 
 	signals:
 		void solutionFound(std::vector<Colle> const &colles) const;
