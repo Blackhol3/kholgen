@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { QWebChannel } from 'qwebchannel';
 
@@ -12,6 +12,7 @@ import { Trio } from './trio';
 import { Week } from './week';
 
 import { SettingsService } from './settings.service';
+import { UndoStackService } from './undo-stack.service';
 
 @Component({
 	selector: 'app-root',
@@ -21,7 +22,7 @@ import { SettingsService } from './settings.service';
 export class AppComponent {
 	@ViewChild('importFileInput') importFileInput!: ElementRef<HTMLInputElement>;
 	
-	constructor(public dialog: MatDialog, public settings: SettingsService) {
+	constructor(public dialog: MatDialog, public settings: SettingsService, public undoStack: UndoStackService) {
 		//this.connect();
 	}
 	
@@ -74,6 +75,20 @@ export class AppComponent {
 		}
 		
 		//this.connect();
+		/** @todo Handle the undo stack better, or display a warning dialog **/
+		this.undoStack.clear();
+	}
+	
+	@HostListener('window:keydown', ['$event'])
+	protected onKeydown($event: KeyboardEvent) {
+		if ($event.ctrlKey && $event.key === 'z') {
+			this.undoStack.undo();
+			$event.preventDefault();
+		}
+		else if ($event.ctrlKey && $event.key === 'y') {
+			this.undoStack.redo();
+			$event.preventDefault();
+		}
 	}
 	
 	protected connect() {

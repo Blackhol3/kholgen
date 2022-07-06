@@ -4,13 +4,13 @@
 		<button mat-raised-button [disabled]="true">Supprimer <mat-icon>remove</mat-icon></button>
 	</div>
 	<mat-selection-list #subjectsList (selectionChange)="selectionChange($event)" [multiple]="false">
-		<mat-list-option *ngFor="let subject of settings.subjects" [value]="subject" [style]="{color: subject.color}">
+		<mat-list-option *ngFor="let subject of settings.subjects; index as index" [value]="index" [style]="{color: subject.color}">
 			<p>{{subject.name}}</p>
 		</mat-list-option>
 	</mat-selection-list>
 </div>
-<mat-divider [vertical]="true" *ngIf="selectedSubject !== null"></mat-divider>
-<form [formGroup]="subjectForm" *ngIf="selectedSubject !== null">
+<mat-divider [vertical]="true" *ngIf="selectedSubjectIndex !== null"></mat-divider>
+<form [formGroup]="subjectForm" *ngIf="selectedSubjectIndex !== null">
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Nom</mat-label>
 		<input matInput type="text" formControlName="name">
