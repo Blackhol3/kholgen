@@ -20,6 +20,7 @@ import { AppComponent } from './app.component';
 import { ColloscopeComponent } from './colloscope/colloscope.component';
 import { ComputationPageComponent } from './computation-page/computation-page.component';
 import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
+import { SubjectFormComponent } from './subject-form/subject-form.component';
 import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
 
 @NgModule({
@@ -28,6 +29,7 @@ import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
   		ColloscopeComponent,
 		ComputationPageComponent,
     	ConnectionDialogComponent,
+		SubjectFormComponent,
 		SubjectsPageComponent,
 	],
 	imports: [
