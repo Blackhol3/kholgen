@@ -1,11 +1,6 @@
 import { animate, query, style, transition, trigger } from '@angular/animations';
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { QWebChannel } from 'qwebchannel';
 
-import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
-
-import { Colle } from './colle';
 import { Subject } from './subject';
 import { Teacher } from './teacher';
 import { Timeslot } from './timeslot';
@@ -40,9 +35,7 @@ import { UndoStackService } from './undo-stack.service';
 export class AppComponent {
 	@ViewChild('importFileInput') importFileInput!: ElementRef<HTMLInputElement>;
 	
-	constructor(private dialog: MatDialog, private settings: SettingsService, private undoStack: UndoStackService) {
-		//this.connect();
-	}
+	constructor(private settings: SettingsService, private undoStack: UndoStackService) { }
 	
 	startImportFile() {
 		this.importFileInput.nativeElement.click();
@@ -92,7 +85,6 @@ export class AppComponent {
 			this.settings.weeks.push(new Week(i));
 		}
 		
-		//this.connect();
 		/** @todo Handle the undo stack better, or display a warning dialog **/
 		this.undoStack.clear();
 	}
@@ -107,41 +99,5 @@ export class AppComponent {
 			this.undoStack.redo();
 			$event.preventDefault();
 		}
-	}
-	
-	protected connect() {
-		if (this.dialog.getDialogById('connection') === undefined) {
-			this.dialog.open(ConnectionDialogComponent, { id: 'connection' });
-		}
-		 
-		let websocket = new WebSocket('ws://localhost:4201');
-		websocket.addEventListener('open', () => {
-			new QWebChannel(websocket, (channel: any) => {
-				let communication = channel.objects.communication;
-				communication.newColles.connect((jsonColles: any[]) => this.importJsonColles(jsonColles));
-				
-				communication.compute({
-					subjects: this.settings.subjects,
-					teachers: this.settings.teachers,
-					numberOfTrios: this.settings.trios.length,
-					numberOfWeeks: this.settings.weeks.length,
-				});
-			});
-			
-			let dialog = this.dialog.getDialogById('connection');
-			if (dialog !== undefined) {
-				dialog.close();
-			}
-		});
-		websocket.addEventListener('close', () => { this.connect(); });
-	}
-	
-	protected importJsonColles(jsonColles: any[]) {
-		this.settings.colles = jsonColles.map((colle: any) => new Colle(
-			this.settings.teachers.find(teacher => teacher.name === colle.teacherName) as Teacher,
-			new Timeslot(colle.timeslot.day, colle.timeslot.hour),
-			this.settings.trios[colle.trioId],
-			this.settings.weeks[colle.weekId],
-		));
 	}
 }

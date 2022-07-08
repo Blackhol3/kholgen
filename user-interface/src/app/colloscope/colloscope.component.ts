@@ -1,40 +1,35 @@
-import { Component, Input, OnChanges } from '@angular/core';
-import { Colle } from '../colle';
-import { Subject } from '../subject';
+import { Component } from '@angular/core';
 import { Teacher } from '../teacher';
 import { Timeslot } from '../timeslot';
 import { Trio } from '../trio';
 import { Week } from '../week';
+
+import { SettingsService } from '../settings.service';
 
 @Component({
 	selector: 'app-colloscope',
 	templateUrl: './colloscope.component.html',
 	styleUrls: ['./colloscope.component.scss']
 })
-export class ColloscopeComponent implements OnChanges {
-	@Input() colles: Colle[] = [];
-	@Input() subjects: Subject[] = [];
-	@Input() teachers: Teacher[] = [];
-	@Input() weeks: Week[] = [];
-	
+export class ColloscopeComponent {
 	tableData: any[] = [];
 	tableWeeksHeaderRowDef: string[] = [];
 	tableSubjectRowspan: number[] = [];
 	tableTeacherRowspan: number[] = [];
 	
-	constructor() { }
+	constructor(public settings: SettingsService) { }
 	
-	ngOnChanges() {
+	getTableData() {
 		this.tableData = [];
-		for (let subject of this.subjects) {
-			for (let teacher of this.teachers.filter(t => t.subject === subject)) {
+		for (let subject of this.settings.subjects) {
+			for (let teacher of this.settings.teachers.filter(t => t.subject === subject)) {
 				for (let timeslot of teacher.availableTimeslots) {
 					let triosByWeek = [];
-					for (let week of this.weeks) {
+					for (let week of this.settings.weeks) {
 						triosByWeek.push(this.getTrio(teacher, timeslot, week));
 					}
 					
-					if (triosByWeek.some(trio => trio !== null)) {
+					if (this.settings.colles.length === 0 || triosByWeek.some(trio => trio !== null)) {
 						this.tableData.push({
 							subject: subject,
 							teacher: teacher,
@@ -46,14 +41,16 @@ export class ColloscopeComponent implements OnChanges {
 			}
 		}
 		
-		this.tableWeeksHeaderRowDef = this.weeks.map(week => 'week-' + week.id);
+		this.tableWeeksHeaderRowDef = this.settings.weeks.map(week => 'week-' + week.id);
 		
 		this.tableSubjectRowspan = this.getRowspanArray('subject');
 		this.tableTeacherRowspan = this.getRowspanArray('teacher');
+		
+		return this.tableData;
 	}
 	
 	getTrio(teacher: Teacher, timeslot: Timeslot, week: Week): Trio | null {
-		for (let colle of this.colles) {
+		for (let colle of this.settings.colles) {
 			if (colle.teacher === teacher && colle.timeslot.isEqual(timeslot) && colle.week === week) {
 				return colle.trio;
 			}

@@ -4,7 +4,7 @@
 		<button mat-raised-button (click)="deleteSubject()" [disabled]="selectedSubjects.length === 0">Supprimer <mat-icon>remove</mat-icon></button>
 	</div>
 	<mat-selection-list [multiple]="false" [(ngModel)]="selectedSubjects" [@listAnimation]="settings.subjects.length">
-		<mat-list-option *ngFor="let subject of settings.subjects" [value]="subject" [style]="{color: subject.color}">
+		<mat-list-option *ngFor="let subject of settings.subjects" [value]="subject" [style.color]="subject.color">
 			<p>{{subject.name}}</p>
 		</mat-list-option>
 	</mat-selection-list>
