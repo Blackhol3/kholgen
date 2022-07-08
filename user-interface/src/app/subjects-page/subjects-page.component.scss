@@ -4,6 +4,17 @@
 	justify-content: center;
 }
 
-button, mat-divider {
+button {
 	margin: 0 8px;
+}
+
+app-subject-form {
+	margin-left: 8px;
+	padding-left: 8px;
+	border-left: 1px solid rgba(0, 0, 0, 0.12);
+	overflow: hidden;
+	
+	& > * {
+		position: relative;
+	}
 }

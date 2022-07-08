@@ -9,4 +9,8 @@ import { SettingsService } from '../settings.service';
 })
 export class ComputationPageComponent {
 	constructor(public settings: SettingsService) { }
+	
+	compute() {
+		
+	}
 }

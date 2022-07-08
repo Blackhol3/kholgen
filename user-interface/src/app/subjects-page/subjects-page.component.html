@@ -3,11 +3,10 @@
 		<button mat-raised-button (click)="addNewSubject()">Ajouter <mat-icon>add</mat-icon></button>
 		<button mat-raised-button (click)="deleteSubject()" [disabled]="selectedSubjects.length === 0">Supprimer <mat-icon>remove</mat-icon></button>
 	</div>
-	<mat-selection-list [multiple]="false" [(ngModel)]="selectedSubjects">
+	<mat-selection-list [multiple]="false" [(ngModel)]="selectedSubjects" [@listAnimation]="settings.subjects.length">
 		<mat-list-option *ngFor="let subject of settings.subjects" [value]="subject" [style]="{color: subject.color}">
 			<p>{{subject.name}}</p>
 		</mat-list-option>
 	</mat-selection-list>
 </div>
-<mat-divider [vertical]="true" *ngIf="selectedSubjects.length > 0"></mat-divider>
-<app-subject-form [subject]="selectedSubjects[0]" *ngIf="selectedSubjects.length > 0"></app-subject-form>
+<app-subject-form [subject]="selectedSubjects[0]" *ngIf="selectedSubjects.length > 0" @slideAnimation></app-subject-form>

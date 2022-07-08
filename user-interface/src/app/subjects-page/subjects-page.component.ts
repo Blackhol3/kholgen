@@ -1,3 +1,4 @@
+import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 
@@ -8,7 +9,38 @@ import { UndoStackService } from '../undo-stack.service';
 @Component({
 	selector: 'app-subjects-page',
 	templateUrl: './subjects-page.component.html',
-	styleUrls: ['./subjects-page.component.scss']
+	styleUrls: ['./subjects-page.component.scss'],
+	animations: [
+		trigger('slideAnimation', [
+			transition(':enter', [
+				query('*', [
+					style({left: '-100%', maxWidth: 0}),
+					animate('200ms', style({left: 0, maxWidth: '210px'})),
+				]),
+			]),
+			transition(':leave', [
+				query('*', [
+					style({left: 0, maxWidth: '210px'}),
+					animate('150ms', style({left: '-100%', maxWidth: 0})),
+				]),
+			]),
+		]),
+		
+		/** @link https://ultimatecourses.com/blog/angular-animations-how-to-animate-lists */
+		trigger('listAnimation', [
+			transition('* <=> *', [
+				query(':enter', [
+						style({opacity: 0}),
+						stagger('50ms', animate('200ms ease-out', style({opacity: 1})))
+					], {optional: true}
+				),
+				query(':leave',
+					animate('150ms', style({opacity: 0})),
+					{optional: true}
+				),
+			]),
+		]),
+	],
 })
 export class SubjectsPageComponent implements OnInit, OnDestroy {
 	selectedSubjects: Subject[] = [];

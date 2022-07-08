@@ -1,3 +1,4 @@
+import { animate, query, style, transition, trigger } from '@angular/animations';
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { QWebChannel } from 'qwebchannel';
@@ -17,12 +18,29 @@ import { UndoStackService } from './undo-stack.service';
 @Component({
 	selector: 'app-root',
 	templateUrl: './app.component.html',
-	styleUrls: ['./app.component.scss']
+	styleUrls: ['./app.component.scss'],
+	animations: [
+		trigger('routeAnimation', [
+			transition('* => *', [
+				style({position: 'relative'}),
+				query(':enter, :leave', style({position: 'absolute'}), {optional: true}),
+				query(':enter', style({left: '-100%'}), {optional: true}),
+				query(':leave', [
+					animate('150ms', style({opacity: 0})),
+					style({left: '-100%'}),
+				], {optional: true}),
+				query(':enter', [
+					style({left: 'initial', opacity: 0}),
+					animate('200ms', style({opacity: 1})),
+				], {optional: true}),
+			]),
+		]),
+	],
 })
 export class AppComponent {
 	@ViewChild('importFileInput') importFileInput!: ElementRef<HTMLInputElement>;
 	
-	constructor(public dialog: MatDialog, public settings: SettingsService, public undoStack: UndoStackService) {
+	constructor(private dialog: MatDialog, private settings: SettingsService, private undoStack: UndoStackService) {
 		//this.connect();
 	}
 	
