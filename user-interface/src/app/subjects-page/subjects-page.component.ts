@@ -1,6 +1,7 @@
 import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { firstValueFrom, Subscription } from 'rxjs';
 
 import { Subject } from '../subject';
 import { SettingsService } from '../settings.service';
@@ -46,7 +47,7 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	selectedSubjects: Subject[] = [];
 	undoStackSubscription: Subscription | undefined;
 	
-	constructor(public settings: SettingsService, public undoStack: UndoStackService) { }
+	constructor(public settings: SettingsService, private snackBar: MatSnackBar, private undoStack: UndoStackService) { }
 	
 	ngOnInit() {
 		this.undoStackSubscription = this.undoStack.changeObservable.subscribe(() => this.updateSelectedSubject());
@@ -65,10 +66,35 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	}
 	
 	deleteSubject() {
-		/** @todo Supprimer les enseignants associés */
-		const index = this.settings.subjects.indexOf(this.selectedSubjects[0]);
+		const subject = this.selectedSubjects[0];
+		const index = this.settings.subjects.indexOf(subject);
+		let hasAssociatedTeachers = false;
+		
+		this.undoStack.startGroup();
+		for (let i = this.settings.teachers.length - 1; i >= 0; --i) {
+			if (this.settings.teachers[i].subject === subject) {
+				this.undoStack.actions.splice('teachers', i);
+				hasAssociatedTeachers = true;
+			}
+		}
 		this.undoStack.actions.splice('subjects', index);
+		this.undoStack.endGroup();
+		
 		this.selectedSubjects = this.settings.subjects.length > 0 ? [this.settings.subjects[Math.max(0, index - 1)]] : [];
+		
+		if (hasAssociatedTeachers) {
+			let observable = this.snackBar.open(
+				`Un ou plusieurs enseignant·es de « ${subject.name} » ont également été supprimé·es.`,
+				'Annuler',
+				{duration: 3000}
+			).afterDismissed();
+			
+			firstValueFrom(observable).then(event => {
+				if (event?.dismissedByAction) {
+					this.undoStack.undo();
+				}
+			});
+		}
 	}
 	
 	updateSelectedSubject() {

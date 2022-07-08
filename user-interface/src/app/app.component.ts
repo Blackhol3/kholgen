@@ -65,28 +65,35 @@ export class AppComponent {
 	
 	/** @todo Throw better error messages **/
 	import(jsonObject: any) {
-		this.settings.subjects = jsonObject.subjects.map((subject: any) => new Subject(
-			subject.name, subject.shortName, subject.frequency, subject.color
-		));
+		this.undoStack.startGroup();
 		
-		this.settings.teachers = jsonObject.teachers.map((teacher: any) => new Teacher(
-			teacher.name,
-			this.settings.subjects.find(subject => subject.name === teacher.subject) as Subject,
-			teacher.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
-		));
+		this.undoStack.actions.clear('subjects');
+		for (let subject of jsonObject.subjects) {
+			this.undoStack.actions.push('subjects', new Subject(
+				subject.name, subject.shortName, subject.frequency, subject.color
+			));
+		}
 		
-		this.settings.trios = [];
+		this.undoStack.actions.clear('teachers');
+		for (let teacher of jsonObject.teachers) {
+			this.undoStack.actions.push('teachers', new Teacher(
+				teacher.name,
+				this.settings.subjects.find(subject => subject.name === teacher.subject) as Subject,
+				teacher.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
+			));
+		}
+		
+		this.undoStack.actions.clear('trios');
 		for (let i = 0; i < jsonObject.numberOfTrios; ++i) {
-			this.settings.trios.push(new Trio(i));
+			this.undoStack.actions.push('trios', new Trio(i));
 		}
 		
-		this.settings.weeks = [];
+		this.undoStack.actions.clear('weeks');
 		for (let i = 0; i < 20; ++i) {
-			this.settings.weeks.push(new Week(i));
+			this.undoStack.actions.push('weeks', new Week(i));
 		}
 		
-		/** @todo Handle the undo stack better, or display a warning dialog **/
-		this.undoStack.clear();
+		this.undoStack.endGroup();
 	}
 	
 	@HostListener('window:keydown', ['$event'])

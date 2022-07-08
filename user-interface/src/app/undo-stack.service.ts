@@ -82,6 +82,42 @@ class SpliceCommand implements Command {
 	}
 }
 
+class GroupCommand implements Command {
+	protected commands: Command[] = [];
+	
+	undo(state: object): void {
+		this.commands.slice().reverse().map(command => command.undo(state));
+	}
+	
+	redo(state: object): void {
+		this.commands.map(command => command.redo(state));
+	}
+	
+	merge(command: Command): [Command, GroupCommand] {
+		return [command, this];
+	}
+	
+	push(command: Command) {
+		this.commands.push(command);
+	}
+	
+	splice(start: number, deleteCount: number, ...items: Command[]) {
+		this.commands.splice(start, deleteCount, ...items);
+	}
+	
+	last(): Command | undefined {
+		return last(this.commands);
+	}
+}
+
+function last(collection: Command[]|GroupCommand): Command | undefined {
+	if (collection instanceof Array) {
+		return collection[collection.length - 1];
+	}
+	
+	return collection.last();
+}
+
 @Injectable({
 	providedIn: 'root'
 })
@@ -93,6 +129,7 @@ export class UndoStackService {
 	
 	protected undoStack: Command[] = [];
 	protected redoStack: Command[] = [];
+	protected groupLevel = 0;
 	
 	constructor(state: SettingsService) {
 		this.state = state;
@@ -101,6 +138,7 @@ export class UndoStackService {
 	clear(): void {
 		this.undoStack = [];
 		this.redoStack = [];
+		this.groupLevel = 0;
 	}
 	
 	actions = {
@@ -115,14 +153,22 @@ export class UndoStackService {
 		splice: (path: string, index: any): void => {
 			this.add(new SpliceCommand(this.state, path, index), false);
 		},
+		
+		clear: (path: string): void => {
+			this.startGroup();
+			for (let i = get(this.state, path).length - 1; i >= 0; --i) {
+				this.actions.splice(path, i);
+			}
+			this.endGroup();
+		},
 	};
 	
 	canUndo(): boolean {
-		return this.undoStack.length > 0;
+		return !this.isGrouped() && this.undoStack.length > 0;
 	}
 	
 	canRedo(): boolean {
-		return this.redoStack.length > 0;
+		return !this.isGrouped() && this.redoStack.length > 0;
 	}
 	
 	undo(): void {
@@ -149,13 +195,37 @@ export class UndoStackService {
 		this.changeSubject.next();
 	}
 	
+	startGroup(): void {
+		if (!this.isGrouped()) {
+			this.undoStack.push(new GroupCommand());
+		}
+		
+		++this.groupLevel;
+	}
+	
+	isGrouped(): boolean {
+		return this.groupLevel > 0;
+	}
+	
+	endGroup(): void {
+		--this.groupLevel;
+		
+		if (!this.isGrouped()) {
+			const groupCommand = last(this.undoStack) as GroupCommand;
+			if (groupCommand.last() === undefined) {
+				this.undoStack.pop();
+			}
+		}
+	}
+	
 	protected add(command: Command, shouldMergeIfPossible: boolean) {
-		const previousCommand = this.undoStack[this.undoStack.length - 1];
+		const stack = this.isGrouped() ? last(this.undoStack) as GroupCommand : this.undoStack;
+		const previousCommand = last(stack);
 		if (shouldMergeIfPossible && previousCommand !== undefined) {
-			this.undoStack.splice(-1, 1, ...command.merge(previousCommand));
+			stack.splice(-1, 1, ...command.merge(previousCommand));
 		}
 		else {
-			this.undoStack.push(command);
+			stack.push(command);
 		}
 		
 		command.redo(this.state);
