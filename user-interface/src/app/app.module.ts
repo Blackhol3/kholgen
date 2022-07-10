@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
@@ -22,6 +23,9 @@ import { ComputationPageComponent } from './computation-page/computation-page.co
 import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
 import { SubjectFormComponent } from './subject-form/subject-form.component';
 import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
+import { TeacherFormComponent } from './teacher-form/teacher-form.component';
+import { TeachersPageComponent } from './teachers-page/teachers-page.component';
+import { WeeklyTimetableComponent } from './weekly-timetable/weekly-timetable.component';
 
 @NgModule({
 	declarations: [
@@ -31,6 +35,9 @@ import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
     	ConnectionDialogComponent,
 		SubjectFormComponent,
 		SubjectsPageComponent,
+		TeacherFormComponent,
+		TeachersPageComponent,
+		WeeklyTimetableComponent,
 	],
 	imports: [
 		BrowserModule,
@@ -39,6 +46,7 @@ import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
 		ReactiveFormsModule,
 		RouterModule.forRoot([
 			{path: 'subjects', component: SubjectsPageComponent},
+			{path: 'teachers', component: TeachersPageComponent},
 			{path: 'computation', component: ComputationPageComponent},
 			{path: '**', redirectTo: '/subjects'},
 		]),
@@ -50,6 +58,7 @@ import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
 		MatInputModule,
 		MatListModule,
 		MatProgressSpinnerModule,
+		MatSelectModule,
 		MatSidenavModule,
 		MatSnackBarModule,
 		MatTableModule,

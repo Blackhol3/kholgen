@@ -12,6 +12,7 @@ mat-toolbar {
 
 mat-sidenav-container {
 	top: 64px !important;
+	padding-bottom: 32px;
 }
 
 @media(max-width: 599px) {
@@ -34,4 +35,12 @@ mat-sidenav-content {
 	justify-content: center;
 	
 	padding: 16px;
+}
+
+/**
+ * @bug Float property isn't set by Angular animation, so we set it manually
+ * @see animation.ts
+ */
+:host ::ng-deep .ng-trigger-slideAnimation.ng-animating > .ng-animating {
+	float: right;
 }

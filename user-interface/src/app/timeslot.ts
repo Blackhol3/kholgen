@@ -2,14 +2,14 @@ export const enum Day {
 	Monday, Tuesday, Wednesday, Thursday, Friday
 }
 
-const firstHour = 8;
-const lastHour = 18;
+export const firstHour = 8;
+export const lastHour = 18;
 
-const dayNames = [
+export const dayNames: readonly string[] = [
 	'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'
 ];
 
-const dayShortNames = [
+export const dayShortNames: readonly string[] = [
 	'l', 'm', 'M', 'j', 'v'
 ];
 

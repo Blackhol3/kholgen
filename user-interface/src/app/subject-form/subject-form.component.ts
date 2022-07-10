@@ -12,11 +12,11 @@ import { UndoStackService } from '../undo-stack.service';
 	styleUrls: ['./subject-form.component.scss']
 })
 export class SubjectFormComponent implements OnInit, OnChanges, OnDestroy {
-	@Input('subject') subject: Subject | undefined;
+	@Input() subject: Subject | undefined;
 	
 	form = this.formBuilder.group({
-		name: ['', [Validators.required, (control: AbstractControl) => this.existingNameValidator(control)]],
-		shortName: ['', Validators.required],
+		name: ['', [Validators.required, (control: AbstractControl) => this.notUniqueValidator(control, 'name')]],
+		shortName: ['', [Validators.required, (control: AbstractControl) => this.notUniqueValidator(control, 'shortName')]],
 		frequency: [1, [Validators.required, Validators.min(1), Validators.pattern('^[0-9]*$')]],
 		color: ['', Validators.required],
 	});
@@ -59,10 +59,10 @@ export class SubjectFormComponent implements OnInit, OnChanges, OnDestroy {
 		}
 	}
 
-	protected existingNameValidator(control: AbstractControl): ValidationErrors | null {
+	protected notUniqueValidator(control: AbstractControl, property: keyof Subject): ValidationErrors | null {
 		for (let subject of this.settings.subjects) {
-			if (subject !== this.subject && subject.name === control.value) {
-				return {existingName: {subject: subject }};
+			if (subject !== this.subject && subject[property] === control.value) {
+				return {notUnique: {subject: subject, property: property}};
 			}
 		}
 		

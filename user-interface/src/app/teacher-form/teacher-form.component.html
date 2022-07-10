@@ -1,0 +1,17 @@
+<form [formGroup]="form">
+	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+		<mat-label>Nom</mat-label>
+		<input matInput type="text" formControlName="name">
+		<mat-error *ngIf="form.controls.name.hasError('notUnique')">Un·e autre enseignant·e de cette matière porte déjà ce nom.</mat-error>
+	</mat-form-field>
+	
+	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+		<mat-label>Classe</mat-label>
+		<mat-select formControlName="subject">
+			<mat-option *ngFor="let subject of settings.subjects" [value]="subject" [style.color]="subject.color">{{subject.name}}</mat-option>
+		</mat-select>
+	</mat-form-field>
+	
+	<mat-label>Disponibilités</mat-label>
+	<app-weekly-timetable formControlName="availableTimeslots"></app-weekly-timetable>
+</form>

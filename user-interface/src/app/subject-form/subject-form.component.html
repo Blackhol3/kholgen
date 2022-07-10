@@ -2,12 +2,13 @@
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Nom</mat-label>
 		<input matInput type="text" formControlName="name">
-		<mat-error *ngIf="form.controls.name.hasError('existingName')">Une autre matière porte déjà ce nom.</mat-error>
+		<mat-error *ngIf="form.controls.name.hasError('notUnique')">Une autre matière porte déjà ce nom.</mat-error>
 	</mat-form-field>
 	
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Abréviation</mat-label>
 		<input matInput type="text" formControlName="shortName">
+		<mat-error *ngIf="form.controls.shortName.hasError('notUnique')">Une autre matière utilise déjà cette abréviation.</mat-error>
 	</mat-form-field>
 	
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
