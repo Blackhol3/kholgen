@@ -5,6 +5,10 @@ $palette: mat.define-palette(mat.$indigo-palette);
 mat-toolbar {
 	justify-content: space-between;
 	
+	button {
+		margin-left: 8px;
+	}
+	
 	input[type=file] {
 		display: none;
 	}

@@ -24,7 +24,7 @@
 	
 	<ng-container matColumnDef="timeslot">
 		<th mat-header-cell *matHeaderCellDef rowspan="2">Créneau</th>
-		<td mat-cell *matCellDef="let rowData">{{rowData.timeslot.toString()}}</td>
+		<td mat-cell *matCellDef="let rowData">{{rowData.timeslot.toReadableString()}}</td>
 	</ng-container>
 	
 	<ng-container matColumnDef="weeks">

@@ -1,5 +1,6 @@
 import { animate, query, style, transition, trigger } from '@angular/animations';
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import * as FileSaver from 'file-saver';
 
 import { Subject } from './subject';
 import { Teacher } from './teacher';
@@ -35,7 +36,7 @@ import { UndoStackService } from './undo-stack.service';
 export class AppComponent {
 	@ViewChild('importFileInput') importFileInput!: ElementRef<HTMLInputElement>;
 	
-	constructor(private settings: SettingsService, private undoStack: UndoStackService) { }
+	constructor(private settings: SettingsService, public undoStack: UndoStackService) { }
 	
 	startImportFile() {
 		this.importFileInput.nativeElement.click();
@@ -62,6 +63,17 @@ export class AppComponent {
 				}
 			})
 		;
+	}
+	
+	/** @todo Add a warning that this does not save the results, only the configuration */
+	exportFile() {
+		FileSaver.saveAs(
+			new Blob(
+				[JSON.stringify(this.export(), undefined, "\t")],
+				{type: 'application/json'},
+			),
+			'Colloscope.json',
+		);
 	}
 	
 	/** @todo Throw better error messages **/
@@ -95,6 +107,18 @@ export class AppComponent {
 		}
 		
 		this.undoStack.endGroup();
+	}
+	
+	export() {
+		return {
+			subjects: this.settings.subjects,
+			teachers: this.settings.teachers.map(teacher => ({
+				name: teacher.name,
+				subject: teacher.subject.name,
+				availableTimeslots: teacher.availableTimeslots.map(timeslot => timeslot.toString()),
+			})),
+			numberOfTrios: this.settings.trios.length,
+		};
 	}
 	
 	@HostListener('window:keydown', ['$event'])

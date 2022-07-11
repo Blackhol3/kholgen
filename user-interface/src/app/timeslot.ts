@@ -23,8 +23,12 @@ export class Timeslot {
 		return this.day === timeslot.day && this.hour === timeslot.hour;
 	}
 	
-	toString(): string {
+	toReadableString(): string {
 		return `${dayNames[this.day]} à ${this.hour}h`;
+	}
+	
+	toString(): string {
+		return `${dayNames[this.day]} ${this.hour}`;
 	}
 	
 	/** @todo Rename Wednesday short name in "w" and simplify this method **/

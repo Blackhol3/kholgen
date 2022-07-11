@@ -1,7 +1,10 @@
 <mat-toolbar color="primary">
 	<span>KhôlGen</span>
-	<button mat-raised-button (click)="startImportFile()">Importer <mat-icon>file_download</mat-icon></button>
-	<input #importFileInput type="file" accept="application/json" (change)="importFile()" />
+	<div>
+		<button mat-raised-button (click)="startImportFile()">Importer <mat-icon>file_download</mat-icon></button>
+		<button mat-raised-button (click)="exportFile()" [disabled]="!undoStack.canUndo()">Exporter <mat-icon>file_upload</mat-icon></button>
+		<input #importFileInput type="file" accept="application/json" (change)="importFile()" />
+	</div>
 </mat-toolbar>
 
 <mat-sidenav-container fullscreen>
