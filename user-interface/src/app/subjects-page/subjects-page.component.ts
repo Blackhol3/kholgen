@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { firstValueFrom, Subscription } from 'rxjs';
 
@@ -68,6 +69,11 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	
 	ngOnDestroy() {
 		this.undoStackSubscription?.unsubscribe();
+	}
+	
+	onDrop($event: CdkDragDrop<any[]>) {
+		this.selectedSubjects = [this.settings.subjects[$event.previousIndex]];
+		this.undoStack.actions.move('subjects', $event.previousIndex, $event.currentIndex);
 	}
 	
 	addNewSubject() {

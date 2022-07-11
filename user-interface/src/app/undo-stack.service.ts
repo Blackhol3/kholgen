@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { get, set } from 'lodash';
 import { Subject } from 'rxjs';
 
@@ -82,6 +83,35 @@ class SpliceCommand implements Command {
 	}
 }
 
+class MoveCommand implements Command {
+	protected path: string;
+	protected oldIndex: number;
+	protected newIndex: number;
+	
+	constructor(path: string, oldIndex: number, newIndex: number) {
+		this.path = path;
+		this.oldIndex = oldIndex;
+		this.newIndex = newIndex;
+	}
+	
+	undo(state: object): void {
+		moveItemInArray(get(state, this.path), this.newIndex, this.oldIndex);
+	}
+	
+	redo(state: object): void {
+		moveItemInArray(get(state, this.path), this.oldIndex, this.newIndex);
+	}
+	
+	merge(command: Command): []|[MoveCommand]|[Command, MoveCommand] {
+		if (command instanceof MoveCommand && command.path === this.path) {
+			command.newIndex = this.newIndex;
+			return command.newIndex === command.oldIndex ? [] : [command];
+		}
+		
+		return [command, this];
+	}
+}
+
 class GroupCommand implements Command {
 	protected commands: Command[] = [];
 	
@@ -152,6 +182,10 @@ export class UndoStackService {
 		
 		splice: (path: string, index: any): void => {
 			this.add(new SpliceCommand(this.state, path, index), false);
+		},
+		
+		move: (path: string, oldIndex: number, newIndex: number, shouldMergeIfPossible: boolean = true): void => {
+			this.add(new MoveCommand(path, oldIndex, newIndex), shouldMergeIfPossible);
 		},
 		
 		clear: (path: string): void => {

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { RouterModule } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -42,6 +43,7 @@ import { WeeklyTimetableComponent } from './weekly-timetable/weekly-timetable.co
 	imports: [
 		BrowserModule,
 		BrowserAnimationsModule,
+		DragDropModule,
 		FormsModule,
 		ReactiveFormsModule,
 		RouterModule.forRoot([

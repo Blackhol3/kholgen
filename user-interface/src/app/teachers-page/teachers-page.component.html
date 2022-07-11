@@ -4,13 +4,13 @@
 			<button mat-raised-button (click)="addNewTeacher()" [disabled]="settings.subjects.length === 0">Ajouter <mat-icon>add</mat-icon></button>
 			<button mat-raised-button (click)="deleteTeacher()" [disabled]="selectedTeachers.length === 0">Supprimer <mat-icon>remove</mat-icon></button>
 		</div>
-		<mat-selection-list [multiple]="false" [(ngModel)]="selectedTeachers" [@listAnimation]="settings.teachers.length">
-			<ng-container *ngFor="let subject of settings.subjects">
+		<mat-selection-list [multiple]="false" [(ngModel)]="selectedTeachers" [@listAnimation]="settings.teachers.length" cdkDropListGroup>
+			<div *ngFor="let subject of settings.subjects" cdkDropList [cdkDropListData]="subject" [cdkDropListEnterPredicate]="canDrop" (cdkDropListDropped)="onDrop($event)">
 				<div mat-subheader [style.color]="subject.color">{{subject.name}}</div>
 				<ng-container *ngFor="let teacher of settings.teachers">
-					<mat-list-option *ngIf="teacher.subject === subject" [value]="teacher">{{teacher.name}}</mat-list-option>
+					<mat-list-option *ngIf="teacher.subject === subject" cdkDrag [cdkDragData]="teacher" [value]="teacher">{{teacher.name}}</mat-list-option>
 				</ng-container>
-			</ng-container>
+			</div>
 		</mat-selection-list>
 	</div>
 	<app-teacher-form [teacher]="selectedTeachers[0]" *ngIf="selectedTeachers.length > 0" @slideAnimation></app-teacher-form>

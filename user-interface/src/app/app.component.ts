@@ -41,6 +41,7 @@ export class AppComponent {
 		this.importFileInput.nativeElement.click();
 	}
 	
+	/** @todo Add file drag and drop */
 	importFile() {
 		let files = this.importFileInput.nativeElement.files;
 		if (files === null || files[0] === undefined) {
