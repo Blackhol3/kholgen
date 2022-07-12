@@ -17,12 +17,13 @@ using operations_research::sat::LinearExpr;
 using operations_research::sat::Model;
 using operations_research::sat::NewFeasibleSolutionObserver;
 using std::unordered_map;
+using std::vector;
 
-Solver::Solver(QObject *parent): QObject(parent)
+Solver::Solver()
 {
 }
 
-void Solver::compute(std::vector<Subject> const &newSubjects, std::vector<Teacher> const &newTeachers, std::vector<Trio> const &newTrios, std::vector<Week> const &newWeeks)
+void Solver::compute(vector<Subject> const &newSubjects, vector<Teacher> const &newTeachers, vector<Trio> const &newTrios, vector<Week> const &newWeeks, std::function<void(vector<Colle> const &colles)> const &solutionFound)
 {
 	subjects = newSubjects;
 	teachers = newTeachers;
@@ -57,7 +58,7 @@ void Solver::compute(std::vector<Subject> const &newSubjects, std::vector<Teache
 	for (auto const &week: weeks) {
 		for (auto const &teacher: teachers) {
 			for (auto const &timeslot: teacher.getAvailableTimeslots()) {
-				std::vector<BoolVar> collesOfTeacherAtTimeslotInWeek;
+				vector<BoolVar> collesOfTeacherAtTimeslotInWeek;
 
 				for (auto const &trio: trios) {
 					collesOfTeacherAtTimeslotInWeek.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week]);
@@ -72,7 +73,7 @@ void Solver::compute(std::vector<Subject> const &newSubjects, std::vector<Teache
 	for (auto const &week: weeks) {
 		for (auto const &trio: trios) {
 			for (auto const &timeslot: timeslots) {
-				std::vector<BoolVar> collesOfTriosAtTimeslotInWeek;
+				vector<BoolVar> collesOfTriosAtTimeslotInWeek;
 
 				for (auto const &teacher: teachers) {
 					if (teacher.getAvailableTimeslots().contains(timeslot)) {
@@ -91,7 +92,7 @@ void Solver::compute(std::vector<Subject> const &newSubjects, std::vector<Teache
 			// We go through all consecutives sets of `frequency` weeks,
 			// which exclude some of the last weeks as starting point of the set.
 			for (auto startingWeek = weeks.cbegin(); startingWeek != std::prev(weeks.cend(), subject.getFrequency() - 1); ++startingWeek) {
-				std::vector<BoolVar> collesOfTrioInSubjectInSetOfWeeks;
+				vector<BoolVar> collesOfTrioInSubjectInSetOfWeeks;
 
 				for (auto week = startingWeek; week != startingWeek + subject.getFrequency(); ++week) {
 					for (auto const &teacher: getTeachersOfSubject(subject)) {
@@ -109,14 +110,14 @@ void Solver::compute(std::vector<Subject> const &newSubjects, std::vector<Teache
 	// Trios must have a regular number of subjects each week
 	auto bestSubjectsCombinations = getBestSubjectsCombinations();
 	for (auto const &trio: trios) {
-		std::vector<BoolVar> subjectsCombinationVars;
+		vector<BoolVar> subjectsCombinationVars;
 
 		for (auto const &subjectsCombination: bestSubjectsCombinations) {
 			auto subjectsCombinationVar = modelBuilder.NewBoolVar();
 			subjectsCombinationVars.push_back(subjectsCombinationVar);
 
 			for (auto const &[subject, week]: subjectsCombination) {
-				std::vector<BoolVar> collesOfTrioInSubjectInWeek;
+				vector<BoolVar> collesOfTrioInSubjectInWeek;
 
 				for (auto const &teacher: getTeachersOfSubject(subject)) {
 					for (auto const &timeslot: teacher.getAvailableTimeslots()) {
@@ -185,8 +186,8 @@ void Solver::compute(std::vector<Subject> const &newSubjects, std::vector<Teache
 	LinearExpr objective3;
 	for (auto const &teacher: teachers) {
 		for (auto const &timeslot: teacher.getAvailableTimeslots()) {
-			std::vector<BoolVar> collesInSlot;
-			std::vector<BoolVar> collesNotInSlot;
+			vector<BoolVar> collesInSlot;
+			vector<BoolVar> collesNotInSlot;
 
 			for (auto const &week: weeks) {
 				for (auto const &trio: trios) {
@@ -211,7 +212,7 @@ void Solver::compute(std::vector<Subject> const &newSubjects, std::vector<Teache
 		qDebug() << "--- Objective 1 :" << SolutionIntegerValue(response, objective1);
 		qDebug() << "--- Objective 2 :" << SolutionIntegerValue(response, objective2);
 		qDebug() << "--- Objective 3 :" << SolutionIntegerValue(response, objective3);
-		emit solutionFound(getColles(response, isTrioWithTeacherAtTimeslotInWeek));
+		solutionFound(getColles(response, isTrioWithTeacherAtTimeslotInWeek));
 	}));
 	auto response = SolveCpModel(modelBuilder.Build(), &model);
 
@@ -243,10 +244,10 @@ int Solver::getCycleDuration() const
 }
 
 /** @todo There is surely a more clever way to do all this */
-std::vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() const
+vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() const
 {
 	// Create all possible combinations
-	std::vector<std::unordered_map<Subject, Week>> possibleCombinations = {{}};
+	vector<std::unordered_map<Subject, Week>> possibleCombinations = {{}};
 	for (auto const &subject: subjects) {
 		auto lastPossibleCombinations = possibleCombinations;
 		possibleCombinations.clear();
@@ -261,7 +262,7 @@ std::vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinatio
 	}
 
 	// Calculate the maximal numbers of simultaneous subjects in a week for each combination
-	std::vector<int> maxSubjectsInCombination;
+	vector<int> maxSubjectsInCombination;
 	int cycleDuration = getCycleDuration();
 	for (auto const &combination: possibleCombinations) {
 		int maxSubjects = 0;
@@ -282,8 +283,8 @@ std::vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinatio
 
 	// Keep only the combinations with the minimal maximal
 	int minMaxSubjectsInCombination = *std::min_element(maxSubjectsInCombination.cbegin(), maxSubjectsInCombination.cend());
-	std::vector<std::unordered_map<Subject, Week>> bestCombinations;
-	for (std::vector<int>::size_type i = 0; i < possibleCombinations.size(); ++i) {
+	vector<std::unordered_map<Subject, Week>> bestCombinations;
+	for (vector<int>::size_type i = 0; i < possibleCombinations.size(); ++i) {
 		if (maxSubjectsInCombination[i] == minMaxSubjectsInCombination) {
 			bestCombinations.push_back(possibleCombinations[i]);
 		}
@@ -292,9 +293,9 @@ std::vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinatio
 	return bestCombinations;
 }
 
-std::vector<Teacher> Solver::getTeachersOfSubject(const Subject& subject) const
+vector<Teacher> Solver::getTeachersOfSubject(const Subject& subject) const
 {
-	std::vector<Teacher> teachersOfSubject;
+	vector<Teacher> teachersOfSubject;
 	for (auto const &teacher: teachers) {
 		if (teacher.getSubject() == subject) {
 			teachersOfSubject.push_back(teacher);
@@ -304,9 +305,9 @@ std::vector<Teacher> Solver::getTeachersOfSubject(const Subject& subject) const
 	return teachersOfSubject;
 }
 
-std::vector<std::pair<Slot,  Slot>> Solver::getNotSimultaneousSameDaySlotsWithDifferentSubjects() const
+vector<std::pair<Slot,  Slot>> Solver::getNotSimultaneousSameDaySlotsWithDifferentSubjects() const
 {
-	std::vector<std::pair<Slot,  Slot>> sameDaySlots;
+	vector<std::pair<Slot,  Slot>> sameDaySlots;
 	for (auto const &teacher1: teachers) {
 		for (auto const &teacher2: teachers) {
 			if (teacher1.getSubject() == teacher2.getSubject()) {
@@ -329,9 +330,9 @@ std::vector<std::pair<Slot,  Slot>> Solver::getNotSimultaneousSameDaySlotsWithDi
 	return sameDaySlots;
 }
 
-std::vector<std::pair<Slot,  Slot>> Solver::getConsecutiveSlotsWithDifferentSubjects() const
+vector<std::pair<Slot,  Slot>> Solver::getConsecutiveSlotsWithDifferentSubjects() const
 {
-	std::vector<std::pair<Slot,  Slot>> consecutiveSlots;
+	vector<std::pair<Slot,  Slot>> consecutiveSlots;
 	for (auto const &[slot1, slot2]: getNotSimultaneousSameDaySlotsWithDifferentSubjects()) {
 		if (slot1.getTimeslot().isAdjacentTo(slot2.getTimeslot())) {
 			consecutiveSlots.push_back({slot1, slot2});
@@ -341,9 +342,9 @@ std::vector<std::pair<Slot,  Slot>> Solver::getConsecutiveSlotsWithDifferentSubj
 	return consecutiveSlots;
 }
 
-std::vector<Colle> Solver::getColles(CpSolverResponse const &response, unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> const &isTrioWithTeacherAtTimeslotInWeek) const
+vector<Colle> Solver::getColles(CpSolverResponse const &response, unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> const &isTrioWithTeacherAtTimeslotInWeek) const
 {
-	std::vector<Colle> colles;
+	vector<Colle> colles;
 	for (auto const &week: weeks) {
 		for (auto const &teacher: teachers) {
 			for (auto const &trio: trios) {

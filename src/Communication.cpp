@@ -9,7 +9,6 @@
 Communication::Communication(std::shared_ptr<JsonImporter> const &importer, std::shared_ptr<Solver> const &solver, QObject *parent):
 	QObject(parent), importer(importer), solver(solver)
 {
-	connect(solver.get(), &Solver::solutionFound, this, &Communication::sendColles);
 }
 
 void Communication::sendColles(std::vector<Colle> const &colles) const
@@ -27,5 +26,13 @@ void Communication::compute(QJsonObject const &settings) const
 	importer->read(settings);
 
 	QFutureWatcher<void> watcher;
-	watcher.setFuture(QtConcurrent::run([&]() { solver->compute(importer->getSubjects(), importer->getTeachers(), importer->getTrios(), importer->getWeeks()); }));
+	watcher.setFuture(QtConcurrent::run([&]() {
+		solver->compute(
+			importer->getSubjects(),
+			importer->getTeachers(),
+			importer->getTrios(),
+			importer->getWeeks(),
+			[&](std::vector<Colle> const &colles) { sendColles(colles); }
+		);
+	}));
 }
