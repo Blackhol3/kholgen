@@ -1,17 +1,17 @@
 #pragma once
 
-#include <QTextStream>
 #include <map>
+#include <string>
 #include "Exporter.h"
 
 class CsvExporter : public Exporter
 {
 	public:
 		using Exporter::Exporter;
-		bool save(QString filePath) override;
+		std::string save() override;
 
 	protected:
-		QTextStream textStream;
+		std::string text;
 
 		void createTeachersPart();
 		void createTriosPart();

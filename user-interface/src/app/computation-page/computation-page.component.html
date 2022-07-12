@@ -1,2 +1,9 @@
-<button (click)="compute()">Démarrer le calcul</button>
+<div>
+	<button mat-raised-button (click)="compute()">Démarrer le calcul</button>
+	<button mat-raised-button [disabled]="settings.colles.length === 0" [matMenuTriggerFor]="saveMenu">Sauvegarder…</button>
+	<mat-menu #saveMenu="matMenu" class="no-overflow">
+		<button mat-menu-item (click)="saveAsExcel()">Excel (.xlsx)</button>
+		<button mat-menu-item (click)="saveAsCsv()">CSV (.csv)</button>
+	</mat-menu>
+</div>
 <app-colloscope></app-colloscope>

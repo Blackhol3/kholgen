@@ -1,23 +1,19 @@
 #include "ExcelExporter.h"
 
 #include <QCoreApplication>
-#include "Solver.h"
 #include "Subject.h"
 #include "Teacher.h"
 
-bool ExcelExporter::save(QString filePath)
+std::string ExcelExporter::save()
 {
 	initWorkbook();
 	createTeachersWorksheet();
 	createTriosWorksheet();
 
-	try {
-		workbook->save(filePath.toStdString());
-		return true;
-	}
-	catch (std::exception const &) {
-		return false;
-	}
+	std::ostringstream stream;
+	workbook->save(stream);
+
+	return stream.str();
 }
 
 void ExcelExporter::initWorkbook()

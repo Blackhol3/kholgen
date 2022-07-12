@@ -68,9 +68,7 @@ export class CommunicationService {
 	}
 	
 	compute(settings: SettingsService): Observable<Colle[]> {
-		if (this.communication === undefined) {
-			throw 'Cannot compute when the communication is not opened.';
-		}
+		this.checkIfOpen();
 		
 		if (this.computeSubject !== undefined) {
 			return this.computeSubject.asObservable();
@@ -78,6 +76,10 @@ export class CommunicationService {
 		
 		this.computeSubject = new Subject<Colle[]>();
 		this.communication.newColles.connect((jsonColles: any[]) => this.computeSubject?.next(this.importJsonColles(settings, jsonColles)));
+		this.communication.computationFinished.connect(() => {
+			this.computeSubject?.complete();
+			this.computeSubject = undefined;
+		});
 		this.communication.compute({
 			subjects: settings.subjects,
 			teachers: settings.teachers,
@@ -86,6 +88,44 @@ export class CommunicationService {
 		});
 		
 		return this.computeSubject.asObservable();
+	}
+	
+	async exportAsCsv(): Promise<Blob> {
+		this.checkIfOpen();
+		const csv = await this.communication.exportAsCsv() as string;
+		
+		const blob = new Blob(
+			[csv],
+			{type: 'text/csv'},
+		);
+		
+		return blob;
+	}
+	
+	async exportAsExcel(): Promise<Blob> {
+		this.checkIfOpen();
+		const base64ByteArray = await this.communication.exportAsExcel() as string;
+		
+		/** @link https://stackoverflow.com/questions/16245768/creating-a-blob-from-a-base64-string-in-javascript/2057033#2057033 */
+		const byteCharacters = atob(base64ByteArray);
+		const byteNumbers = new Array(byteCharacters.length);
+		for (let i = 0; i < byteCharacters.length; ++i) {
+			byteNumbers[i] = byteCharacters.charCodeAt(i);
+		}
+		const byteArray = new Uint8Array(byteNumbers);
+		
+		const blob = new Blob(
+			[byteArray],
+			{type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'},
+		);
+		
+		return blob;
+	}
+	
+	protected checkIfOpen() {
+		if (this.communication === undefined) {
+			throw 'The communication is not opened.';
+		}
 	}
 	
 	protected importJsonColles(settings: SettingsService, jsonColles: any[]): Colle[] {

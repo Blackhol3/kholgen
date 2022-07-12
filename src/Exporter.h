@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QString>
-#include <vector>
+#include <string>
 #include <unordered_map>
+#include <vector>
 #include "Colle.h"
 #include "Slot.h"
 #include "Subject.h"
@@ -13,7 +13,7 @@ class Exporter
 {
 	public:
 		Exporter(std::vector<Subject> const &subjects, std::vector<Teacher> const &teachers, std::vector<Trio> const &trios, std::vector<Colle> const &colles);
-		virtual bool save(QString filePath) = 0;
+		virtual std::string save() = 0;
 		virtual ~Exporter();
 
 	protected:

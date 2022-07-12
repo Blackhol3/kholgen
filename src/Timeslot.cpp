@@ -2,9 +2,6 @@
 
 #include <QObject>
 
-int const Timeslot::firstHour = 8;
-int const Timeslot::lastHour = 19;
-
 std::map<Day, QString> const Timeslot::dayNames = {
 	{Day::Monday,    QObject::tr("Lundi")},
 	{Day::Tuesday,   QObject::tr("Mardi")},

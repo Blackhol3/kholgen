@@ -1,10 +1,21 @@
 :host {
+	min-width: 60em;
+	
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+	align-items: center;
 	height: max-content;
 }
 
 button {
-	margin-bottom: 8px;
+	margin: 0 4px;
+}
+
+::ng-deep .mat-menu-panel.no-overflow {
+	overflow: hidden !important;
+}
+
+app-colloscope {
+	margin: 8px;
 }

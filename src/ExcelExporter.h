@@ -1,15 +1,15 @@
 #pragma once
 
-#include <QString>
 #include <xlnt/xlnt.hpp>
 #include <memory>
+#include <string>
 #include "Exporter.h"
 
 class ExcelExporter : public Exporter
 {
 	public:
 		using Exporter::Exporter;
-		bool save(QString filePath) override;
+		std::string save() override;
 
 	protected:
 		std::unique_ptr<xlnt::workbook> workbook;

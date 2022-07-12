@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QByteArray>
 #include <QObject>
 #include <QJsonObject>
 #include <memory>
@@ -15,15 +16,19 @@ class Communication : public QObject
 
 	public:
 		Communication(std::shared_ptr<JsonImporter> const &importer, std::shared_ptr<Solver> const &solver, QObject *parent = nullptr);
-		void sendColles(std::vector<Colle> const &colles) const;
+		void sendColles() const;
 
 	public slots:
-		void compute(QJsonObject const &settings) const;
+		void compute(QJsonObject const &settings);
+		QString exportAsCsv() const;
+		QByteArray exportAsExcel() const;
 
 	signals:
 		void newColles(const QJsonArray &colles) const;
+		void computationFinished(bool success) const;
 
 	protected:
 		std::shared_ptr<JsonImporter> importer;
 		std::shared_ptr<Solver> solver;
+		std::vector<Colle> colles;
 };

@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <numeric>
 #include <unordered_set>
-#include "ExcelExporter.h"
 #include "Timeslot.h"
 
 using operations_research::sat::BoolVar;
@@ -23,7 +22,7 @@ Solver::Solver()
 {
 }
 
-void Solver::compute(vector<Subject> const &newSubjects, vector<Teacher> const &newTeachers, vector<Trio> const &newTrios, vector<Week> const &newWeeks, std::function<void(vector<Colle> const &colles)> const &solutionFound)
+bool Solver::compute(vector<Subject> const &newSubjects, vector<Teacher> const &newTeachers, vector<Trio> const &newTrios, vector<Week> const &newWeeks, std::function<void(vector<Colle> const &colles)> const &solutionFound)
 {
 	subjects = newSubjects;
 	teachers = newTeachers;
@@ -224,13 +223,8 @@ void Solver::compute(vector<Subject> const &newSubjects, vector<Teacher> const &
 	qDebug().noquote() << QString::fromStdString(CpSolverResponseStats(response)).replace("\n", "\n\t");
 
 	qDebug() << "Status :" << QString::fromStdString(CpSolverStatus_Name(response.status()));
-	if (response.status() != CpSolverStatus::FEASIBLE && response.status() != CpSolverStatus::OPTIMAL) {
-		return;
-	}
 
-	auto colles = getColles(response, isTrioWithTeacherAtTimeslotInWeek);
-	ExcelExporter exporter(subjects, teachers, trios, colles);
-	exporter.save("../test.xlsx");
+	return response.status() == CpSolverStatus::FEASIBLE || response.status() == CpSolverStatus::OPTIMAL;
 }
 
 int Solver::getCycleDuration() const

@@ -1,24 +1,16 @@
 #include "CsvExporter.h"
 
-#include <QFile>
-#include "Solver.h"
 #include "Subject.h"
 #include "Teacher.h"
 
-bool CsvExporter::save(QString filePath)
+std::string CsvExporter::save()
 {
-	QFile file(filePath);
-	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-		return false;
-	}
+	text.clear();
+	text += "sep=,";
+	text += "\n"; createTeachersPart();
+	text += "\n"; createTriosPart();
 
-	textStream.setDevice(&file);
-	textStream << "sep=,";
-	textStream << "\n"; createTeachersPart();
-	textStream << "\n"; createTriosPart();
-	textStream.flush();
-
-	return true;
+	return text;
 }
 
 void CsvExporter::createTeachersPart()
@@ -147,15 +139,15 @@ void CsvExporter::writeContents(const std::map<unsigned int, std::map<unsigned i
 			for (unsigned int column = 0; column < nbColumns; ++column) {
 				auto const cellIterator = rowIterator->second.find(column);
 				if (cellIterator != rowIterator->second.end()) {
-					textStream << cellIterator->second;
+					text += cellIterator->second.toStdString();
 				}
 
 				if (column < nbColumns - 1) {
-					textStream << ",";
+					text += ",";
 				}
 			}
 		}
 
-		textStream << "\n";
+		text += "\n";
 	}
 }

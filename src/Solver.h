@@ -16,7 +16,7 @@ class Solver
 {
 	public:
 		Solver();
-		void compute(
+		bool compute(
 			std::vector<Subject> const &newSubjects,
 			std::vector<Teacher> const &newTeachers,
 			std::vector<Trio> const &newTrios,
