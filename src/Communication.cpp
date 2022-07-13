@@ -43,6 +43,11 @@ void Communication::compute(QJsonObject const &settings)
 	}));
 }
 
+void Communication::stopComputation()
+{
+	solver->stopComputation();
+}
+
 QString Communication::exportAsCsv() const
 {
 	CsvExporter exporter(importer->getSubjects(), importer->getTeachers(), importer->getTrios(), colles);

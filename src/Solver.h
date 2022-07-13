@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ortools/sat/cp_model.h>
+#include <atomic>
 #include <functional>
 #include <unordered_map>
 #include <utility>
@@ -23,12 +24,15 @@ class Solver
 			std::vector<Week> const &newWeeks,
 			std::function<void(std::vector<Colle> const &colles)> const &solutionFound
 		);
+		void stopComputation();
 
 	protected:
 		std::vector<Subject> subjects;
 		std::vector<Teacher> teachers;
 		std::vector<Trio> trios;
 		std::vector<Week> weeks;
+
+		std::atomic<bool> shouldComputationBeStopped;
 
 		int getCycleDuration() const;
 		std::vector<std::unordered_map<Subject, Week>> getBestSubjectsCombinations() const;

@@ -90,6 +90,11 @@ export class CommunicationService {
 		return this.computeSubject.asObservable();
 	}
 	
+	stopComputation() {
+		this.checkIfOpen();
+		this.communication.stopComputation();
+	}
+	
 	async exportAsCsv(): Promise<Blob> {
 		this.checkIfOpen();
 		const csv = await this.communication.exportAsCsv() as string;

@@ -6,6 +6,10 @@
 	justify-content: center;
 	align-items: center;
 	height: max-content;
+	
+	& > * {
+		margin-bottom: 8px;
+	}
 }
 
 button {
@@ -14,8 +18,4 @@ button {
 
 ::ng-deep .mat-menu-panel.no-overflow {
 	overflow: hidden !important;
-}
-
-app-colloscope {
-	margin: 8px;
 }

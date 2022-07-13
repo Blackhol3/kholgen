@@ -20,6 +20,7 @@ class Communication : public QObject
 
 	public slots:
 		void compute(QJsonObject const &settings);
+		void stopComputation();
 		QString exportAsCsv() const;
 		QByteArray exportAsExcel() const;
 

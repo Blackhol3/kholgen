@@ -3,7 +3,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { RouterModule } from '@angular/router';
+import { RouterModule, RouteReuseStrategy } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -12,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -28,6 +29,8 @@ import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
 import { TeacherFormComponent } from './teacher-form/teacher-form.component';
 import { TeachersPageComponent } from './teachers-page/teachers-page.component';
 import { WeeklyTimetableComponent } from './weekly-timetable/weekly-timetable.component';
+
+import { ReuseStrategy } from './reuse-strategy';
 
 @NgModule({
 	declarations: [
@@ -61,6 +64,7 @@ import { WeeklyTimetableComponent } from './weekly-timetable/weekly-timetable.co
 		MatInputModule,
 		MatListModule,
 		MatMenuModule,
+		MatProgressBarModule,
 		MatProgressSpinnerModule,
 		MatSelectModule,
 		MatSidenavModule,
@@ -68,7 +72,9 @@ import { WeeklyTimetableComponent } from './weekly-timetable/weekly-timetable.co
 		MatTableModule,
 		MatToolbarModule,
 	],
-	providers: [],
+	providers: [
+		{ provide: RouteReuseStrategy, useClass: ReuseStrategy },
+	],
 	bootstrap: [AppComponent]
 })
 export class AppModule { }

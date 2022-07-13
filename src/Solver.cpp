@@ -1,11 +1,13 @@
 #include "Solver.h"
 
+#include <ortools/util/time_limit.h>
 #include <QDebug>
 #include <algorithm>
 #include <numeric>
 #include <unordered_set>
 #include "Timeslot.h"
 
+using operations_research::TimeLimit;
 using operations_research::sat::BoolVar;
 using operations_research::sat::CpModelBuilder;
 using operations_research::sat::CpSolverResponse;
@@ -205,7 +207,10 @@ bool Solver::compute(vector<Subject> const &newSubjects, vector<Teacher> const &
 
 	modelBuilder.Minimize(objective1 + objective2 + objective3);
 
+	shouldComputationBeStopped = false;
+
 	Model model;
+	model.GetOrCreate<TimeLimit>()->RegisterExternalBooleanAsLimit(&shouldComputationBeStopped);
 	model.Add(NewFeasibleSolutionObserver([&] (auto const &response) {
 		qDebug() << "--- Duration :" << 1000*response.wall_time() << "ms";
 		qDebug() << "--- Objective 1 :" << SolutionIntegerValue(response, objective1);
@@ -225,6 +230,12 @@ bool Solver::compute(vector<Subject> const &newSubjects, vector<Teacher> const &
 	qDebug() << "Status :" << QString::fromStdString(CpSolverStatus_Name(response.status()));
 
 	return response.status() == CpSolverStatus::FEASIBLE || response.status() == CpSolverStatus::OPTIMAL;
+}
+
+/** @bug Error in OR-Tools when the computation is stopped too early */
+void Solver::stopComputation()
+{
+	shouldComputationBeStopped = true;
 }
 
 int Solver::getCycleDuration() const
