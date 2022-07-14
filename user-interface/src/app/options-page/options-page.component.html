@@ -1,0 +1,11 @@
+<section>
+	<p>Les contraintes <strong>en haut</strong> sont les plus <strong>importantes</strong> et seront imposées en premier.</p>
+	<div class="objectives-list">
+		<div class="scale"></div>
+		<mat-list cdkDropList (cdkDropListDropped)="onDrop($event)">
+			<mat-list-item *ngFor="let objective of settings.objectives" cdkDrag>
+				{{objective.readableName}}
+			</mat-list-item>
+		</mat-list>
+	</div>
+</section>

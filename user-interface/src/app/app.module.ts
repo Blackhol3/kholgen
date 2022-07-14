@@ -24,6 +24,7 @@ import { AppComponent } from './app.component';
 import { ColloscopeComponent } from './colloscope/colloscope.component';
 import { ComputationPageComponent } from './computation-page/computation-page.component';
 import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
+import { OptionsPageComponent } from './options-page/options-page.component';
 import { SubjectFormComponent } from './subject-form/subject-form.component';
 import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
 import { TeacherFormComponent } from './teacher-form/teacher-form.component';
@@ -35,9 +36,10 @@ import { ReuseStrategy } from './reuse-strategy';
 @NgModule({
 	declarations: [
 		AppComponent,
-  		ColloscopeComponent,
+		ColloscopeComponent,
 		ComputationPageComponent,
     	ConnectionDialogComponent,
+		OptionsPageComponent,
 		SubjectFormComponent,
 		SubjectsPageComponent,
 		TeacherFormComponent,
@@ -53,6 +55,7 @@ import { ReuseStrategy } from './reuse-strategy';
 		RouterModule.forRoot([
 			{path: 'subjects', component: SubjectsPageComponent},
 			{path: 'teachers', component: TeachersPageComponent},
+			{path: 'options', component: OptionsPageComponent},
 			{path: 'computation', component: ComputationPageComponent},
 			{path: '**', redirectTo: '/subjects'},
 		]),

@@ -44,6 +44,16 @@ add_executable(${PROJECT_NAME}
     WebSocketTransport.h
     Week.cpp
     Week.h
+
+    Objective/MinimalNumberOfSlotsObjective.cpp
+    Objective/MinimalNumberOfSlotsObjective.h
+    Objective/NoConsecutiveCollesObjective.cpp
+    Objective/NoConsecutiveCollesObjective.h
+    Objective/Objective.cpp
+    Objective/Objective.h
+    Objective/OnlyOneCollePerDayObjective.cpp
+    Objective/OnlyOneCollePerDayObjective.h
+
     ${TS_FILES}
 )
 

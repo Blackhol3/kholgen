@@ -1,0 +1,77 @@
+@use '../common';
+
+@include common.animated-drag-drop;
+.cdk-drag-preview  {
+	display: flex;
+	align-items: center;
+	padding: 0 16px;
+	font-size: 16px;
+}
+
+:host {
+	width: 60em;
+}
+
+section {
+	display: flex;
+	flex-wrap: wrap;
+	height: max-content;
+	justify-content: center;
+	
+	p {
+		width: 100%;
+	}
+}
+
+.objectives-list {
+	display: flex;
+	
+	.scale {
+		$color: rgba(0, 0, 0, 0.87);
+		$icon-height: 48px;
+		$icon-margin: $icon-height - 8px;
+		
+		position: relative;
+		left: -20px;
+		
+		width: 4px;
+		margin: $icon-margin 0;
+		background: linear-gradient($color, transparent);
+		
+		&::before, &::after {
+			position: absolute;
+			left: -10px;
+			
+			display: flex;
+			align-items: center;
+
+			height: $icon-height;
+			font-family: 'Material Icons';
+			font-size: 24px;
+			color: $color;
+		}
+		
+		&::before {
+			content: 'add';
+			top: -$icon-margin;
+		}
+		
+		&::after {
+			content: 'remove';
+			bottom: -$icon-margin;
+		}
+	}
+
+	mat-list {
+		padding: 0;
+		background: white;
+		border: 1px solid rgba(0, 0, 0, 0.12);
+		border-radius: 4px;
+		cursor: move;
+		
+		mat-list-item:not(:last-child) {
+			border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+		}
+	}
+	
+}

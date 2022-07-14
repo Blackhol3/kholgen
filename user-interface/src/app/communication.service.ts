@@ -85,6 +85,7 @@ export class CommunicationService {
 			teachers: settings.teachers,
 			numberOfTrios: settings.trios.length,
 			numberOfWeeks: settings.weeks.length,
+			objectives: settings.objectives.map(objective => objective.name),
 		});
 		
 		return this.computeSubject.asObservable();

@@ -4,7 +4,9 @@
 #include <QDebug>
 #include <algorithm>
 #include <numeric>
+#include <ranges>
 #include <unordered_set>
+#include "Objective/Objective.h"
 #include "Timeslot.h"
 
 using operations_research::TimeLimit;
@@ -24,12 +26,17 @@ Solver::Solver()
 {
 }
 
-bool Solver::compute(vector<Subject> const &newSubjects, vector<Teacher> const &newTeachers, vector<Trio> const &newTrios, vector<Week> const &newWeeks, std::function<void(vector<Colle> const &colles)> const &solutionFound)
+bool Solver::compute(
+	vector<Subject> const &newSubjects, vector<Teacher> const &newTeachers, vector<Trio> const &newTrios, vector<Week> const &newWeeks,
+	vector<std::shared_ptr<Objective>> const &newObjectives,
+	std::function<void(vector<Colle> const &colles)> const &solutionFound
+)
 {
 	subjects = newSubjects;
 	teachers = newTeachers;
 	trios = newTrios;
 	weeks = newWeeks;
+	objectives = newObjectives;
 
 	CpModelBuilder modelBuilder;
 
@@ -137,97 +144,33 @@ bool Solver::compute(vector<Subject> const &newSubjects, vector<Teacher> const &
 	/***** ADD OPTIMISATION *****/
 	/****************************/
 
-	// Trios shouldn't have two consecutives colles
-	LinearExpr objective1;
-	auto consecutiveSlots = getConsecutiveSlotsWithDifferentSubjects();
-	for (auto const &week: weeks) {
-		for (auto const &trio: trios) {
-			for (auto const &[slot1, slot2]: consecutiveSlots) {
-				auto areConsecutiveSlotsUsed = modelBuilder.NewBoolVar();
+	std::vector<ObjectiveComputation> objectiveComputations;
+	for (auto const &objective: objectives) {
+		objectiveComputations.push_back(objective->compute(subjects, teachers, trios, weeks, isTrioWithTeacherAtTimeslotInWeek, modelBuilder));
+	};
 
-				modelBuilder.AddBoolAnd({
-					isTrioWithTeacherAtTimeslotInWeek[trio][slot1.getTeacher()][slot1.getTimeslot()][week],
-					isTrioWithTeacherAtTimeslotInWeek[trio][slot2.getTeacher()][slot2.getTimeslot()][week],
-				}).OnlyEnforceIf(areConsecutiveSlotsUsed);
-
-				modelBuilder.AddBoolOr({
-					isTrioWithTeacherAtTimeslotInWeek[trio][slot1.getTeacher()][slot1.getTimeslot()][week].Not(),
-					isTrioWithTeacherAtTimeslotInWeek[trio][slot2.getTeacher()][slot2.getTimeslot()][week].Not(),
-				}).OnlyEnforceIf(areConsecutiveSlotsUsed.Not());
-
-				objective1 += areConsecutiveSlotsUsed;
-			}
-		}
+	LinearExpr globalObjective;
+	int globalObjectiveFactor = 1;
+	for (auto const &objectiveComputation: objectiveComputations | std::views::reverse) {
+		globalObjective += globalObjectiveFactor * objectiveComputation.objective;
+		globalObjectiveFactor *= objectiveComputation.maxValue + 1;
 	}
-
-	// Trios shouldn't have two colles the same day
-	LinearExpr objective2;
-	auto sameDaySlots = getNotSimultaneousSameDaySlotsWithDifferentSubjects();
-	for (auto const &week: weeks) {
-		for (auto const &trio: trios) {
-			for (auto const &[slot1, slot2]: sameDaySlots) {
-				auto areSameDaySlotsUsed = modelBuilder.NewBoolVar();
-
-				modelBuilder.AddBoolAnd({
-					isTrioWithTeacherAtTimeslotInWeek[trio][slot1.getTeacher()][slot1.getTimeslot()][week],
-					isTrioWithTeacherAtTimeslotInWeek[trio][slot2.getTeacher()][slot2.getTimeslot()][week],
-				}).OnlyEnforceIf(areSameDaySlotsUsed);
-
-				modelBuilder.AddBoolOr({
-					isTrioWithTeacherAtTimeslotInWeek[trio][slot1.getTeacher()][slot1.getTimeslot()][week].Not(),
-					isTrioWithTeacherAtTimeslotInWeek[trio][slot2.getTeacher()][slot2.getTimeslot()][week].Not(),
-				}).OnlyEnforceIf(areSameDaySlotsUsed.Not());
-
-				objective2 += areSameDaySlotsUsed;
-			}
-		}
-	}
-
-	// The number of slots should be minimal
-	LinearExpr objective3;
-	for (auto const &teacher: teachers) {
-		for (auto const &timeslot: teacher.getAvailableTimeslots()) {
-			vector<BoolVar> collesInSlot;
-			vector<BoolVar> collesNotInSlot;
-
-			for (auto const &week: weeks) {
-				for (auto const &trio: trios) {
-					collesInSlot.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week]);
-					collesNotInSlot.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week].Not());
-				}
-			}
-
-			auto isSlotUsed = modelBuilder.NewBoolVar();
-			modelBuilder.AddBoolOr(collesInSlot).OnlyEnforceIf(isSlotUsed);
-			modelBuilder.AddBoolAnd(collesNotInSlot).OnlyEnforceIf(isSlotUsed.Not());
-
-			objective3 += isSlotUsed;
-		}
-	}
-
-	modelBuilder.Minimize(objective1 + objective2 + objective3);
+	modelBuilder.Minimize(globalObjective);
 
 	shouldComputationBeStopped = false;
 
 	Model model;
 	model.GetOrCreate<TimeLimit>()->RegisterExternalBooleanAsLimit(&shouldComputationBeStopped);
 	model.Add(NewFeasibleSolutionObserver([&] (auto const &response) {
-		qDebug() << "--- Duration :" << 1000*response.wall_time() << "ms";
-		qDebug() << "--- Objective 1 :" << SolutionIntegerValue(response, objective1);
-		qDebug() << "--- Objective 2 :" << SolutionIntegerValue(response, objective2);
-		qDebug() << "--- Objective 3 :" << SolutionIntegerValue(response, objective3);
+		qDebug() << "Duration :" << 1000*response.wall_time() << "ms";
+		for (int i = 0; i < objectives.size(); ++i) {
+			qDebug() << "\tObjective" << objectives.at(i)->getName() << ":" << SolutionIntegerValue(response, objectiveComputations.at(i).objective);
+		}
 		solutionFound(getColles(response, isTrioWithTeacherAtTimeslotInWeek));
 	}));
 	auto response = SolveCpModel(modelBuilder.Build(), &model);
 
-	qDebug() << "Variables :" << response.num_booleans();
-	qDebug() << "Duration :" << 1000*response.wall_time() << "ms";
-	qDebug() << "Objective 1 :" << SolutionIntegerValue(response, objective1);
-	qDebug() << "Objective 2 :" << SolutionIntegerValue(response, objective2);
-	qDebug() << "Objective 3 :" << SolutionIntegerValue(response, objective3);
 	qDebug().noquote() << QString::fromStdString(CpSolverResponseStats(response)).replace("\n", "\n\t");
-
-	qDebug() << "Status :" << QString::fromStdString(CpSolverStatus_Name(response.status()));
 
 	return response.status() == CpSolverStatus::FEASIBLE || response.status() == CpSolverStatus::OPTIMAL;
 }
@@ -308,43 +251,6 @@ vector<Teacher> Solver::getTeachersOfSubject(const Subject& subject) const
 	}
 
 	return teachersOfSubject;
-}
-
-vector<std::pair<Slot,  Slot>> Solver::getNotSimultaneousSameDaySlotsWithDifferentSubjects() const
-{
-	vector<std::pair<Slot,  Slot>> sameDaySlots;
-	for (auto const &teacher1: teachers) {
-		for (auto const &teacher2: teachers) {
-			if (teacher1.getSubject() == teacher2.getSubject()) {
-				continue;
-			}
-
-			for (auto const &timeslot1: teacher1.getAvailableTimeslots()) {
-				for (auto const &timeslot2: teacher2.getAvailableTimeslots()) {
-					if (timeslot1.getDay() == timeslot2.getDay() && timeslot1.getHour() < timeslot2.getHour()) {
-						sameDaySlots.push_back({
-							Slot(teacher1, timeslot1),
-							Slot(teacher2, timeslot2),
-						});
-					}
-				}
-			}
-		}
-	}
-
-	return sameDaySlots;
-}
-
-vector<std::pair<Slot,  Slot>> Solver::getConsecutiveSlotsWithDifferentSubjects() const
-{
-	vector<std::pair<Slot,  Slot>> consecutiveSlots;
-	for (auto const &[slot1, slot2]: getNotSimultaneousSameDaySlotsWithDifferentSubjects()) {
-		if (slot1.getTimeslot().isAdjacentTo(slot2.getTimeslot())) {
-			consecutiveSlots.push_back({slot1, slot2});
-		}
-	}
-
-	return consecutiveSlots;
 }
 
 vector<Colle> Solver::getColles(CpSolverResponse const &response, unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> const &isTrioWithTeacherAtTimeslotInWeek) const

@@ -34,6 +34,7 @@ void Communication::compute(QJsonObject const &settings)
 			importer->getTeachers(),
 			importer->getTrios(),
 			importer->getWeeks(),
+			importer->getObjectives(),
 			[&](std::vector<Colle> const &newColles) {
 				colles = newColles;
 				sendColles();

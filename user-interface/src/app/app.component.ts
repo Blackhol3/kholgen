@@ -106,6 +106,11 @@ export class AppComponent {
 			this.undoStack.actions.push('weeks', new Week(i));
 		}
 		
+		this.undoStack.actions.clear('objectives');
+		for (let objective of jsonObject.objectives) {
+			this.undoStack.actions.push('objectives', this.settings.defaultObjectives.find(defaultObjective => defaultObjective.name === objective));
+		}
+		
 		this.undoStack.endGroup();
 	}
 	
@@ -117,6 +122,7 @@ export class AppComponent {
 				subject: teacher.subject.name,
 				availableTimeslots: teacher.availableTimeslots.map(timeslot => timeslot.toString()),
 			})),
+			objectives: this.settings.objectives.map(objective => objective.name),
 			numberOfTrios: this.settings.trios.length,
 		};
 	}
