@@ -6,23 +6,31 @@
 #include "CsvExporter.h"
 #include "ExcelExporter.h"
 #include "JsonImporter.h"
+#include "Objective/Objective.h"
+#include "Objective/ObjectiveComputation.h"
 #include "Solver.h"
 
-Communication::Communication(std::shared_ptr<JsonImporter> const &importer, std::shared_ptr<Solver> const &solver, QObject *parent):
+Communication::Communication(JsonImporter* importer, Solver* solver, QObject *parent):
 	QObject(parent), importer(importer), solver(solver)
 {
 }
 
-void Communication::sendColles() const
+void Communication::sendSolution(std::vector<ObjectiveComputation> const &objectiveComputations) const
 {
 	QJsonArray jsonColles;
 	for (auto const &colle: colles) {
 		jsonColles << colle.toJsonObject();
 	}
 
-	emit newColles(jsonColles);
+	QJsonArray jsonObjectiveComputations;
+	for (auto const &objectiveComputation: objectiveComputations) {
+		jsonObjectiveComputations << objectiveComputation.toJsonObject();
+	}
+
+	emit solutionFound(jsonColles, jsonObjectiveComputations);
 }
 
+/* @todo Only accepts a single computation */
 void Communication::compute(QJsonObject const &settings)
 {
 	importer->read(settings);
@@ -35,9 +43,9 @@ void Communication::compute(QJsonObject const &settings)
 			importer->getTrios(),
 			importer->getWeeks(),
 			importer->getObjectives(),
-			[&](std::vector<Colle> const &newColles) {
+			[&](auto const &newColles, auto const &objectiveComputations) {
 				colles = newColles;
-				sendColles();
+				sendSolution(objectiveComputations);
 			}
 		);
 		emit computationFinished(success);

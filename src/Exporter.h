@@ -7,6 +7,7 @@
 #include "Slot.h"
 #include "Subject.h"
 #include "Teacher.h"
+#include "Trio.h"
 #include "Week.h"
 
 class Exporter

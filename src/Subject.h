@@ -1,9 +1,10 @@
 #pragma once
 
 #include <QColor>
-#include <QJsonObject>
 #include <QString>
 #include <functional>
+
+class QJsonObject;
 
 class Subject
 {

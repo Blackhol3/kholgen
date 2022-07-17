@@ -1,5 +1,7 @@
 #include "Colle.h"
 
+#include <QJsonObject>
+
 Colle::Colle(const Teacher& teacher, const Timeslot& timeslot, const Trio& trio, const Week& week) :
 	teacher(teacher), timeslot(timeslot), trio(trio), week(week)
 {

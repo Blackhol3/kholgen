@@ -1,10 +1,11 @@
 #pragma once
 
-#include <QJsonObject>
 #include "Teacher.h"
 #include "Timeslot.h"
 #include "Trio.h"
 #include "Week.h"
+
+class QJsonObject;
 
 class Colle
 {

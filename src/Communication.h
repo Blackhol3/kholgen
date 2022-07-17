@@ -1,13 +1,12 @@
 #pragma once
 
-#include <QByteArray>
 #include <QObject>
-#include <QJsonObject>
-#include <memory>
 #include <vector>
 #include "Colle.h"
 
 class JsonImporter;
+class Objective;
+class ObjectiveComputation;
 class Solver;
 
 class Communication : public QObject
@@ -15,8 +14,8 @@ class Communication : public QObject
 	Q_OBJECT
 
 	public:
-		Communication(std::shared_ptr<JsonImporter> const &importer, std::shared_ptr<Solver> const &solver, QObject *parent = nullptr);
-		void sendColles() const;
+		Communication(JsonImporter* importer, Solver* solver, QObject *parent = nullptr);
+		void sendSolution(std::vector<ObjectiveComputation> const &objectiveComputations) const;
 
 	public slots:
 		void compute(QJsonObject const &settings);
@@ -25,11 +24,11 @@ class Communication : public QObject
 		QByteArray exportAsExcel() const;
 
 	signals:
-		void newColles(const QJsonArray &colles) const;
+		void solutionFound(const QJsonArray &colles, const QJsonArray &objectiveComputations) const;
 		void computationFinished(bool success) const;
 
 	protected:
-		std::shared_ptr<JsonImporter> importer;
-		std::shared_ptr<Solver> solver;
+		JsonImporter* importer;
+		Solver* solver;
 		std::vector<Colle> colles;
 };

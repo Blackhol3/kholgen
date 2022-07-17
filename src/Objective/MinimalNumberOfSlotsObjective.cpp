@@ -1,5 +1,12 @@
 #include "MinimalNumberOfSlotsObjective.h"
 
+#include <ortools/sat/cp_model.h>
+#include <QString>
+#include "ObjectiveComputation.h"
+#include "../Teacher.h"
+#include "../Trio.h"
+#include "../Week.h"
+
 using operations_research::sat::BoolVar;
 using operations_research::sat::CpModelBuilder;
 using operations_research::sat::LinearExpr;
@@ -12,7 +19,8 @@ ObjectiveComputation MinimalNumberOfSlotsObjective::compute(
 	CpModelBuilder &modelBuilder
 ) const
 {
-	ObjectiveComputation computation;
+	LinearExpr expression;
+	int maxValue = 0;
 
 	for (auto const &teacher: teachers) {
 		for (auto const &timeslot: teacher.getAvailableTimeslots()) {
@@ -30,12 +38,12 @@ ObjectiveComputation MinimalNumberOfSlotsObjective::compute(
 			modelBuilder.AddBoolOr(collesInSlot).OnlyEnforceIf(isSlotUsed);
 			modelBuilder.AddBoolAnd(collesNotInSlot).OnlyEnforceIf(isSlotUsed.Not());
 
-			computation.objective += isSlotUsed;
-			computation.maxValue++;
+			expression += isSlotUsed;
+			maxValue++;
 		}
 	}
 
-	return computation;
+	return ObjectiveComputation(this, expression, maxValue);
 }
 
 QString MinimalNumberOfSlotsObjective::getName() const

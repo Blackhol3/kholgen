@@ -1,5 +1,12 @@
 #include "OnlyOneCollePerDayObjective.h"
 
+#include <ortools/sat/cp_model.h>
+#include <QString>
+#include "ObjectiveComputation.h"
+#include "../Slot.h"
+#include "../Trio.h"
+#include "../Week.h"
+
 using operations_research::sat::BoolVar;
 using operations_research::sat::CpModelBuilder;
 using operations_research::sat::LinearExpr;
@@ -12,7 +19,8 @@ ObjectiveComputation OnlyOneCollePerDayObjective::compute(
 	CpModelBuilder &modelBuilder
 ) const
 {
-	ObjectiveComputation computation;
+	LinearExpr expression;
+	int maxValue = 0;
 
 	auto sameDaySlots = getNotSimultaneousSameDaySlotsWithDifferentSubjects(teachers);
 	for (auto const &week: weeks) {
@@ -30,13 +38,13 @@ ObjectiveComputation OnlyOneCollePerDayObjective::compute(
 					isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot2.getTeacher()).at(slot2.getTimeslot()).at(week).Not(),
 				}).OnlyEnforceIf(areSameDaySlotsUsed.Not());
 
-				computation.objective += areSameDaySlotsUsed;
-				computation.maxValue++;
+				expression += areSameDaySlotsUsed;
+				maxValue++;
 			}
 		}
 	}
 
-	return computation;
+	return ObjectiveComputation(this, expression, maxValue);
 }
 
 QString OnlyOneCollePerDayObjective::getName() const

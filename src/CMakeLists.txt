@@ -51,6 +51,8 @@ add_executable(${PROJECT_NAME}
     Objective/NoConsecutiveCollesObjective.h
     Objective/Objective.cpp
     Objective/Objective.h
+    Objective/ObjectiveComputation.cpp
+    Objective/ObjectiveComputation.h
     Objective/OnlyOneCollePerDayObjective.cpp
     Objective/OnlyOneCollePerDayObjective.h
 

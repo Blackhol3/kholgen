@@ -1,5 +1,6 @@
 #include "Solver.h"
 
+#include <ortools/sat/cp_model.h>
 #include <ortools/util/time_limit.h>
 #include <QDebug>
 #include <algorithm>
@@ -7,6 +8,8 @@
 #include <ranges>
 #include <unordered_set>
 #include "Objective/Objective.h"
+#include "Objective/ObjectiveComputation.h"
+#include "Colle.h"
 #include "Timeslot.h"
 
 using operations_research::TimeLimit;
@@ -28,8 +31,8 @@ Solver::Solver()
 
 bool Solver::compute(
 	vector<Subject> const &newSubjects, vector<Teacher> const &newTeachers, vector<Trio> const &newTrios, vector<Week> const &newWeeks,
-	vector<std::shared_ptr<Objective>> const &newObjectives,
-	std::function<void(vector<Colle> const &colles)> const &solutionFound
+	vector<Objective const *> const &newObjectives,
+	std::function<void(vector<Colle> const &colles, vector<ObjectiveComputation> const &objectivesValues)> const &solutionFound
 )
 {
 	subjects = newSubjects;
@@ -40,7 +43,7 @@ bool Solver::compute(
 
 	CpModelBuilder modelBuilder;
 
-	unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> isTrioWithTeacherAtTimeslotInWeek;
+	SolverVar isTrioWithTeacherAtTimeslotInWeek;
 	for (auto const &teacher: teachers) {
 		for (auto const &trio: trios) {
 			for (auto const &week: weeks) {
@@ -149,13 +152,13 @@ bool Solver::compute(
 		objectiveComputations.push_back(objective->compute(subjects, teachers, trios, weeks, isTrioWithTeacherAtTimeslotInWeek, modelBuilder));
 	};
 
-	LinearExpr globalObjective;
+	LinearExpr globalObjectiveExpression;
 	int globalObjectiveFactor = 1;
 	for (auto const &objectiveComputation: objectiveComputations | std::views::reverse) {
-		globalObjective += globalObjectiveFactor * objectiveComputation.objective;
-		globalObjectiveFactor *= objectiveComputation.maxValue + 1;
+		globalObjectiveExpression += globalObjectiveFactor * objectiveComputation.getExpression();
+		globalObjectiveFactor *= objectiveComputation.getMaxValue() + 1;
 	}
-	modelBuilder.Minimize(globalObjective);
+	modelBuilder.Minimize(globalObjectiveExpression);
 
 	shouldComputationBeStopped = false;
 
@@ -163,10 +166,11 @@ bool Solver::compute(
 	model.GetOrCreate<TimeLimit>()->RegisterExternalBooleanAsLimit(&shouldComputationBeStopped);
 	model.Add(NewFeasibleSolutionObserver([&] (auto const &response) {
 		qDebug() << "Duration :" << 1000*response.wall_time() << "ms";
-		for (int i = 0; i < objectives.size(); ++i) {
-			qDebug() << "\tObjective" << objectives.at(i)->getName() << ":" << SolutionIntegerValue(response, objectiveComputations.at(i).objective);
+		for (auto &objectiveComputation: objectiveComputations) {
+			objectiveComputation.evaluate(response);
+			qDebug() << "\tObjective" << objectiveComputation.getObjective()->getName() << ":" << objectiveComputation.getValue();
 		}
-		solutionFound(getColles(response, isTrioWithTeacherAtTimeslotInWeek));
+		solutionFound(getColles(response, isTrioWithTeacherAtTimeslotInWeek), objectiveComputations);
 	}));
 	auto response = SolveCpModel(modelBuilder.Build(), &model);
 
@@ -253,7 +257,7 @@ vector<Teacher> Solver::getTeachersOfSubject(const Subject& subject) const
 	return teachersOfSubject;
 }
 
-vector<Colle> Solver::getColles(CpSolverResponse const &response, unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> const &isTrioWithTeacherAtTimeslotInWeek) const
+vector<Colle> Solver::getColles(CpSolverResponse const &response, SolverVar const &isTrioWithTeacherAtTimeslotInWeek) const
 {
 	vector<Colle> colles;
 	for (auto const &week: weeks) {

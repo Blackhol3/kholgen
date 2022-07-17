@@ -1,9 +1,12 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { MatTable } from '@angular/material/table';
+import { Subscription } from 'rxjs';
 import * as FileSaver from 'file-saver';
 
 import { CommunicationService } from '../communication.service';
 import { SettingsService } from '../settings.service';
+import { UndoStackService } from '../undo-stack.service';
 
 @Component({
 	selector: 'app-computation-page',
@@ -22,16 +25,25 @@ import { SettingsService } from '../settings.service';
 		]),
 	],
 })
-export class ComputationPageComponent {
+export class ComputationPageComponent implements OnInit, OnDestroy {
 	isRunning = false;
+	undoStackSubscription: Subscription | undefined;
+	@ViewChild(MatTable) objectivesTable: MatTable<any> | undefined;
 	
-	constructor(private communication: CommunicationService, public settings: SettingsService) { }
+	constructor(private communication: CommunicationService, public settings: SettingsService, private undoStack: UndoStackService) {	}
+	
+	ngOnInit() {
+		this.undoStackSubscription = this.undoStack.changeObservable.subscribe(() => this.objectivesTable!.renderRows());
+	}
+	
+	ngOnDestroy() {
+		this.undoStackSubscription?.unsubscribe();
+	}
 	
 	compute() {
 		this.communication.connect().then(() => {
 			this.isRunning = true;
 			this.communication.compute(this.settings).subscribe({
-				next: colles => { this.settings.colles = colles; },
 				complete: () => { this.isRunning = false; },
 			});
 		});

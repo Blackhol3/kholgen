@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 #include "Subject.h"
 #include "Teacher.h"
@@ -14,22 +13,20 @@ class Objective;
 class JsonImporter
 {
 	public:
-		JsonImporter(std::vector<std::shared_ptr<Objective>> const &defaultObjectives);
+		JsonImporter(std::vector<Objective const *> const &objectives);
 		void read(QJsonObject const &settings);
 		const std::vector<Subject> &getSubjects() const;
 		const std::vector<Teacher> &getTeachers() const;
 		const std::vector<Trio> &getTrios() const;
 		const std::vector<Week> &getWeeks() const;
-		const std::vector<std::shared_ptr<Objective>> &getObjectives() const;
+		const std::vector<Objective const *> &getObjectives() const;
 
 	protected:
-		std::vector<std::shared_ptr<Objective>> defaultObjectives;
-
 		std::vector<Subject> subjects;
 		std::vector<Teacher> teachers;
 		std::vector<Trio> trios;
 		std::vector<Week> weeks;
-		std::vector<std::shared_ptr<Objective>> objectives;
+		std::vector<Objective const *> objectives;
 
 		void clear();
 		void importSubjects(QJsonArray const &jsonSubjects);

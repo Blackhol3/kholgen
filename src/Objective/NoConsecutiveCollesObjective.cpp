@@ -1,5 +1,12 @@
 #include "NoConsecutiveCollesObjective.h"
 
+#include <ortools/sat/cp_model.h>
+#include <QString>
+#include "ObjectiveComputation.h"
+#include "../Slot.h"
+#include "../Trio.h"
+#include "../Week.h"
+
 using operations_research::sat::BoolVar;
 using operations_research::sat::CpModelBuilder;
 using operations_research::sat::LinearExpr;
@@ -12,7 +19,8 @@ ObjectiveComputation NoConsecutiveCollesObjective::compute(
 	CpModelBuilder &modelBuilder
 ) const
 {
-	ObjectiveComputation computation;
+	LinearExpr expression;
+	int maxValue = 0;
 
 	for (auto const &week: weeks) {
 		for (auto const &trio: trios) {
@@ -29,13 +37,13 @@ ObjectiveComputation NoConsecutiveCollesObjective::compute(
 					isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot2.getTeacher()).at(slot2.getTimeslot()).at(week).Not(),
 				}).OnlyEnforceIf(areConsecutiveSlotsUsed.Not());
 
-				computation.objective += areConsecutiveSlotsUsed;
-				computation.maxValue++;
+				expression += areConsecutiveSlotsUsed;
+				maxValue++;
 			}
 		}
 	}
 
-	return computation;
+	return ObjectiveComputation(this, expression, maxValue);
 }
 
 QString NoConsecutiveCollesObjective::getName() const

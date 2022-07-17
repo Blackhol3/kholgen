@@ -3,7 +3,6 @@
 #include <QTranslator>
 #include <QWebChannel>
 #include <QWebSocketServer>
-#include <memory>
 #include "misc.h"
 #include "Communication.h"
 #include "JsonImporter.h"
@@ -44,16 +43,20 @@ int main(int argc, char *argv[])
 		channel.connectTo(new WebSocketTransport(server.nextPendingConnection()));
 	});
 
-	auto objectives = std::vector<std::shared_ptr<Objective>>{
-		std::make_shared<MinimalNumberOfSlotsObjective>(),
-		std::make_shared<NoConsecutiveCollesObjective>(),
-		std::make_shared<OnlyOneCollePerDayObjective>()
+	const MinimalNumberOfSlotsObjective minimalNumberOfSlotsObjective;
+	const NoConsecutiveCollesObjective noConsecutiveCollesObjective;
+	const OnlyOneCollePerDayObjective onlyOneCollePerDayObjective;
+
+	std::vector<Objective const *> objectives = {
+		&minimalNumberOfSlotsObjective,
+		&noConsecutiveCollesObjective,
+		&onlyOneCollePerDayObjective,
 	};
 
-	auto solver = std::make_shared<Solver>();
-	auto importer = std::make_shared<JsonImporter>(objectives);
+	Solver solver;
+	JsonImporter importer(objectives);
 
-	Communication communication(importer, solver);
+	Communication communication(&importer, &solver);
 	channel.registerObject("communication", &communication);
 
 	return a.exec();

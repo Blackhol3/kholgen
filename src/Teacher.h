@@ -1,11 +1,12 @@
 #pragma once
 
-#include <QJsonObject>
 #include <QString>
 #include <functional>
 #include <set>
 #include "Subject.h"
 #include "Timeslot.h"
+
+class QJsonObject;
 
 class Teacher
 {

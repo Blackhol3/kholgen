@@ -8,4 +8,20 @@
 	</mat-menu>
 </div>
 <mat-progress-bar *ngIf="isRunning" mode="indeterminate" @insertAnimation></mat-progress-bar>
-<app-colloscope></app-colloscope>
+<section>
+	<table mat-table #objectivesTable="matTable" [dataSource]="settings.objectives" class="mat-elevation-z3">
+		<ng-container matColumnDef="objective">
+			<th mat-header-cell *matHeaderCellDef>Contrainte</th>
+			<td mat-cell *matCellDef="let rowData">{{rowData.readableName}}</td>
+		</ng-container>
+		
+		<ng-container matColumnDef="value">
+			<th mat-header-cell *matHeaderCellDef>Valeur</th>
+			<td mat-cell *matCellDef="let rowData">{{rowData.getValueText()}}</td>
+		</ng-container>
+		
+		<tr mat-header-row *matHeaderRowDef="['objective', 'value']"></tr>
+		<tr mat-row *matRowDef="let row; columns: ['objective', 'value']"></tr>
+	</table>
+	<app-colloscope></app-colloscope>
+</section>

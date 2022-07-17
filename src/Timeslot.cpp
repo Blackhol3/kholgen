@@ -1,5 +1,6 @@
 #include "Timeslot.h"
 
+#include <QJsonObject>
 #include <QObject>
 
 std::map<Day, QString> const Timeslot::dayNames = {

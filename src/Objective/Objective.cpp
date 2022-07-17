@@ -1,5 +1,7 @@
 #include "Objective.h"
 
+#include "../Slot.h"
+
 Objective::Objective()
 {
 

@@ -1,5 +1,7 @@
 #include "Subject.h"
 
+#include <QJsonObject>
+
 Subject::Subject(const QString &name, const QString &shortName, int frequency, QColor color): name(name), shortName(shortName), frequency(frequency), color(color)
 {
 

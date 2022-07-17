@@ -1,5 +1,6 @@
 #include "CsvExporter.h"
 
+#include <QObject>
 #include "Subject.h"
 #include "Teacher.h"
 

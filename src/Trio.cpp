@@ -1,5 +1,7 @@
 #include "Trio.h"
 
+#include <QJsonObject>
+
 Trio::Trio(int id): id(id)
 {
 

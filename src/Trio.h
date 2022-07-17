@@ -1,7 +1,8 @@
 #pragma once
 
-#include <QJsonObject>
 #include <functional>
+
+class QJsonObject;
 
 class Trio
 {

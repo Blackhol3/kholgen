@@ -15,7 +15,7 @@ import { SettingsService } from './settings.service';
 export class CommunicationService {
 	protected websocket: WebSocket | undefined;
 	protected communication: any;
-	protected computeSubject: Subject<Colle[]> | undefined;
+	protected computeSubject: Subject<void> | undefined;
 	
 	constructor(private dialog: MatDialog) { }
 	
@@ -67,15 +67,19 @@ export class CommunicationService {
 		}
 	}
 	
-	compute(settings: SettingsService): Observable<Colle[]> {
+	compute(settings: SettingsService): Observable<void> {
 		this.checkIfOpen();
 		
 		if (this.computeSubject !== undefined) {
 			return this.computeSubject.asObservable();
 		}
 		
-		this.computeSubject = new Subject<Colle[]>();
-		this.communication.newColles.connect((jsonColles: any[]) => this.computeSubject?.next(this.importJsonColles(settings, jsonColles)));
+		this.computeSubject = new Subject<void>();
+		this.communication.solutionFound.connect((jsonColles: any[], jsonObjectiveComputations: any[]) => {
+			this.computeSubject?.next();
+			this.importJsonColles(settings, jsonColles);
+			this.importJsonObjectiveComputations(settings, jsonObjectiveComputations);
+		});
 		this.communication.computationFinished.connect(() => {
 			this.computeSubject?.complete();
 			this.computeSubject = undefined;
@@ -134,12 +138,18 @@ export class CommunicationService {
 		}
 	}
 	
-	protected importJsonColles(settings: SettingsService, jsonColles: any[]): Colle[] {
-		return jsonColles.map((colle: any) => new Colle(
+	protected importJsonColles(settings: SettingsService, jsonColles: any[]): void {
+		settings.colles = jsonColles.map((colle: any) => new Colle(
 			settings.teachers.find(teacher => teacher.name === colle.teacherName) as Teacher,
 			new Timeslot(colle.timeslot.day, colle.timeslot.hour),
 			settings.trios[colle.trioId],
 			settings.weeks[colle.weekId],
 		));
+	}
+	
+	protected importJsonObjectiveComputations(settings: SettingsService, jsonObjectiveComputations: any[]): void {
+		for (let objectiveComputation of jsonObjectiveComputations) {
+			settings.objectives.find(objective => objective.name === objectiveComputation.objectiveName)?.setValue(objectiveComputation.value);
+		};
 	}
 }

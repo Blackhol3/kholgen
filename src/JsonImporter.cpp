@@ -11,7 +11,7 @@
 #include "Objective/Objective.h"
 #include "Timeslot.h"
 
-JsonImporter::JsonImporter(std::vector<std::shared_ptr<Objective>> const &defaultObjectives): defaultObjectives(defaultObjectives)
+JsonImporter::JsonImporter(std::vector<Objective const *> const &objectives): objectives(objectives)
 {
 }
 
@@ -46,7 +46,7 @@ const std::vector<Week>& JsonImporter::getWeeks() const
 	return weeks;
 }
 
-const std::vector<std::shared_ptr<Objective>>& JsonImporter::getObjectives() const
+const std::vector<Objective const *>& JsonImporter::getObjectives() const
 {
 	return objectives;
 }
@@ -57,7 +57,6 @@ void JsonImporter::clear()
 	teachers.clear();
 	trios.clear();
 	weeks.clear();
-	objectives.clear();
 }
 
 void JsonImporter::importSubjects(QJsonArray const &jsonSubjects)
@@ -90,12 +89,16 @@ void JsonImporter::importWeeks(int nbWeeks)
 
 void JsonImporter::importObjectives(QJsonArray const& jsonObjectives)
 {
+	int index = 0;
 	for (auto &&jsonObjective: jsonObjectives) {
 		auto const &name = jsonObjective.toString();
-		auto const &objective = *std::find_if(defaultObjectives.cbegin(), defaultObjectives.cend(), [&](auto const &defaultObjective) {
-			return defaultObjective->getName() == name;
-		});
-		objectives.push_back(objective);
+		std::iter_swap(
+			objectives.begin() + index,
+			std::find_if(objectives.begin(), objectives.end(), [&](auto const &objective) {
+				return objective->getName() == name;
+			})
+		);
+		++index;
 	}
 }
 

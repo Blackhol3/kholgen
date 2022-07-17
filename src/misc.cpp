@@ -5,6 +5,8 @@
 	#include <Windows.h>
 #endif
 
+#include <QTextStream>
+
 void initStdout()
 {
 	#ifdef _WIN32

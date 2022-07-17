@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QTextStream>
+class QTextStream;
 
 void initStdout();
 QTextStream& qStdout();

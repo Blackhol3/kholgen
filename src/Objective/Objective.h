@@ -1,22 +1,21 @@
 #pragma once
 
-#include <ortools/sat/cp_model.h>
-#include <QString>
 #include <vector>
 #include <unordered_map>
 #include <utility>
-#include "../Slot.h"
-#include "../Subject.h"
-#include "../Teacher.h"
-#include "../Timeslot.h"
-#include "../Trio.h"
-#include "../Week.h"
 
-struct ObjectiveComputation {
-	/** An expression between 0 and `maxValue`, both included */
-	operations_research::sat::LinearExpr objective;
-	int maxValue = 0;
-};
+namespace operations_research::sat {
+	class BoolVar;
+	class CpModelBuilder;
+}
+class QString;
+class ObjectiveComputation;
+class Slot;
+class Subject;
+class Teacher;
+class Timeslot;
+class Trio;
+class Week;
 
 class Objective
 {

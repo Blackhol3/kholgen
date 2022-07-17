@@ -15,14 +15,17 @@ export class SettingsService {
 		new Objective(
 			'No consecutive colles',
 			`Un trinôme ne doit pas avoir deux colles consécutives`,
+			value => `${value} colle(s) consécutive(s)`,
 		),
 		new Objective(
 			'Only one colle per day',
 			`Un trinôme ne doit pas avoir deux colles le même jour`,
+			value => `${value} colle(s) le même jour`,
 		),
 		new Objective(
 			'Minimal number of slots',
 			`Le nombre de créneaux de colles doit être minimal`,
+			value => `${value} créneaux`,
 		),
 	];
 	

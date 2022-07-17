@@ -14,5 +14,9 @@ export class OptionsPageComponent {
 	
 	onDrop($event: CdkDragDrop<any[]>) {
 		this.undoStack.actions.move('objectives', $event.previousIndex, $event.currentIndex);
+		
+		/** @todo Really, really nasty way to update the views */
+		this.undoStack.undo();
+		this.undoStack.redo();
 	}
 }

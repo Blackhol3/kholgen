@@ -16,6 +16,28 @@ button {
 	margin: 0 4px;
 }
 
+section {
+	display: flex;
+	
+	table {
+		display: block;
+		height: max-content;
+		margin-right: 8px;
+	}
+}
+
+.mat-header-row {
+	height: 60px;
+}
+
+.mat-column-objective {
+	padding-right: 24px;
+}
+
+.mat-column-value {
+	text-align: center;
+}
+
 ::ng-deep .mat-menu-panel.no-overflow {
 	overflow: hidden !important;
 }

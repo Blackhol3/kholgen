@@ -1,6 +1,7 @@
 #include "Teacher.h"
 
 #include <QJsonArray>
+#include <QJsonObject>
 
 Teacher::Teacher(QString const &name, Subject const &subject, std::set<Timeslot> const &availableTimeslots):
 	name(name), subject(subject), availableTimeslots(availableTimeslots)
