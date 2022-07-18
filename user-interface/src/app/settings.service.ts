@@ -23,6 +23,11 @@ export class SettingsService {
 			value => `${value} colle(s) le même jour`,
 		),
 		new Objective(
+			'Same slot only once in cycle',
+			`Au cours d'un cycle, un trinôme n'utilise jamais deux fois le même créneau`,
+			value => `${value} répétition(s)`,
+		),
+		new Objective(
 			'Minimal number of slots',
 			`Le nombre de créneaux de colles doit être minimal`,
 			value => `${value} créneaux`,

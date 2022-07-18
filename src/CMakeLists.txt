@@ -55,6 +55,8 @@ add_executable(${PROJECT_NAME}
     Objective/ObjectiveComputation.h
     Objective/OnlyOneCollePerDayObjective.cpp
     Objective/OnlyOneCollePerDayObjective.h
+    Objective/SameSlotOnlyOnceInCycleObjective.cpp
+    Objective/SameSlotOnlyOnceInCycleObjective.h
 
     ${TS_FILES}
 )

@@ -11,6 +11,7 @@
 #include "Objective/MinimalNumberOfSlotsObjective.h"
 #include "Objective/NoConsecutiveCollesObjective.h"
 #include "Objective/OnlyOneCollePerDayObjective.h"
+#include "Objective/SameSlotOnlyOnceInCycleObjective.h"
 
 int main(int argc, char *argv[])
 {
@@ -46,11 +47,13 @@ int main(int argc, char *argv[])
 	const MinimalNumberOfSlotsObjective minimalNumberOfSlotsObjective;
 	const NoConsecutiveCollesObjective noConsecutiveCollesObjective;
 	const OnlyOneCollePerDayObjective onlyOneCollePerDayObjective;
+	const SameSlotOnlyOnceInCycleObjective sameSlotOnlyOnceInCycleObjective;
 
 	std::vector<Objective const *> objectives = {
 		&minimalNumberOfSlotsObjective,
 		&noConsecutiveCollesObjective,
 		&onlyOneCollePerDayObjective,
+		&sameSlotOnlyOnceInCycleObjective,
 	};
 
 	Solver solver;

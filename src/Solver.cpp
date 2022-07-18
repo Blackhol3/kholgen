@@ -153,8 +153,11 @@ bool Solver::compute(
 	};
 
 	LinearExpr globalObjectiveExpression;
-	int globalObjectiveFactor = 1;
+	unsigned long long globalObjectiveFactor = 1;
 	for (auto const &objectiveComputation: objectiveComputations | std::views::reverse) {
+		qDebug() << "Objective" << objectiveComputation.getObjective()->getName() << ":";
+		qDebug() << "\tMaximal value" << objectiveComputation.getMaxValue();
+		qDebug() << "\tGlobal factor" << globalObjectiveFactor;
 		globalObjectiveExpression += globalObjectiveFactor * objectiveComputation.getExpression();
 		globalObjectiveFactor *= objectiveComputation.getMaxValue() + 1;
 	}
