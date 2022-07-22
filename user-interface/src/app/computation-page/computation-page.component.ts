@@ -2,7 +2,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { MatTable } from '@angular/material/table';
 import { Subscription } from 'rxjs';
-import * as FileSaver from 'file-saver';
+import * as FileSaver from 'file-saver-es';
 
 import { CommunicationService } from '../communication.service';
 import { SettingsService } from '../settings.service';

@@ -1,6 +1,6 @@
 import { animate, query, style, transition, trigger } from '@angular/animations';
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import * as FileSaver from 'file-saver';
+import * as FileSaver from 'file-saver-es';
 
 import { Subject } from './subject';
 import { Teacher } from './teacher';

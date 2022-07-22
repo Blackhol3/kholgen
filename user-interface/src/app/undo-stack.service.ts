@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { get, set } from 'lodash';
+import { get, set } from 'lodash-es';
 import { Subject } from 'rxjs';
 
 import { SettingsService } from './settings.service';
