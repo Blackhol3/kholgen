@@ -78,7 +78,12 @@ ObjectiveComputation SameSlotOnlyOnceInCycleObjective::compute(
 							modelBuilder.AddEquality(hasTrioExactlyOneColleWithTeacherInTimeslotInInterval, false).OnlyEnforceIf(shouldEnforce.Not());
 
 							expression += hasTrioExactlyOneColleWithTeacherInTimeslotInInterval;
-							maxValue++;
+
+							// `hasTrioExactlyOneColleWithTeacherInTimeslotInInterval` is always false, except for one value of `intervalSize`,
+							// so we only need to increment `maxValue` for the wider possible loop.
+							if (intervalSize == 1) {
+								maxValue++;
+							}
 						}
 					}
 				}

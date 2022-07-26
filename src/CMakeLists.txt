@@ -45,6 +45,8 @@ add_executable(${PROJECT_NAME}
     Week.cpp
     Week.h
 
+    Objective/EvenDistributionBetweenTeachersObjective.cpp
+    Objective/EvenDistributionBetweenTeachersObjective.h
     Objective/MinimalNumberOfSlotsObjective.cpp
     Objective/MinimalNumberOfSlotsObjective.h
     Objective/NoConsecutiveCollesObjective.cpp

@@ -28,6 +28,11 @@ export class SettingsService {
 			value => `${value} répétition(s)`,
 		),
 		new Objective(
+			'Even distribution between teachers',
+			`Les colles avec un même enseignant doivent être bien répartis dans le temps`,
+			value => `Score de ${value}`,
+		),
+		new Objective(
 			'Minimal number of slots',
 			`Le nombre de créneaux de colles doit être minimal`,
 			value => `${value} créneaux`,

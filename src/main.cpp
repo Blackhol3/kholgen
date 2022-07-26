@@ -8,6 +8,7 @@
 #include "JsonImporter.h"
 #include "Solver.h"
 #include "WebSocketTransport.h"
+#include "Objective/EvenDistributionBetweenTeachersObjective.h"
 #include "Objective/MinimalNumberOfSlotsObjective.h"
 #include "Objective/NoConsecutiveCollesObjective.h"
 #include "Objective/OnlyOneCollePerDayObjective.h"
@@ -44,12 +45,14 @@ int main(int argc, char *argv[])
 		channel.connectTo(new WebSocketTransport(server.nextPendingConnection()));
 	});
 
+	const EvenDistributionBetweenTeachersObjective evenDistributionBetweenTeachersObjective;
 	const MinimalNumberOfSlotsObjective minimalNumberOfSlotsObjective;
 	const NoConsecutiveCollesObjective noConsecutiveCollesObjective;
 	const OnlyOneCollePerDayObjective onlyOneCollePerDayObjective;
 	const SameSlotOnlyOnceInCycleObjective sameSlotOnlyOnceInCycleObjective;
 
 	std::vector<Objective const *> objectives = {
+		&evenDistributionBetweenTeachersObjective,
 		&minimalNumberOfSlotsObjective,
 		&noConsecutiveCollesObjective,
 		&onlyOneCollePerDayObjective,
