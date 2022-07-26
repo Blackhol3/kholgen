@@ -50,18 +50,23 @@ export class SubjectFormComponent implements OnInit, OnChanges, OnDestroy {
 	formChange() {
 		let subject = this.subject as any;
 		for (let [key, control] of Object.entries(this.form.controls)) {
-			if (control.valid && subject[key] !== control.value) {
-				this.undoStack.actions.update(`subjects[${this.settings.subjects.indexOf(subject)}].${key}`, control.value);
+			if (control.valid && subject[key] !== this.getControlValue(key)) {
+				this.undoStack.actions.update(`subjects[${this.settings.subjects.indexOf(subject)}].${key}`, this.getControlValue(key));
 			}
 			else {
 				control.markAsTouched();
 			}
 		}
 	}
+	
+	protected getControlValue(key: string) {
+		const value = this.form?.controls[key as keyof typeof this.form.controls].value;
+		return typeof value === 'string' ? value.trim() : value;
+	}
 
 	protected notUniqueValidator(control: AbstractControl, property: keyof Subject): ValidationErrors | null {
 		for (let subject of this.settings.subjects) {
-			if (subject !== this.subject && subject[property] === control.value) {
+			if (subject !== this.subject && subject[property] === control.value.trim()) {
 				return {notUnique: {subject: subject, property: property}};
 			}
 		}

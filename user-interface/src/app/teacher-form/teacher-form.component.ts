@@ -51,13 +51,18 @@ export class TeacherFormComponent implements  OnInit, OnChanges, OnDestroy {
 	formChange() {
 		let teacher = this.teacher as any;
 		for (let [key, control] of Object.entries(this.form.controls)) {
-			if (control.valid && teacher[key] !== control.value) {
-				this.undoStack.actions.update(`teachers[${this.settings.teachers.indexOf(teacher)}].${key}`, control.value, key !== 'availableTimeslots');
+			if (control.valid && teacher[key] !== this.getControlValue(key)) {
+				this.undoStack.actions.update(`teachers[${this.settings.teachers.indexOf(teacher)}].${key}`, this.getControlValue(key), key !== 'availableTimeslots');
 			}
 			else {
 				control.markAsTouched();
 			}
 		}
+	}
+	
+	protected getControlValue(key: string) {
+		const value = this.form?.controls[key as keyof typeof this.form.controls].value;
+		return typeof value === 'string' ? value.trim() : value;
 	}
 	
 	protected notUniqueValidator(control: AbstractControl): ValidationErrors | null {
@@ -67,7 +72,7 @@ export class TeacherFormComponent implements  OnInit, OnChanges, OnDestroy {
 		};
 		
 		for (let teacher of this.settings.teachers) {
-			if (teacher !== this.teacher && teacher.subject === control.get('subject')?.value && teacher.name === control.get('name')?.value) {
+			if (teacher !== this.teacher && teacher.subject === this.getControlValue('subject') && teacher.name === this.getControlValue('name')) {
 				const error = {notUnique: {teacher: teacher}};
 				control.get('name')?.setErrors(Object.assign({}, errors.name, error));
 				control.get('subject')?.setErrors(Object.assign({}, errors.subject, error));
