@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
-import { SettingsService } from '../settings.service';
+import { StateService } from '../state.service';
 import { UndoStackService } from '../undo-stack.service';
 
 @Component({
@@ -10,7 +10,7 @@ import { UndoStackService } from '../undo-stack.service';
 	styleUrls: ['./options-page.component.scss'],
 })
 export class OptionsPageComponent {
-	constructor(public settings: SettingsService, private undoStack: UndoStackService) { }
+	constructor(public state: StateService, private undoStack: UndoStackService) { }
 	
 	onDrop($event: CdkDragDrop<any[]>) {
 		this.undoStack.actions.move('objectives', $event.previousIndex, $event.currentIndex);

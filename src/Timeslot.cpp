@@ -24,6 +24,12 @@ Timeslot::Timeslot(const Day &day, int hour): day(day), hour(hour)
 
 }
 
+Timeslot::Timeslot(const QJsonObject& json):
+	day(static_cast<Day>(json["day"].toInt())),
+	hour(json["hour"].toInt())
+{
+}
+
 Day Timeslot::getDay() const
 {
 	return day;

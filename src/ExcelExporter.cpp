@@ -1,11 +1,15 @@
 #include "ExcelExporter.h"
 
 #include <QCoreApplication>
+#include "Slot.h"
+#include "State.h"
 #include "Subject.h"
 #include "Teacher.h"
 
-std::string ExcelExporter::save()
+std::string ExcelExporter::save(std::vector<Colle> const &newColles)
 {
+	colles = newColles;
+
 	initWorkbook();
 	createTeachersWorksheet();
 	createTriosWorksheet();
@@ -68,7 +72,7 @@ void ExcelExporter::createTeachersWorksheet()
 	}
 
 	// Print the teachers
-	auto const teachersBySubject = getTeachersBySubject();
+	auto const &teachersBySubject = getTeachersBySubject();
 	for (auto const &[teacher, rows]: getRowsByTeacher())
 	{
 		auto const &teachersOfSubject = teachersBySubject.at(teacher.getSubject());
@@ -110,7 +114,7 @@ void ExcelExporter::createTeachersWorksheet()
 	{
 		auto row = rowBySlot.at(Slot(colle.getTeacher(), colle.getTimeslot()));
 		auto cell = worksheet.cell(firstTrioColumn + static_cast<unsigned int>(colle.getWeek().getId()), row + firstTrioRow);
-		cell.value(std::distance(trios.cbegin(), std::find(trios.cbegin(), trios.cend(), colle.getTrio())) + 1);
+		cell.value(std::distance(state->getTrios().cbegin(), std::find(state->getTrios().cbegin(), state->getTrios().cend(), colle.getTrio())) + 1);
 		cell.alignment(centerAlignement);
 		cell.font(xlnt::font().size(10));
 	}
@@ -140,8 +144,8 @@ void ExcelExporter::createTeachersWorksheet()
 	}
 
 	// Set columns width
-	auto subjectWithLongerName = *std::max_element(subjects.cbegin(), subjects.cend(), [] (auto const &a, auto const &b) { return a.getName().size() < b.getName().size(); });
-	auto teacherWithLongerName = *std::max_element(teachers.cbegin(), teachers.cend(), [] (auto const &a, auto const &b) { return a.getName().size() < b.getName().size(); });
+	auto subjectWithLongerName = *std::max_element(state->getSubjects().cbegin(), state->getSubjects().cend(), [] (auto const &a, auto const &b) { return a.getName().size() < b.getName().size(); });
+	auto teacherWithLongerName = *std::max_element(state->getTeachers().cbegin(), state->getTeachers().cend(), [] (auto const &a, auto const &b) { return a.getName().size() < b.getName().size(); });
 	auto dayWithLongerName = *std::max_element(Timeslot::dayNames.cbegin(), Timeslot::dayNames.cend(), [] (auto const &a, auto const &b) { return a.second.size() < b.second.size(); });
 
 	worksheet.column_properties(subjectColumn).width = static_cast<double>(subjectWithLongerName.getName().size());
@@ -171,7 +175,7 @@ void ExcelExporter::createTriosWorksheet()
 	auto const maximalNumberOfCollesByWeek = getMaximalNumberOfCollesByWeek();
 
 	// Print the trios
-	for (std::vector<Trio>::size_type idTrio = 0; idTrio < trios.size(); ++idTrio)
+	for (std::vector<Trio>::size_type idTrio = 0; idTrio < state->getTrios().size(); ++idTrio)
 	{
 		auto firstRow = maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idTrio) + firstSlotRow;
 		auto lastRow = maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idTrio + 1) - 1 + firstSlotRow;
@@ -188,7 +192,7 @@ void ExcelExporter::createTriosWorksheet()
 	auto const &slotsByTrioAndWeek = getSlotsByTrioAndWeek();
 	for (auto const &[trio, slotsByWeek]: slotsByTrioAndWeek)
 	{
-		auto idTrio = std::distance(trios.cbegin(), std::find(trios.cbegin(), trios.cend(), trio));
+		auto idTrio = std::distance(state->getTrios().cbegin(), std::find(state->getTrios().cbegin(), state->getTrios().cend(), trio));
 		for (auto const &[week, slotsOfWeek]: slotsByWeek)
 		{
 			auto idWeek = static_cast<unsigned int>(week.getId());
@@ -223,7 +227,7 @@ void ExcelExporter::createTriosWorksheet()
 
 	// Print the borders
 	QVector<xlnt::row_t> bottomBorderedRows{weekRow};
-	for (std::vector<Trio>::size_type idTrio = 0; idTrio < trios.size(); ++idTrio) {
+	for (std::vector<Trio>::size_type idTrio = 0; idTrio < state->getTrios().size(); ++idTrio) {
 		bottomBorderedRows << maximalNumberOfCollesByWeek * static_cast<xlnt::row_t>(idTrio + 1) - 1 + firstSlotRow;
 	}
 

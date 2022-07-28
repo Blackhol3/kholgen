@@ -10,6 +10,8 @@ class Subject
 {
 	public:
 		Subject(QString const &name, QString const &shortName, int frequency, QColor color = Qt::lightGray);
+		explicit Subject(QJsonObject const &json);
+
 		QString const &getName() const;
 		QString const &getShortName() const;
 		int getFrequency() const;

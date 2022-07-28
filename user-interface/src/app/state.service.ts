@@ -10,7 +10,7 @@ import { Week } from './week';
 @Injectable({
 	providedIn: 'root'
 })
-export class SettingsService {
+export class StateService {
 	readonly defaultObjectives = [
 		new Objective(
 			'No consecutive colles',
@@ -47,4 +47,27 @@ export class SettingsService {
 	objectives: Objective[] = this.defaultObjectives.slice();
 	
 	constructor() { }
+	
+	toHumanObject() {
+		return {
+			subjects: this.subjects,
+			teachers: this.teachers.map(teacher => ({
+				name: teacher.name,
+				subject: teacher.subject.name,
+				availableTimeslots: teacher.availableTimeslots.map(timeslot => timeslot.toString()),
+			})),
+			objectives: this.objectives.map(objective => objective.name),
+			numberOfTrios: this.trios.length,
+		};
+	}
+	
+	toSolverObject() {
+		return {
+			subjects: this.subjects,
+			teachers: this.teachers,
+			numberOfTrios: this.trios.length,
+			numberOfWeeks: this.weeks.length,
+			objectives: this.objectives.map(objective => objective.name),
+		};
+	}
 }

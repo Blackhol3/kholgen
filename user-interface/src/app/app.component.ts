@@ -8,7 +8,7 @@ import { Timeslot } from './timeslot';
 import { Trio } from './trio';
 import { Week } from './week';
 
-import { SettingsService } from './settings.service';
+import { StateService } from './state.service';
 import { UndoStackService } from './undo-stack.service';
 
 @Component({
@@ -36,7 +36,7 @@ import { UndoStackService } from './undo-stack.service';
 export class AppComponent {
 	@ViewChild('importFileInput') importFileInput!: ElementRef<HTMLInputElement>;
 	
-	constructor(private settings: SettingsService, public undoStack: UndoStackService) { }
+	constructor(private state: StateService, public undoStack: UndoStackService) { }
 	
 	startImportFile() {
 		this.importFileInput.nativeElement.click();
@@ -69,7 +69,7 @@ export class AppComponent {
 	exportFile() {
 		FileSaver.saveAs(
 			new Blob(
-				[JSON.stringify(this.export(), undefined, "\t")],
+				[JSON.stringify(this.state.toHumanObject(), undefined, "\t")],
 				{type: 'application/json'},
 			),
 			'Colloscope.json',
@@ -91,7 +91,7 @@ export class AppComponent {
 		for (let teacher of jsonObject.teachers) {
 			this.undoStack.actions.push('teachers', new Teacher(
 				teacher.name,
-				this.settings.subjects.find(subject => subject.name === teacher.subject) as Subject,
+				this.state.subjects.find(subject => subject.name === teacher.subject) as Subject,
 				teacher.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
 			));
 		}
@@ -108,23 +108,10 @@ export class AppComponent {
 		
 		this.undoStack.actions.clear('objectives');
 		for (let objective of jsonObject.objectives) {
-			this.undoStack.actions.push('objectives', this.settings.defaultObjectives.find(defaultObjective => defaultObjective.name === objective));
+			this.undoStack.actions.push('objectives', this.state.defaultObjectives.find(defaultObjective => defaultObjective.name === objective));
 		}
 		
 		this.undoStack.endGroup();
-	}
-	
-	export() {
-		return {
-			subjects: this.settings.subjects,
-			teachers: this.settings.teachers.map(teacher => ({
-				name: teacher.name,
-				subject: teacher.subject.name,
-				availableTimeslots: teacher.availableTimeslots.map(timeslot => timeslot.toString()),
-			})),
-			objectives: this.settings.objectives.map(objective => objective.name),
-			numberOfTrios: this.settings.trios.length,
-		};
 	}
 	
 	@HostListener('window:keydown', ['$event'])

@@ -10,6 +10,7 @@
 #include "Objective/Objective.h"
 #include "Objective/ObjectiveComputation.h"
 #include "Colle.h"
+#include "State.h"
 #include "Timeslot.h"
 
 using operations_research::TimeLimit;
@@ -25,28 +26,18 @@ using operations_research::sat::NewFeasibleSolutionObserver;
 using std::unordered_map;
 using std::vector;
 
-Solver::Solver()
+Solver::Solver(State const *state): state(state)
 {
 }
 
-bool Solver::compute(
-	vector<Subject> const &newSubjects, vector<Teacher> const &newTeachers, vector<Trio> const &newTrios, vector<Week> const &newWeeks,
-	vector<Objective const *> const &newObjectives,
-	std::function<void(vector<Colle> const &colles, vector<ObjectiveComputation> const &objectivesValues)> const &solutionFound
-)
+bool Solver::compute(std::function<void(vector<Colle> const &colles, vector<ObjectiveComputation> const &objectivesValues)> const &solutionFound)
 {
-	subjects = newSubjects;
-	teachers = newTeachers;
-	trios = newTrios;
-	weeks = newWeeks;
-	objectives = newObjectives;
-
 	CpModelBuilder modelBuilder;
 
 	SolverVar isTrioWithTeacherAtTimeslotInWeek;
-	for (auto const &teacher: teachers) {
-		for (auto const &trio: trios) {
-			for (auto const &week: weeks) {
+	for (auto const &teacher: state->getTeachers()) {
+		for (auto const &trio: state->getTrios()) {
+			for (auto const &week: state->getWeeks()) {
 				for (auto const &timeslot: teacher.getAvailableTimeslots()) {
 					isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week] = modelBuilder.NewBoolVar();
 				}
@@ -55,7 +46,7 @@ bool Solver::compute(
 	}
 
 	std::unordered_set<Timeslot> timeslots;
-	for (auto const &teacher: teachers) {
+	for (auto const &teacher: state->getTeachers()) {
 		for (auto const &timeslot: teacher.getAvailableTimeslots()) {
 			timeslots.insert(timeslot);
 		}
@@ -66,12 +57,12 @@ bool Solver::compute(
 	/***************************/
 
 	// Teachers cannot have two trios at the same time
-	for (auto const &week: weeks) {
-		for (auto const &teacher: teachers) {
+	for (auto const &week: state->getWeeks()) {
+		for (auto const &teacher: state->getTeachers()) {
 			for (auto const &timeslot: teacher.getAvailableTimeslots()) {
 				vector<BoolVar> collesOfTeacherAtTimeslotInWeek;
 
-				for (auto const &trio: trios) {
+				for (auto const &trio: state->getTrios()) {
 					collesOfTeacherAtTimeslotInWeek.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week]);
 				}
 
@@ -81,12 +72,12 @@ bool Solver::compute(
 	}
 
 	// Trios cannot have two colles at the same time
-	for (auto const &week: weeks) {
-		for (auto const &trio: trios) {
+	for (auto const &week: state->getWeeks()) {
+		for (auto const &trio: state->getTrios()) {
 			for (auto const &timeslot: timeslots) {
 				vector<BoolVar> collesOfTriosAtTimeslotInWeek;
 
-				for (auto const &teacher: teachers) {
+				for (auto const &teacher: state->getTeachers()) {
 					if (teacher.getAvailableTimeslots().contains(timeslot)) {
 						collesOfTriosAtTimeslotInWeek.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week]);
 					}
@@ -98,15 +89,15 @@ bool Solver::compute(
 	}
 
 	// Trios must have each subject with the appropriate frequency, regularly distributed amongst weeks
-	for (auto const &trio: trios) {
-		for (auto const &subject: subjects) {
+	for (auto const &trio: state->getTrios()) {
+		for (auto const &subject: state->getSubjects()) {
 			// We go through all consecutives sets of `frequency` weeks,
 			// which exclude some of the last weeks as starting point of the set.
-			for (auto startingWeek = weeks.cbegin(); startingWeek != std::prev(weeks.cend(), subject.getFrequency() - 1); ++startingWeek) {
+			for (auto startingWeek = state->getWeeks().cbegin(); startingWeek != std::prev(state->getWeeks().cend(), subject.getFrequency() - 1); ++startingWeek) {
 				vector<BoolVar> collesOfTrioInSubjectInSetOfWeeks;
 
 				for (auto week = startingWeek; week != startingWeek + subject.getFrequency(); ++week) {
-					for (auto const &teacher: getTeachersOfSubject(subject)) {
+					for (auto const &teacher: state->getTeachersOfSubject(subject)) {
 						for (auto const &timeslot: teacher.getAvailableTimeslots()) {
 							collesOfTrioInSubjectInSetOfWeeks.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][*week]);
 						}
@@ -120,7 +111,7 @@ bool Solver::compute(
 
 	// Trios must have a regular number of subjects each week
 	auto bestSubjectsCombinations = getBestSubjectsCombinations();
-	for (auto const &trio: trios) {
+	for (auto const &trio: state->getTrios()) {
 		vector<BoolVar> subjectsCombinationVars;
 
 		for (auto const &subjectsCombination: bestSubjectsCombinations) {
@@ -130,7 +121,7 @@ bool Solver::compute(
 			for (auto const &[subject, week]: subjectsCombination) {
 				vector<BoolVar> collesOfTrioInSubjectInWeek;
 
-				for (auto const &teacher: getTeachersOfSubject(subject)) {
+				for (auto const &teacher: state->getTeachersOfSubject(subject)) {
 					for (auto const &timeslot: teacher.getAvailableTimeslots()) {
 						collesOfTrioInSubjectInWeek.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week]);
 					}
@@ -148,8 +139,8 @@ bool Solver::compute(
 	/****************************/
 
 	std::vector<ObjectiveComputation> objectiveComputations;
-	for (auto const &objective: objectives) {
-		objectiveComputations.push_back(objective->compute(subjects, teachers, trios, weeks, isTrioWithTeacherAtTimeslotInWeek, modelBuilder));
+	for (auto const &objective: state->getObjectives()) {
+		objectiveComputations.push_back(objective->compute(state, isTrioWithTeacherAtTimeslotInWeek, modelBuilder));
 	};
 
 	LinearExpr globalObjectiveExpression;
@@ -191,7 +182,7 @@ void Solver::stopComputation()
 int Solver::getCycleDuration() const
 {
 	int cycleDuration = 1;
-	for (auto const &subject: subjects) {
+	for (auto const &subject: state->getSubjects()) {
 		cycleDuration = std::lcm(cycleDuration, subject.getFrequency());
 	}
 
@@ -203,12 +194,12 @@ vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() 
 {
 	// Create all possible combinations
 	vector<std::unordered_map<Subject, Week>> possibleCombinations = {{}};
-	for (auto const &subject: subjects) {
+	for (auto const &subject: state->getSubjects()) {
 		auto lastPossibleCombinations = possibleCombinations;
 		possibleCombinations.clear();
 
 		for (auto const &combination: lastPossibleCombinations) {
-			for (auto week = weeks.begin(); week != std::next(weeks.begin(), subject.getFrequency()); ++week) {
+			for (auto week = state->getWeeks().begin(); week != std::next(state->getWeeks().begin(), subject.getFrequency()); ++week) {
 				auto newCombination = combination;
 				newCombination.emplace(subject, *week);
 				possibleCombinations.push_back(newCombination);
@@ -221,7 +212,7 @@ vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() 
 	int cycleDuration = getCycleDuration();
 	for (auto const &combination: possibleCombinations) {
 		int maxSubjects = 0;
-		for (auto week = weeks.begin(); week != std::next(weeks.begin(), cycleDuration); ++week) {
+		for (auto week = state->getWeeks().begin(); week != std::next(state->getWeeks().begin(), cycleDuration); ++week) {
 			int nbSubjects = 0;
 			for (auto const &[subject, startingWeek]: combination) {
 				int distance = week->getId() - startingWeek.getId();
@@ -248,24 +239,12 @@ vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() 
 	return bestCombinations;
 }
 
-vector<Teacher> Solver::getTeachersOfSubject(const Subject& subject) const
-{
-	vector<Teacher> teachersOfSubject;
-	for (auto const &teacher: teachers) {
-		if (teacher.getSubject() == subject) {
-			teachersOfSubject.push_back(teacher);
-		}
-	}
-
-	return teachersOfSubject;
-}
-
 vector<Colle> Solver::getColles(CpSolverResponse const &response, SolverVar const &isTrioWithTeacherAtTimeslotInWeek) const
 {
 	vector<Colle> colles;
-	for (auto const &week: weeks) {
-		for (auto const &teacher: teachers) {
-			for (auto const &trio: trios) {
+	for (auto const &week: state->getWeeks()) {
+		for (auto const &teacher: state->getTeachers()) {
+			for (auto const &trio: state->getTrios()) {
 				for (auto const &timeslot: teacher.getAvailableTimeslots()) {
 					if (SolutionBooleanValue(response, isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week))) {
 						colles.push_back(Colle(teacher, timeslot, trio, week));

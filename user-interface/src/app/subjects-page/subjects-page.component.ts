@@ -5,7 +5,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
 import { Subject } from '../subject';
-import { SettingsService } from '../settings.service';
+import { StateService } from '../state.service';
 import { UndoStackService } from '../undo-stack.service';
 
 const standardSubjects = {
@@ -61,7 +61,7 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	selectedStandardClass: StandardClass | undefined;
 	readonly standardClasses = standardClasses;
 	
-	constructor(public settings: SettingsService, private snackBar: MatSnackBar, private undoStack: UndoStackService) { }
+	constructor(public state: StateService, private snackBar: MatSnackBar, private undoStack: UndoStackService) { }
 	
 	ngOnInit() {
 		this.undoStackSubscription = this.undoStack.changeObservable.subscribe(() => this.updateSelectedSubject());
@@ -72,13 +72,13 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	}
 	
 	onDrop($event: CdkDragDrop<any[]>) {
-		this.selectedSubjects = [this.settings.subjects[$event.previousIndex]];
+		this.selectedSubjects = [this.state.subjects[$event.previousIndex]];
 		this.undoStack.actions.move('subjects', $event.previousIndex, $event.currentIndex);
 	}
 	
 	addNewSubject() {
 		let name = '';
-		for (let i = 1; name = `Matière ${i}`, this.settings.subjects.some(subject => subject.name === name || subject.shortName === name); ++i) {
+		for (let i = 1; name = `Matière ${i}`, this.state.subjects.some(subject => subject.name === name || subject.shortName === name); ++i) {
 		}
 		
 		this.undoStack.actions.push('subjects', new Subject(name, name, 1, '#aaaaaa'));
@@ -86,12 +86,12 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	
 	deleteSubject() {
 		const subject = this.selectedSubjects[0];
-		const index = this.settings.subjects.indexOf(subject);
+		const index = this.state.subjects.indexOf(subject);
 		let hasAssociatedTeachers = false;
 		
 		this.undoStack.startGroup();
-		for (let i = this.settings.teachers.length - 1; i >= 0; --i) {
-			if (this.settings.teachers[i].subject === subject) {
+		for (let i = this.state.teachers.length - 1; i >= 0; --i) {
+			if (this.state.teachers[i].subject === subject) {
 				this.undoStack.actions.splice('teachers', i);
 				hasAssociatedTeachers = true;
 			}
@@ -99,7 +99,7 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 		this.undoStack.actions.splice('subjects', index);
 		this.undoStack.endGroup();
 		
-		this.selectedSubjects = this.settings.subjects.length > 0 ? [this.settings.subjects[Math.max(0, index - 1)]] : [];
+		this.selectedSubjects = this.state.subjects.length > 0 ? [this.state.subjects[Math.max(0, index - 1)]] : [];
 		
 		if (hasAssociatedTeachers) {
 			let observable = this.snackBar.open(
@@ -117,9 +117,9 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	}
 	
 	updateSelectedSubject() {
-		const index = this.settings.subjects.indexOf(this.selectedSubjects[0]);
+		const index = this.state.subjects.indexOf(this.selectedSubjects[0]);
 		if (index === -1) {
-			this.selectedSubjects = this.settings.subjects.length > 0 ? [this.settings.subjects[this.settings.subjects.length - 1]] : [];
+			this.selectedSubjects = this.state.subjects.length > 0 ? [this.state.subjects[this.state.subjects.length - 1]] : [];
 		}
 	}
 	

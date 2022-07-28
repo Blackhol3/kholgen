@@ -4,10 +4,6 @@
 #include <functional>
 #include <unordered_map>
 #include <vector>
-#include "Subject.h"
-#include "Teacher.h"
-#include "Trio.h"
-#include "Week.h"
 
 namespace operations_research::sat {
 	class BoolVar;
@@ -16,35 +12,28 @@ namespace operations_research::sat {
 class Colle;
 class Objective;
 class ObjectiveComputation;
+class State;
+class Subject;
+class Teacher;
+class Timeslot;
+class Trio;
+class Week;
 
 using SolverVar = std::unordered_map<Trio, std::unordered_map<Teacher, std::unordered_map<Timeslot, std::unordered_map<Week, operations_research::sat::BoolVar>>>>;
 
 class Solver
 {
 	public:
-		Solver();
-		bool compute(
-			std::vector<Subject> const &newSubjects,
-			std::vector<Teacher> const &newTeachers,
-			std::vector<Trio> const &newTrios,
-			std::vector<Week> const &newWeeks,
-			std::vector<Objective const *> const &newObjectives,
-			std::function<void(std::vector<Colle> const &colles, std::vector<ObjectiveComputation> const &objectiveComputations)> const &solutionFound
-		);
+		Solver(State const *state);
+		bool compute(std::function<void(std::vector<Colle> const &colles, std::vector<ObjectiveComputation> const &objectiveComputations)> const &solutionFound);
 		void stopComputation();
 
 	protected:
-		std::vector<Subject> subjects;
-		std::vector<Teacher> teachers;
-		std::vector<Trio> trios;
-		std::vector<Week> weeks;
-		std::vector<Objective const *> objectives;
-
+		State const *state;
 		std::atomic<bool> shouldComputationBeStopped;
 
 		int getCycleDuration() const;
 		std::vector<std::unordered_map<Subject, Week>> getBestSubjectsCombinations() const;
-		std::vector<Teacher> getTeachersOfSubject(Subject const &subject) const;
 
 		std::vector<Colle> getColles(operations_research::sat::CpSolverResponse const &response, SolverVar const &isTrioWithTeacherAtTimeslotInWeek) const;
 };

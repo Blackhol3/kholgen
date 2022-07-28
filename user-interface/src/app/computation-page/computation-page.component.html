@@ -1,7 +1,7 @@
 <div>
 	<button mat-raised-button *ngIf="!isRunning" (click)="compute()">Démarrer le calcul <mat-icon>play_arrow</mat-icon></button>
 	<button mat-raised-button *ngIf="isRunning" (click)="stopComputation()">Arrêter le calcul <mat-icon>stop</mat-icon></button>
-	<button mat-raised-button [disabled]="settings.colles.length === 0" [matMenuTriggerFor]="saveMenu">Sauvegarder…</button>
+	<button mat-raised-button [disabled]="state.colles.length === 0" [matMenuTriggerFor]="saveMenu">Sauvegarder…</button>
 	<mat-menu #saveMenu="matMenu" class="no-overflow">
 		<button mat-menu-item (click)="saveAsExcel()">Excel (.xlsx)</button>
 		<button mat-menu-item (click)="saveAsCsv()">CSV (.csv)</button>
@@ -9,7 +9,7 @@
 </div>
 <mat-progress-bar *ngIf="isRunning" mode="indeterminate" @insertAnimation></mat-progress-bar>
 <section>
-	<table mat-table #objectivesTable="matTable" [dataSource]="settings.objectives" class="mat-elevation-z3">
+	<table mat-table #objectivesTable="matTable" [dataSource]="state.objectives" class="mat-elevation-z3">
 		<ng-container matColumnDef="objective">
 			<th mat-header-cell *matHeaderCellDef>Contrainte</th>
 			<td mat-cell *matCellDef="let rowData">{{rowData.readableName}}</td>

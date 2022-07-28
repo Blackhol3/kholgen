@@ -4,7 +4,7 @@ import { Timeslot } from '../timeslot';
 import { Trio } from '../trio';
 import { Week } from '../week';
 
-import { SettingsService } from '../settings.service';
+import { StateService } from '../state.service';
 
 @Component({
 	selector: 'app-colloscope',
@@ -17,19 +17,19 @@ export class ColloscopeComponent {
 	tableSubjectRowspan: number[] = [];
 	tableTeacherRowspan: number[] = [];
 	
-	constructor(public settings: SettingsService) { }
+	constructor(public state: StateService) { }
 	
 	getTableData() {
 		this.tableData = [];
-		for (let subject of this.settings.subjects) {
-			for (let teacher of this.settings.teachers.filter(t => t.subject === subject)) {
+		for (let subject of this.state.subjects) {
+			for (let teacher of this.state.teachers.filter(t => t.subject === subject)) {
 				for (let timeslot of teacher.availableTimeslots) {
 					let triosByWeek = [];
-					for (let week of this.settings.weeks) {
+					for (let week of this.state.weeks) {
 						triosByWeek.push(this.getTrio(teacher, timeslot, week));
 					}
 					
-					if (this.settings.colles.length === 0 || triosByWeek.some(trio => trio !== null)) {
+					if (this.state.colles.length === 0 || triosByWeek.some(trio => trio !== null)) {
 						this.tableData.push({
 							subject: subject,
 							teacher: teacher,
@@ -41,7 +41,7 @@ export class ColloscopeComponent {
 			}
 		}
 		
-		this.tableWeeksHeaderRowDef = this.settings.weeks.map(week => 'week-' + week.id);
+		this.tableWeeksHeaderRowDef = this.state.weeks.map(week => 'week-' + week.id);
 		
 		this.tableSubjectRowspan = this.getRowspanArray('subject');
 		this.tableTeacherRowspan = this.getRowspanArray('teacher');
@@ -50,7 +50,7 @@ export class ColloscopeComponent {
 	}
 	
 	getTrio(teacher: Teacher, timeslot: Timeslot, week: Week): Trio | null {
-		for (let colle of this.settings.colles) {
+		for (let colle of this.state.colles) {
 			if (colle.teacher === teacher && colle.timeslot.isEqual(timeslot) && colle.week === week) {
 				return colle.trio;
 			}

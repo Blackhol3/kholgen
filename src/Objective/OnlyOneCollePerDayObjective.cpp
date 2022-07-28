@@ -3,6 +3,7 @@
 #include <ortools/sat/cp_model.h>
 #include <QString>
 #include "ObjectiveComputation.h"
+#include "../State.h"
 #include "../Slot.h"
 #include "../Trio.h"
 #include "../Week.h"
@@ -14,7 +15,7 @@ using std::unordered_map;
 using std::vector;
 
 ObjectiveComputation OnlyOneCollePerDayObjective::compute(
-	vector<Subject> const &, vector<Teacher> const &teachers, vector<Trio> const &trios, vector<Week> const &weeks,
+	State const *state,
 	unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> const &isTrioWithTeacherAtTimeslotInWeek,
 	CpModelBuilder &modelBuilder
 ) const
@@ -22,9 +23,9 @@ ObjectiveComputation OnlyOneCollePerDayObjective::compute(
 	LinearExpr expression;
 	int maxValue = 0;
 
-	auto sameDaySlots = getNotSimultaneousSameDaySlotsWithDifferentSubjects(teachers);
-	for (auto const &week: weeks) {
-		for (auto const &trio: trios) {
+	auto const &sameDaySlots = state->getNotSimultaneousSameDaySlotsWithDifferentSubjects();
+	for (auto const &week: state->getWeeks()) {
+		for (auto const &trio: state->getTrios()) {
 			for (auto const &[slot1, slot2]: sameDaySlots) {
 				auto areSameDaySlotsUsed = modelBuilder.NewBoolVar();
 

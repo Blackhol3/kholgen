@@ -7,6 +7,14 @@ Subject::Subject(const QString &name, const QString &shortName, int frequency, Q
 
 }
 
+Subject::Subject(const QJsonObject& json):
+	name(json["name"].toString()),
+	shortName(json["shortName"].toString()),
+	frequency(json["frequency"].toInt()),
+	color(json["color"].toString())
+{
+}
+
 QString const &Subject::getName() const
 {
 	return name;

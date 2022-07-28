@@ -1,7 +1,12 @@
 #include "Exporter.h"
 
-Exporter::Exporter(std::vector<Subject> const &subjects, std::vector<Teacher> const &teachers, std::vector<Trio> const &trios, std::vector<Colle> const &colles):
-	subjects(subjects), teachers(teachers), trios(trios), colles(colles)
+#include "Slot.h"
+#include "State.h"
+#include "Subject.h"
+#include "Teacher.h"
+#include "Trio.h"
+
+Exporter::Exporter(State const *state): state(state)
 {
 }
 
@@ -11,8 +16,8 @@ std::unordered_map<Slot, unsigned int> Exporter::getRowBySlot() const
 
 	auto sortedColles = colles;
 	std::sort(sortedColles.begin(), sortedColles.end(), [&] (auto const &a, auto const &b) {
-		if (a.getSubject() != b.getSubject()) { return find(subjects.begin(), subjects.end(), a.getSubject()) < find(subjects.begin(), subjects.end(), b.getSubject()); }
-		if (a.getTeacher() != b.getTeacher()) { return find(teachers.begin(), teachers.end(), a.getTeacher()) < find(teachers.begin(), teachers.end(), b.getTeacher()); }
+		if (a.getSubject() != b.getSubject()) { return find(state->getSubjects().begin(), state->getSubjects().end(), a.getSubject()) < find(state->getSubjects().begin(), state->getSubjects().end(), b.getSubject()); }
+		if (a.getTeacher() != b.getTeacher()) { return find(state->getTeachers().begin(), state->getTeachers().end(), a.getTeacher()) < find(state->getTeachers().begin(), state->getTeachers().end(), b.getTeacher()); }
 		return a.getTimeslot() < b.getTimeslot();
 	});
 
@@ -57,7 +62,7 @@ std::unordered_map<Subject, std::vector<unsigned int>> Exporter::getRowsBySubjec
 unsigned int Exporter::getMaximalNumberOfCollesByWeek() const
 {
 	unsigned int maximalNumberOfCollesByWeek = 0;
-	for (auto const &trio: trios)
+	for (auto const &trio: state->getTrios())
 	{
 		auto numberOfCollesInFirstWeek = std::count_if(colles.cbegin(), colles.cend(), [&] (auto const &colle) { return colle.getTrio() == trio && colle.getWeek().getId() == 0; });
 		if (maximalNumberOfCollesByWeek < numberOfCollesInFirstWeek) {
@@ -73,12 +78,8 @@ std::unordered_map<Subject, std::vector<Teacher>> Exporter::getTeachersBySubject
 	std::unordered_map<Subject, std::vector<Teacher>> teachersBySubject;
 	auto const rowsByTeacher = getRowsByTeacher();
 
-	for (auto const &subject: subjects) {
-		for (auto const &teacher: teachers) {
-			if (teacher.getSubject() != subject) {
-				continue;
-			}
-
+	for (auto const &subject: state->getSubjects()) {
+		for (auto const &teacher: state->getTeachersOfSubject(subject)) {
 			if (rowsByTeacher.contains(teacher)) {
 				teachersBySubject[subject].push_back(teacher);
 			}
@@ -99,6 +100,4 @@ std::unordered_map<Trio, std::unordered_map<Week, std::vector<Slot>>> Exporter::
 	return slotsByTrioAndWeek;
 }
 
-Exporter::~Exporter()
-{
-}
+Exporter::~Exporter() = default;

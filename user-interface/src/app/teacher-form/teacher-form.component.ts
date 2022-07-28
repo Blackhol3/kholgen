@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { Subject } from '../subject';
 import { Teacher } from '../teacher';
 import { Timeslot } from '../timeslot';
-import { SettingsService } from '../settings.service';
+import { StateService } from '../state.service';
 import { UndoStackService } from '../undo-stack.service';
 
 @Component({
@@ -23,7 +23,7 @@ export class TeacherFormComponent implements  OnInit, OnChanges, OnDestroy {
 	}, {validators: control => this.notUniqueValidator(control)});
 	undoStackSubscription: Subscription | undefined;
 	
-	constructor(public settings: SettingsService, private undoStack: UndoStackService, private formBuilder: FormBuilder) {
+	constructor(public state: StateService, private undoStack: UndoStackService, private formBuilder: FormBuilder) {
 		this.form.valueChanges.subscribe(() => this.formChange());
 	}
 
@@ -52,7 +52,7 @@ export class TeacherFormComponent implements  OnInit, OnChanges, OnDestroy {
 		let teacher = this.teacher as any;
 		for (let [key, control] of Object.entries(this.form.controls)) {
 			if (control.valid && teacher[key] !== this.getControlValue(key)) {
-				this.undoStack.actions.update(`teachers[${this.settings.teachers.indexOf(teacher)}].${key}`, this.getControlValue(key), key !== 'availableTimeslots');
+				this.undoStack.actions.update(`teachers[${this.state.teachers.indexOf(teacher)}].${key}`, this.getControlValue(key), key !== 'availableTimeslots');
 			}
 			else {
 				control.markAsTouched();
@@ -71,7 +71,7 @@ export class TeacherFormComponent implements  OnInit, OnChanges, OnDestroy {
 			subject: control.get('subject')?.errors ?? {},
 		};
 		
-		for (let teacher of this.settings.teachers) {
+		for (let teacher of this.state.teachers) {
 			if (teacher !== this.teacher && teacher.subject === this.getControlValue('subject') && teacher.name === this.getControlValue('name')) {
 				const error = {notUnique: {teacher: teacher}};
 				control.get('name')?.setErrors(Object.assign({}, errors.name, error));

@@ -3,6 +3,7 @@
 #include <QString>
 #include <functional>
 #include <set>
+#include <vector>
 #include "Subject.h"
 #include "Timeslot.h"
 
@@ -12,6 +13,8 @@ class Teacher
 {
 	public:
 		Teacher(QString const &name, Subject const &subject, std::set<Timeslot> const &availableTimeslots);
+		Teacher(QJsonObject const &json, std::vector<Subject> const &subjects);
+
 		QString const &getName() const;
 		Subject const &getSubject() const;
 		std::set<Timeslot> const &getAvailableTimeslots() const;

@@ -3,7 +3,7 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { get, set } from 'lodash-es';
 import { Subject } from 'rxjs';
 
-import { SettingsService } from './settings.service';
+import { StateService } from './state.service';
 
 interface Command {
 	undo(state: object): void;
@@ -161,7 +161,7 @@ export class UndoStackService {
 	protected redoStack: Command[] = [];
 	protected groupLevel = 0;
 	
-	constructor(state: SettingsService) {
+	constructor(state: StateService) {
 		this.state = state;
 	}
 	

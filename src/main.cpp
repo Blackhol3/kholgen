@@ -5,8 +5,10 @@
 #include <QWebSocketServer>
 #include "misc.h"
 #include "Communication.h"
-#include "JsonImporter.h"
+#include "CsvExporter.h"
+#include "ExcelExporter.h"
 #include "Solver.h"
+#include "State.h"
 #include "WebSocketTransport.h"
 #include "Objective/EvenDistributionBetweenTeachersObjective.h"
 #include "Objective/MinimalNumberOfSlotsObjective.h"
@@ -59,10 +61,13 @@ int main(int argc, char *argv[])
 		&sameSlotOnlyOnceInCycleObjective,
 	};
 
-	Solver solver;
-	JsonImporter importer(objectives);
+	State state(objectives);
+	Solver solver(&state);
 
-	Communication communication(&importer, &solver);
+	CsvExporter csvExporter(&state);
+	ExcelExporter excelExporter(&state);
+
+	Communication communication(&state, &solver, &csvExporter, &excelExporter);
 	channel.registerObject("communication", &communication);
 
 	return a.exec();

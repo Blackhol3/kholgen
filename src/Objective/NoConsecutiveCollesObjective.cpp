@@ -3,6 +3,7 @@
 #include <ortools/sat/cp_model.h>
 #include <QString>
 #include "ObjectiveComputation.h"
+#include "../State.h"
 #include "../Slot.h"
 #include "../Trio.h"
 #include "../Week.h"
@@ -14,7 +15,7 @@ using std::unordered_map;
 using std::vector;
 
 ObjectiveComputation NoConsecutiveCollesObjective::compute(
-	vector<Subject> const &, vector<Teacher> const &teachers, vector<Trio> const &trios, vector<Week> const &weeks,
+	State const *state,
 	unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> const &isTrioWithTeacherAtTimeslotInWeek,
 	CpModelBuilder &modelBuilder
 ) const
@@ -22,9 +23,10 @@ ObjectiveComputation NoConsecutiveCollesObjective::compute(
 	LinearExpr expression;
 	int maxValue = 0;
 
-	for (auto const &week: weeks) {
-		for (auto const &trio: trios) {
-			for (auto const &[slot1, slot2]: getConsecutiveSlotsWithDifferentSubjects(teachers)) {
+	auto const &consecutiveSlots = state->getConsecutiveSlotsWithDifferentSubjects();
+	for (auto const &week: state->getWeeks()) {
+		for (auto const &trio: state->getTrios()) {
+			for (auto const &[slot1, slot2]: consecutiveSlots) {
 				auto areConsecutiveSlotsUsed = modelBuilder.NewBoolVar();
 
 				modelBuilder.AddBoolAnd({

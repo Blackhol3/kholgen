@@ -3,6 +3,7 @@
 #include <ortools/sat/cp_model.h>
 #include <QString>
 #include "ObjectiveComputation.h"
+#include "../State.h"
 #include "../Teacher.h"
 #include "../Trio.h"
 #include "../Week.h"
@@ -14,7 +15,7 @@ using std::unordered_map;
 using std::vector;
 
 ObjectiveComputation MinimalNumberOfSlotsObjective::compute(
-	vector<Subject> const &, vector<Teacher> const &teachers, vector<Trio> const &trios, vector<Week> const &weeks,
+	State const *state,
 	unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> const &isTrioWithTeacherAtTimeslotInWeek,
 	CpModelBuilder &modelBuilder
 ) const
@@ -22,13 +23,13 @@ ObjectiveComputation MinimalNumberOfSlotsObjective::compute(
 	LinearExpr expression;
 	int maxValue = 0;
 
-	for (auto const &teacher: teachers) {
+	for (auto const &teacher: state->getTeachers()) {
 		for (auto const &timeslot: teacher.getAvailableTimeslots()) {
 			vector<BoolVar> collesInSlot;
 			vector<BoolVar> collesNotInSlot;
 
-			for (auto const &week: weeks) {
-				for (auto const &trio: trios) {
+			for (auto const &week: state->getWeeks()) {
+				for (auto const &trio: state->getTrios()) {
 					collesInSlot.push_back(isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week));
 					collesNotInSlot.push_back(isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week).Not());
 				}

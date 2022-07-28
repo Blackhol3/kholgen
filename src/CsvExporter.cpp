@@ -1,11 +1,15 @@
 #include "CsvExporter.h"
 
 #include <QObject>
+#include "Slot.h"
+#include "State.h"
 #include "Subject.h"
 #include "Teacher.h"
 
-std::string CsvExporter::save()
+std::string CsvExporter::save(std::vector<Colle> const &newColles)
 {
+	colles = newColles;
+
 	text.clear();
 	text += "sep=,";
 	text += "\n"; createTeachersPart();
@@ -64,7 +68,7 @@ void CsvExporter::createTeachersPart()
 	{
 		auto const &row = rowBySlot.at(Slot(colle.getTeacher(), colle.getTimeslot()));
 		auto const &column = firstTrioColumn + static_cast<unsigned int>(colle.getWeek().getId());
-		contents[row + firstTrioRow][column] = QString::number(std::distance(trios.begin(), std::find(trios.begin(), trios.end(), colle.getTrio())) + 1);
+		contents[row + firstTrioRow][column] = QString::number(std::distance(state->getTrios().begin(), std::find(state->getTrios().begin(), state->getTrios().end(), colle.getTrio())) + 1);
 	}
 
 	// Print the weeks
@@ -89,7 +93,7 @@ void CsvExporter::createTriosPart()
 	auto const maximalNumberOfCollesByWeek = getMaximalNumberOfCollesByWeek();
 
 	// Print the trios
-	for (int idTrio = 0; idTrio < static_cast<int>(trios.size()); ++idTrio)
+	for (int idTrio = 0; idTrio < static_cast<int>(state->getTrios().size()); ++idTrio)
 	{
 		auto firstRow = maximalNumberOfCollesByWeek * static_cast<unsigned int>(idTrio) + firstSlotRow;
 		contents[firstRow][trioColumn] = QObject::tr("G%1").arg(idTrio + 1);
@@ -100,7 +104,7 @@ void CsvExporter::createTriosPart()
 	auto const &slotsByTrioAndWeek = getSlotsByTrioAndWeek();
 	for (auto slotsByWeek = slotsByTrioAndWeek.cbegin(); slotsByWeek != slotsByTrioAndWeek.cend(); ++slotsByWeek)
 	{
-		auto idTrio = std::distance(trios.begin(), std::find(trios.begin(), trios.end(), slotsByWeek->first));
+		auto idTrio = std::distance(state->getTrios().begin(), std::find(state->getTrios().begin(), state->getTrios().end(), slotsByWeek->first));
 		for (auto slotsOfWeek = slotsByWeek->second.cbegin(); slotsOfWeek != slotsByWeek->second.cend(); ++slotsOfWeek)
 		{
 			auto idWeek = static_cast<unsigned int>(slotsOfWeek->first.getId());

@@ -3,7 +3,7 @@ import { AbstractControl, FormBuilder, ValidationErrors, Validators } from '@ang
 import { Subscription } from 'rxjs';
 
 import { Subject } from '../subject';
-import { SettingsService } from '../settings.service';
+import { StateService } from '../state.service';
 import { UndoStackService } from '../undo-stack.service';
 
 @Component({
@@ -22,7 +22,7 @@ export class SubjectFormComponent implements OnInit, OnChanges, OnDestroy {
 	});
 	undoStackSubscription: Subscription | undefined;
 	
-	constructor(private settings: SettingsService, private undoStack: UndoStackService, private formBuilder: FormBuilder) {
+	constructor(private state: StateService, private undoStack: UndoStackService, private formBuilder: FormBuilder) {
 		this.form.valueChanges.subscribe(() => this.formChange());
 	}
 
@@ -51,7 +51,7 @@ export class SubjectFormComponent implements OnInit, OnChanges, OnDestroy {
 		let subject = this.subject as any;
 		for (let [key, control] of Object.entries(this.form.controls)) {
 			if (control.valid && subject[key] !== this.getControlValue(key)) {
-				this.undoStack.actions.update(`subjects[${this.settings.subjects.indexOf(subject)}].${key}`, this.getControlValue(key));
+				this.undoStack.actions.update(`subjects[${this.state.subjects.indexOf(subject)}].${key}`, this.getControlValue(key));
 			}
 			else {
 				control.markAsTouched();
@@ -65,7 +65,7 @@ export class SubjectFormComponent implements OnInit, OnChanges, OnDestroy {
 	}
 
 	protected notUniqueValidator(control: AbstractControl, property: keyof Subject): ValidationErrors | null {
-		for (let subject of this.settings.subjects) {
+		for (let subject of this.state.subjects) {
 			if (subject !== this.subject && subject[property] === control.value.trim()) {
 				return {notUnique: {subject: subject, property: property}};
 			}

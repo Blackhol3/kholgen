@@ -15,6 +15,8 @@ class Timeslot
 {
 	public:
 		Timeslot(Day const &day, int hour);
+		explicit Timeslot(QJsonObject const &json);
+
 		Day getDay() const;
 		int getHour() const;
 

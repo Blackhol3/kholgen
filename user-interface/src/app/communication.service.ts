@@ -7,7 +7,7 @@ import { ConnectionDialogComponent } from './connection-dialog/connection-dialog
 import { Colle } from './colle';
 import { Teacher } from './teacher';
 import { Timeslot } from './timeslot';
-import { SettingsService } from './settings.service';
+import { StateService } from './state.service';
 
 @Injectable({
 	providedIn: 'root'
@@ -67,7 +67,7 @@ export class CommunicationService {
 		}
 	}
 	
-	compute(settings: SettingsService): Observable<void> {
+	compute(state: StateService): Observable<void> {
 		this.checkIfOpen();
 		
 		if (this.computeSubject !== undefined) {
@@ -77,20 +77,14 @@ export class CommunicationService {
 		this.computeSubject = new Subject<void>();
 		this.communication.solutionFound.connect((jsonColles: any[], jsonObjectiveComputations: any[]) => {
 			this.computeSubject?.next();
-			this.importJsonColles(settings, jsonColles);
-			this.importJsonObjectiveComputations(settings, jsonObjectiveComputations);
+			this.importJsonColles(state, jsonColles);
+			this.importJsonObjectiveComputations(state, jsonObjectiveComputations);
 		});
 		this.communication.computationFinished.connect(() => {
 			this.computeSubject?.complete();
 			this.computeSubject = undefined;
 		});
-		this.communication.compute({
-			subjects: settings.subjects,
-			teachers: settings.teachers,
-			numberOfTrios: settings.trios.length,
-			numberOfWeeks: settings.weeks.length,
-			objectives: settings.objectives.map(objective => objective.name),
-		});
+		this.communication.compute(state.toSolverObject());
 		
 		return this.computeSubject.asObservable();
 	}
@@ -138,18 +132,18 @@ export class CommunicationService {
 		}
 	}
 	
-	protected importJsonColles(settings: SettingsService, jsonColles: any[]): void {
-		settings.colles = jsonColles.map((colle: any) => new Colle(
-			settings.teachers.find(teacher => teacher.name === colle.teacherName) as Teacher,
+	protected importJsonColles(state: StateService, jsonColles: any[]): void {
+		state.colles = jsonColles.map((colle: any) => new Colle(
+			state.teachers.find(teacher => teacher.name === colle.teacherName) as Teacher,
 			new Timeslot(colle.timeslot.day, colle.timeslot.hour),
-			settings.trios[colle.trioId],
-			settings.weeks[colle.weekId],
+			state.trios[colle.trioId],
+			state.weeks[colle.weekId],
 		));
 	}
 	
-	protected importJsonObjectiveComputations(settings: SettingsService, jsonObjectiveComputations: any[]): void {
+	protected importJsonObjectiveComputations(state: StateService, jsonObjectiveComputations: any[]): void {
 		for (let objectiveComputation of jsonObjectiveComputations) {
-			settings.objectives.find(objective => objective.name === objectiveComputation.objectiveName)?.setValue(objectiveComputation.value);
+			state.objectives.find(objective => objective.name === objectiveComputation.objectiveName)?.setValue(objectiveComputation.value);
 		};
 	}
 }

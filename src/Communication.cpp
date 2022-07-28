@@ -5,13 +5,12 @@
 #include <QtConcurrent>
 #include "CsvExporter.h"
 #include "ExcelExporter.h"
-#include "JsonImporter.h"
-#include "Objective/Objective.h"
 #include "Objective/ObjectiveComputation.h"
 #include "Solver.h"
+#include "State.h"
 
-Communication::Communication(JsonImporter* importer, Solver* solver, QObject *parent):
-	QObject(parent), importer(importer), solver(solver)
+Communication::Communication(State* state, Solver* solver, CsvExporter* csvExporter, ExcelExporter* excelExporter, QObject *parent):
+	QObject(parent), state(state), solver(solver), csvExporter(csvExporter), excelExporter(excelExporter)
 {
 }
 
@@ -31,18 +30,13 @@ void Communication::sendSolution(std::vector<ObjectiveComputation> const &object
 }
 
 /* @todo Only accepts a single computation */
-void Communication::compute(QJsonObject const &settings)
+void Communication::compute(QJsonObject const &jsonState)
 {
-	importer->read(settings);
+	state->import(jsonState);
 
 	QFutureWatcher<void> watcher;
 	watcher.setFuture(QtConcurrent::run([&]() {
 		bool success = solver->compute(
-			importer->getSubjects(),
-			importer->getTeachers(),
-			importer->getTrios(),
-			importer->getWeeks(),
-			importer->getObjectives(),
 			[&](auto const &newColles, auto const &objectiveComputations) {
 				colles = newColles;
 				sendSolution(objectiveComputations);
@@ -59,12 +53,10 @@ void Communication::stopComputation()
 
 QString Communication::exportAsCsv() const
 {
-	CsvExporter exporter(importer->getSubjects(), importer->getTeachers(), importer->getTrios(), colles);
-	return QString::fromStdString(exporter.save());
+	return QString::fromStdString(csvExporter->save(colles));
 }
 
 QByteArray Communication::exportAsExcel() const
 {
-	ExcelExporter exporter(importer->getSubjects(), importer->getTeachers(), importer->getTrios(), colles);
-	return QByteArray::fromStdString(exporter.save()).toBase64();
+	return QByteArray::fromStdString(excelExporter->save(colles)).toBase64();
 }

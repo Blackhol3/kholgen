@@ -9,7 +9,7 @@ class ExcelExporter : public Exporter
 {
 	public:
 		using Exporter::Exporter;
-		std::string save() override;
+		std::string save(std::vector<Colle> const &newColles) override;
 
 	protected:
 		std::unique_ptr<xlnt::workbook> workbook;

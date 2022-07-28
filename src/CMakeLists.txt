@@ -26,12 +26,12 @@ add_executable(${PROJECT_NAME}
     ExcelExporter.h
     Exporter.cpp
     Exporter.h
-    JsonImporter.cpp
-    JsonImporter.h
     Slot.cpp
     Slot.h
     Solver.cpp
     Solver.h
+    State.cpp
+    State.h
     Subject.cpp
     Subject.h
     Teacher.cpp
