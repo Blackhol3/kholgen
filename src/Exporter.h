@@ -15,7 +15,8 @@ class Week;
 class Exporter
 {
 	public:
-		Exporter(State const *state);
+		Exporter(State const &state);
+		Exporter(State const &&state) = delete;
 		virtual std::string save(std::vector<Colle> const &newColles) = 0;
 		virtual ~Exporter() = 0;
 

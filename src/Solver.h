@@ -24,7 +24,8 @@ using SolverVar = std::unordered_map<Trio, std::unordered_map<Teacher, std::unor
 class Solver
 {
 	public:
-		Solver(State const *state);
+		Solver(State const &state);
+		Solver(State const &&state) = delete;
 		bool compute(std::function<void(std::vector<Colle> const &colles, std::vector<ObjectiveComputation> const &objectiveComputations)> const &solutionFound);
 		void stopComputation();
 

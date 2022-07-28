@@ -6,7 +6,7 @@
 #include "Teacher.h"
 #include "Trio.h"
 
-Exporter::Exporter(State const *state): state(state)
+Exporter::Exporter(State const &state): state(&state)
 {
 }
 

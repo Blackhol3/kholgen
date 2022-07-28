@@ -16,7 +16,7 @@ class Communication : public QObject
 	Q_OBJECT
 
 	public:
-		Communication(State* state, Solver* solver, CsvExporter* csvExporter, ExcelExporter* excelExporter, QObject *parent = nullptr);
+		Communication(State &state, Solver &solver, CsvExporter &csvExporter, ExcelExporter &excelExporter, QObject *parent = nullptr);
 		void sendSolution(std::vector<ObjectiveComputation> const &objectiveComputations) const;
 
 	public slots:

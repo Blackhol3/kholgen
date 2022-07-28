@@ -62,12 +62,12 @@ int main(int argc, char *argv[])
 	};
 
 	State state(objectives);
-	Solver solver(&state);
+	Solver solver(state);
 
-	CsvExporter csvExporter(&state);
-	ExcelExporter excelExporter(&state);
+	CsvExporter csvExporter(state);
+	ExcelExporter excelExporter(state);
 
-	Communication communication(&state, &solver, &csvExporter, &excelExporter);
+	Communication communication(state, solver, csvExporter, excelExporter);
 	channel.registerObject("communication", &communication);
 
 	return a.exec();

@@ -4,15 +4,16 @@
 #include <functional>
 #include <set>
 #include <vector>
-#include "Subject.h"
 #include "Timeslot.h"
 
 class QJsonObject;
+class Subject;
 
 class Teacher
 {
 	public:
 		Teacher(QString const &name, Subject const &subject, std::set<Timeslot> const &availableTimeslots);
+		Teacher(QString const &name, Subject const &&subject, std::set<Timeslot> const &availableTimeslots) = delete;
 		Teacher(QJsonObject const &json, std::vector<Subject> const &subjects);
 
 		QString const &getName() const;
@@ -26,7 +27,7 @@ class Teacher
 
 	protected:
 		QString name;
-		Subject subject;
+		Subject const *subject;
 		std::set<Timeslot> availableTimeslots;
 };
 

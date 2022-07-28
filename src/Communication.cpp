@@ -9,8 +9,8 @@
 #include "Solver.h"
 #include "State.h"
 
-Communication::Communication(State* state, Solver* solver, CsvExporter* csvExporter, ExcelExporter* excelExporter, QObject *parent):
-	QObject(parent), state(state), solver(solver), csvExporter(csvExporter), excelExporter(excelExporter)
+Communication::Communication(State &state, Solver &solver, CsvExporter &csvExporter, ExcelExporter &excelExporter, QObject *parent):
+	QObject(parent), state(&state), solver(&solver), csvExporter(&csvExporter), excelExporter(&excelExporter)
 {
 }
 

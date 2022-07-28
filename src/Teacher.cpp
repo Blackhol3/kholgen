@@ -2,16 +2,17 @@
 
 #include <QJsonArray>
 #include <QJsonObject>
+#include "Subject.h"
 
 Teacher::Teacher(QString const &name, Subject const &subject, std::set<Timeslot> const &availableTimeslots):
-	name(name), subject(subject), availableTimeslots(availableTimeslots)
+	name(name), subject(&subject), availableTimeslots(availableTimeslots)
 {
 
 }
 
 Teacher::Teacher(QJsonObject const &json, std::vector<Subject> const &subjects):
 	name(json["name"].toString()),
-	subject(*std::find_if(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject.getName() == json["subject"].toObject()["name"]; }))
+	subject(&*std::find_if(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject.getName() == json["subject"].toObject()["name"]; }))
 {
 	for (auto const &jsonAvailableTimeslot: json["availableTimeslots"].toArray()) {
 		availableTimeslots.insert(Timeslot(jsonAvailableTimeslot.toObject()));
@@ -25,7 +26,7 @@ QString const &Teacher::getName() const
 
 Subject const &Teacher::getSubject() const
 {
-	return subject;
+	return *subject;
 }
 
 std::set<Timeslot> const &Teacher::getAvailableTimeslots() const
@@ -47,7 +48,7 @@ QJsonObject Teacher::toJsonObject() const
 
 	return {
 		{"name", name},
-		{"subjectName", subject.getName()},
+		{"subjectName", subject->getName()},
 		{"availableTimeslots", jsonAvailableTimeslots},
 	};
 }

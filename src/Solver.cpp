@@ -26,7 +26,7 @@ using operations_research::sat::NewFeasibleSolutionObserver;
 using std::unordered_map;
 using std::vector;
 
-Solver::Solver(State const *state): state(state)
+Solver::Solver(State const &state): state(&state)
 {
 }
 
@@ -152,6 +152,8 @@ bool Solver::compute(std::function<void(vector<Colle> const &colles, vector<Obje
 		globalObjectiveExpression += globalObjectiveFactor * objectiveComputation.getExpression();
 		globalObjectiveFactor *= objectiveComputation.getMaxValue() + 1;
 	}
+	qDebug() << "Global objective:";
+	qDebug() << "\tMaximal value" << globalObjectiveFactor;
 	modelBuilder.Minimize(globalObjectiveExpression);
 
 	shouldComputationBeStopped = false;
