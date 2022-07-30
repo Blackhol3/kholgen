@@ -20,15 +20,16 @@ export class Teacher {
 	toHumanJsonObject(state: State) {
 		return {
 			name: this.name,
-			subject: state.findId('subjects', this.subjectId).name,
+			subject: state.findId('subjects', this.subjectId)!.name,
 			availableTimeslots: this.availableTimeslots.map(timeslot => timeslot.toString()),
 		};
 	}
 	
-	static fromJsonObject(json: ReturnType<Teacher['toHumanJsonObject']>, subjects: Subject[]) {
-		return new Teacher(
+	static fromJsonObject(json: ReturnType<Teacher['toHumanJsonObject']>, subjects: readonly Subject[]) {
+		const subject = subjects.find(subject => subject.name === json.subject);
+		return subject === undefined ? undefined : new Teacher(
 			json.name,
-			subjects.find(subject => subject.name === json.subject)!.id,
+			subject.id,
 			json.availableTimeslots.map(timeslot => Timeslot.fromString(timeslot)),
 		);
 	}

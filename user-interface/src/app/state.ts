@@ -50,11 +50,11 @@ export class State {
 		readonly objectives: readonly Objective[] = defaultObjectives.slice(),
 	) {}
 	
-	findId(property: 'groups', id: string) : Group;
-	findId(property: 'subjects', id: string) : Subject;
-	findId(property: 'teachers', id: string) : Teacher;
-	findId(property: 'trios', id: number) : Trio;
-	findId(property: 'weeks', id: number) : Week;
+	findId(property: 'groups', id: string) : Group | undefined;
+	findId(property: 'subjects', id: string) : Subject | undefined;
+	findId(property: 'teachers', id: string) : Teacher | undefined;
+	findId(property: 'trios', id: number) : Trio | undefined;
+	findId(property: 'weeks', id: number) : Week | undefined;
 	findId(property: keyof State, id: any) {
 		return (this[property] as any[]).find(element => element.id === id);
 	}
@@ -92,7 +92,7 @@ export class State {
 		}
 		
 		const subjects = jsonObject.subjects.map((subject: any) => Subject.fromJsonObject(subject));
-		const teachers = jsonObject.teachers.map((teacher: any) => Teacher.fromJsonObject(teacher, subjects));
+		const teachers = jsonObject.teachers.map((teacher: any) => Teacher.fromJsonObject(teacher, subjects)!);
 		
 		let weeks = [];
 		for (let i = 0; i < 20; ++i) {

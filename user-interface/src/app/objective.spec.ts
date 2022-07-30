@@ -2,6 +2,6 @@ import { Objective } from './objective';
 
 describe('Objective', () => {
   it('should create an instance', () => {
-    expect(new Option()).toBeTruthy();
+    expect(new Objective()).toBeTruthy();
   });
 });

@@ -32,7 +32,7 @@ export class Group {
 			},
 			this.nextGroupId !== null ? {
 				duration: this.duration,
-				nextGroup: state.findId('groups', this.nextGroupId).name,
+				nextGroup: state.findId('groups', this.nextGroupId)!.name,
 			} : {}
 		);
 	}

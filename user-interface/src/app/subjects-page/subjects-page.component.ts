@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Draft } from 'immer';
 import { firstValueFrom, Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
@@ -82,11 +81,11 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 		for (let i = 1; name = `Matière ${i}`, this.store.state.subjects.some(subject => subject.name === name || subject.shortName === name); ++i) {
 		}
 		
-		this.undoStack.do(state => { state.subjects.push(new Subject(name, name, 1, '#aaaaaa') as Draft<Subject>) });
+		this.undoStack.do(state => { state.subjects.push(new Subject(name, name, 1, '#aaaaaa')) });
 	}
 	
 	deleteSubject() {
-		const subject = this.store.state.findId('subjects', this.selectedSubjectIds[0]);
+		const subject = this.store.state.findId('subjects', this.selectedSubjectIds[0])!;
 		const index = this.store.state.subjects.indexOf(subject);
 		let hasAssociatedTeachers = false;
 		
@@ -134,8 +133,23 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 			
 			for (let subject of this.selectedStandardClass) {
 				const standardSubject = standardSubjects[subject[0]];
-				state.subjects.push(new Subject(standardSubject.name, standardSubject.shortName, subject[1], standardSubject.color) as Draft<Subject>);
+				state.subjects.push(new Subject(standardSubject.name, standardSubject.shortName, subject[1], standardSubject.color));
 			}
 		});
+	}
+	
+	onPaste($event: ClipboardEvent) {
+		const jsonString = $event.clipboardData?.getData('application/json-subject') ?? '';
+		if (jsonString === '') {
+			return;
+		}
+		
+		const jsonSubject = JSON.parse(jsonString) as ReturnType<Subject['toHumanJsonObject']>;
+		while (this.store.state.subjects.some(subject => subject.name === jsonSubject.name || subject.shortName === jsonSubject.shortName)) {
+			jsonSubject.name += ' (copie)';
+			jsonSubject.shortName += ' (copie)';
+		}
+		
+		this.undoStack.do(state => { state.subjects.push(Subject.fromJsonObject(jsonSubject)) });
 	}
 }

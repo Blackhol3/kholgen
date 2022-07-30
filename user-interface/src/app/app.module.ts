@@ -31,6 +31,8 @@ import { TeacherFormComponent } from './teacher-form/teacher-form.component';
 import { TeachersPageComponent } from './teachers-page/teachers-page.component';
 import { WeeklyTimetableComponent } from './weekly-timetable/weekly-timetable.component';
 
+import { CopyDataDirective } from './copy-data.directive';
+
 import { ReuseStrategy } from './reuse-strategy';
 
 @NgModule({
@@ -39,6 +41,7 @@ import { ReuseStrategy } from './reuse-strategy';
 		ColloscopeComponent,
 		ComputationPageComponent,
     	ConnectionDialogComponent,
+		CopyDataDirective,
 		OptionsPageComponent,
 		SubjectFormComponent,
 		SubjectsPageComponent,

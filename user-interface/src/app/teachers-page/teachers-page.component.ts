@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Draft } from 'immer';
+import { castDraft } from 'immer';
 import { Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
@@ -71,11 +71,11 @@ export class TeachersPageComponent implements OnInit, OnDestroy {
 		for (let i = 1; name = `Enseignant ${i}`, this.store.state.teachers.some(teacher => teacher.name === name); ++i) {
 		}
 		
-		this.undoStack.do(state => { state.teachers.push(new Teacher(name, this.store.state.findId('teachers', this.selectedTeacherIds[0])?.subjectId ?? this.store.state.subjects[0].id, []) as Draft<Teacher>) });
+		this.undoStack.do(state => { state.teachers.push(castDraft(new Teacher(name, this.store.state.findId('teachers', this.selectedTeacherIds[0])?.subjectId ?? this.store.state.subjects[0].id, []))) });
 	}
 	
 	deleteTeacher() {
-		const teacher = this.store.state.findId('teachers', this.selectedTeacherIds[0]);
+		const teacher = this.store.state.findId('teachers', this.selectedTeacherIds[0])!;
 		const index = this.store.state.teachers.indexOf(teacher);
 		
 		this.undoStack.do(state => { state.teachers.splice(index, 1) });
@@ -85,6 +85,27 @@ export class TeachersPageComponent implements OnInit, OnDestroy {
 	updateSelectedTeacher() {
 		if (this.store.state.findId('teachers', this.selectedTeacherIds[0]) === undefined) {
 			this.selectedTeacherIds = this.store.state.teachers.length > 0 ? [this.store.state.teachers[this.store.state.teachers.length - 1].id] : [];
+		}
+	}
+	
+	onPaste($event: ClipboardEvent) {
+		const jsonString = $event.clipboardData?.getData('application/json-teacher') ?? '';
+		if (jsonString === '') {
+			return;
+		}
+		
+		const jsonTeacher = JSON.parse(jsonString) as ReturnType<Teacher['toHumanJsonObject']>;
+		while (this.store.state.teachers.some(teacher => teacher.name === jsonTeacher.name)) {
+			jsonTeacher.name += ' (copie)';
+		}
+		
+		if (this.selectedTeacherIds[0] !== undefined) {
+			jsonTeacher.subject = this.store.state.findId('subjects', this.store.state.findId('teachers', this.selectedTeacherIds[0])!.subjectId)!.name;
+		}
+		
+		const teacher = Teacher.fromJsonObject(jsonTeacher, this.store.state.subjects);
+		if (teacher !== undefined) {
+			this.undoStack.do(state => { state.teachers.push(castDraft(teacher)) });
 		}
 	}
 }
