@@ -1,6 +1,7 @@
 import { immerable } from 'immer';
 
 import { Colle } from './colle';
+import { Group } from './group';
 import { Objective } from './objective';
 import { Subject } from './subject';
 import { Teacher } from './teacher';
@@ -41,6 +42,7 @@ export class State {
 	
 	constructor(
 		readonly colles: readonly Colle[] = [],
+		readonly groups: readonly Group[] = [],
 		readonly subjects: readonly Subject[] = [],
 		readonly teachers: readonly Teacher[] = [],
 		readonly trios: readonly Trio[] = [],
@@ -48,6 +50,7 @@ export class State {
 		readonly objectives: readonly Objective[] = defaultObjectives.slice(),
 	) {}
 	
+	findId(property: 'groups', id: string) : Group;
 	findId(property: 'subjects', id: string) : Subject;
 	findId(property: 'teachers', id: string) : Teacher;
 	findId(property: 'trios', id: number) : Trio;
@@ -58,6 +61,20 @@ export class State {
 	
 	toHumanObject() {
 		return {
+			groups: this.groups.map(group => group.nextGroupId === null ?
+				{
+					name: group.name,
+					availableTimeslots: group.availableTimeslots.map(timeslot => timeslot.toString()),
+					numberOfTrios: group.numberOfTrios,
+				} :
+				{
+					name: group.name,
+					availableTimeslots: group.availableTimeslots.map(timeslot => timeslot.toString()),
+					numberOfTrios: group.numberOfTrios,
+					duration: group.duration,
+					nextGroup: this.findId('groups', group.nextGroupId).name,
+				}
+			),
 			subjects: this.subjects,
 			teachers: this.teachers.map(teacher => ({
 				name: teacher.name,
@@ -65,15 +82,15 @@ export class State {
 				availableTimeslots: teacher.availableTimeslots.map(timeslot => timeslot.toString()),
 			})),
 			objectives: this.objectives.map(objective => objective.name),
-			numberOfTrios: this.trios.length,
 		};
 	}
 	
 	toSolverObject() {
 		return {
+			groups: this.groups,
 			subjects: this.subjects,
 			teachers: this.teachers,
-			numberOfTrios: this.trios.length,
+			trios: this.trios,
 			numberOfWeeks: this.weeks.length,
 			objectives: this.objectives.map(objective => objective.name),
 		};
@@ -81,7 +98,24 @@ export class State {
 	
 	/** @todo Throw better error messages **/
 	static fromJsonObject(jsonObject: any): State {
-		let subjects = []
+		let groups = [];
+		for (let group of jsonObject.groups) {
+			groups.push(new Group(
+				group.name,
+				group.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
+				group.numberOfTrios,
+			));
+		}
+		for (let idGroup = 0; idGroup < groups.length; ++idGroup) {
+			if (jsonObject.groups[idGroup].duration !== undefined && jsonObject.groups[idGroup].nextGroup !== undefined) {
+				groups[idGroup].setNextGroup(
+					jsonObject.groups[idGroup].duration,
+					groups.find(group => group.name === jsonObject.groups[idGroup].nextGroup)!,
+				);
+			}
+		}
+		
+		let subjects = [];
 		for (let subject of jsonObject.subjects) {
 			subjects.push(new Subject(
 				subject.name, subject.shortName, subject.frequency, subject.color
@@ -97,11 +131,6 @@ export class State {
 			));
 		}
 		
-		let trios = [];
-		for (let i = 0; i < jsonObject.numberOfTrios; ++i) {
-			trios.push(new Trio(i));
-		}
-		
 		let weeks = [];
 		for (let i = 0; i < 20; ++i) {
 			weeks.push(new Week(i));
@@ -112,6 +141,6 @@ export class State {
 			objectives.push(defaultObjectives.find(defaultObjective => defaultObjective.name === objective)!);
 		}
 		
-		return new State([], subjects, teachers, trios, weeks, objectives);
+		return new State([], groups, subjects, teachers, [], weeks, objectives);
 	}
 }

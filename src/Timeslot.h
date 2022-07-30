@@ -3,7 +3,9 @@
 #include <QString>
 #include <functional>
 #include <map>
+#include <set>
 
+class QJsonArray;
 class QJsonObject;
 
 enum class Day
@@ -29,6 +31,8 @@ class Timeslot
 
 		static std::map<Day, QString> const dayNames;
 		static std::map<Day, QString> const dayShortNames;
+
+		static std::set<Timeslot> getSet(QJsonArray const &json);
 
 	protected:
 		Day day;

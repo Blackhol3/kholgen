@@ -25,19 +25,19 @@ ObjectiveComputation MinimalNumberOfSlotsObjective::compute(
 
 	for (auto const &teacher: state->getTeachers()) {
 		for (auto const &timeslot: teacher.getAvailableTimeslots()) {
-			vector<BoolVar> collesInSlot;
-			vector<BoolVar> collesNotInSlot;
+			LinearExpr nbCollesInSlot;
 
 			for (auto const &week: state->getWeeks()) {
 				for (auto const &trio: state->getTrios()) {
-					collesInSlot.push_back(isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week));
-					collesNotInSlot.push_back(isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week).Not());
+					if (trio.getAvailableTimeslotsInWeek(week).contains(timeslot)) {
+						nbCollesInSlot += isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week);
+					}
 				}
 			}
 
 			auto isSlotUsed = modelBuilder.NewBoolVar();
-			modelBuilder.AddBoolOr(collesInSlot).OnlyEnforceIf(isSlotUsed);
-			modelBuilder.AddBoolAnd(collesNotInSlot).OnlyEnforceIf(isSlotUsed.Not());
+			modelBuilder.AddGreaterThan(nbCollesInSlot, 0).OnlyEnforceIf(isSlotUsed);
+			modelBuilder.AddEquality(nbCollesInSlot, 0).OnlyEnforceIf(isSlotUsed.Not());
 
 			expression += isSlotUsed;
 			maxValue++;

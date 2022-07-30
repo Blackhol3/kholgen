@@ -10,14 +10,13 @@ Teacher::Teacher(QString const &id, QString const &name, Subject const &subject,
 
 }
 
-Teacher::Teacher(QJsonObject const &json, std::vector<Subject> const &subjects):
-	id(json["id"].toString()),
-	name(json["name"].toString()),
-	subject(&*std::find_if(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject.getId() == json["subjectId"]; }))
+Teacher::Teacher(QJsonObject const &json, std::vector<Subject> const &subjects): Teacher(
+	json["id"].toString(),
+	json["name"].toString(),
+	*std::find_if(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject.getId() == json["subjectId"].toString(); }),
+	Timeslot::getSet(json["availableTimeslots"].toArray())
+)
 {
-	for (auto const &jsonAvailableTimeslot: json["availableTimeslots"].toArray()) {
-		availableTimeslots.insert(Timeslot(jsonAvailableTimeslot.toObject()));
-	}
 }
 
 QString const &Teacher::getId() const

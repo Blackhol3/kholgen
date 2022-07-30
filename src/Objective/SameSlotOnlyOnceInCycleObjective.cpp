@@ -33,7 +33,9 @@ ObjectiveComputation SameSlotOnlyOnceInCycleObjective::compute(
 
 				for (auto const &trio: state->getTrios()) {
 					for (auto const &week: state->getWeeks()) {
-						nbCollesWithTeacherInTimeslot += isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week);
+						if (trio.getAvailableTimeslotsInWeek(week).contains(timeslot)) {
+							nbCollesWithTeacherInTimeslot += isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week);
+						}
 					}
 				}
 
@@ -63,7 +65,9 @@ ObjectiveComputation SameSlotOnlyOnceInCycleObjective::compute(
 						for (int idStartingWeek = 0; idStartingWeek <= state->getWeeks().size() - intervalSize; ++idStartingWeek) {
 							LinearExpr nbCollesOfTrioWithTeacherInTimeslotInInterval;
 							for (auto const &week: state->getWeeks() | std::views::drop(idStartingWeek) | std::views::take(intervalSize)) {
-								nbCollesOfTrioWithTeacherInTimeslotInInterval += isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week);
+								if (trio.getAvailableTimeslotsInWeek(week).contains(timeslot)) {
+									nbCollesOfTrioWithTeacherInTimeslotInInterval += isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week);
+								}
 							}
 
 							auto hasTrioExactlyOneColleWithTeacherInTimeslotInInterval = modelBuilder.NewBoolVar();

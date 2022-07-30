@@ -3,6 +3,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <algorithm>
+#include <ranges>
 #include "Objective/Objective.h"
 #include "Slot.h"
 
@@ -12,6 +13,15 @@ State::State(std::vector<Objective const *> const &objectives): objectives(objec
 
 void State::import(QJsonObject const &json)
 {
+	groups.clear();
+	auto const &jsonGroups = json["groups"].toArray();
+	for (auto const &jsonGroup: jsonGroups) {
+		groups.push_back(Group(jsonGroup.toObject()));
+	}
+	for (int idGroup = 0; idGroup < groups.size(); ++idGroup) {
+		groups[idGroup].setNextGroup(jsonGroups[idGroup].toObject(), groups);
+	}
+
 	subjects.clear();
 	for (auto const &jsonSubject: json["subjects"].toArray()) {
 		subjects.push_back(Subject(jsonSubject.toObject()));
@@ -23,8 +33,8 @@ void State::import(QJsonObject const &json)
 	}
 
 	trios.clear();
-	for (int i = 0; i < json["numberOfTrios"].toInt(); ++i) {
-		trios.push_back(Trio(i));
+	for (auto const &jsonTrio: json["trios"].toArray()) {
+		trios.push_back(Trio(jsonTrio.toObject(), groups));
 	}
 
 	weeks.clear();
@@ -43,6 +53,11 @@ void State::import(QJsonObject const &json)
 		);
 		++index;
 	}
+}
+
+const std::vector<Group>& State::getGroups() const
+{
+	return groups;
 }
 
 const std::vector<Subject>& State::getSubjects() const
@@ -117,4 +132,19 @@ std::vector<std::pair<Slot, Slot>> State::getConsecutiveSlotsWithDifferentSubjec
 	}
 
 	return consecutiveSlots;
+}
+
+std::set<Timeslot> State::getAvailableTimeslots(Teacher const &teacher, Trio const &trio, Week const &week) const
+{
+	std::set<Timeslot> availableTimeslots;
+	auto const &availableTimeslotsTeacher = teacher.getAvailableTimeslots();
+	auto const &availableTimeslotsTrio = trio.getAvailableTimeslotsInWeek(week);
+
+	std::set_intersection(
+		availableTimeslotsTeacher.cbegin(), availableTimeslotsTeacher.cend(),
+		availableTimeslotsTrio.cbegin(), availableTimeslotsTrio.cend(),
+		std::inserter(availableTimeslots, availableTimeslots.end())
+	);
+
+	return availableTimeslots;
 }

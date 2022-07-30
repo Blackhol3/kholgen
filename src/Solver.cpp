@@ -38,17 +38,10 @@ bool Solver::compute(std::function<void(vector<Colle> const &colles, vector<Obje
 	for (auto const &teacher: state->getTeachers()) {
 		for (auto const &trio: state->getTrios()) {
 			for (auto const &week: state->getWeeks()) {
-				for (auto const &timeslot: teacher.getAvailableTimeslots()) {
+				for (auto const &timeslot: state->getAvailableTimeslots(teacher, trio, week)) {
 					isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week] = modelBuilder.NewBoolVar();
 				}
 			}
-		}
-	}
-
-	std::unordered_set<Timeslot> timeslots;
-	for (auto const &teacher: state->getTeachers()) {
-		for (auto const &timeslot: teacher.getAvailableTimeslots()) {
-			timeslots.insert(timeslot);
 		}
 	}
 
@@ -63,7 +56,9 @@ bool Solver::compute(std::function<void(vector<Colle> const &colles, vector<Obje
 				vector<BoolVar> collesOfTeacherAtTimeslotInWeek;
 
 				for (auto const &trio: state->getTrios()) {
-					collesOfTeacherAtTimeslotInWeek.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week]);
+					if (trio.getAvailableTimeslotsInWeek(week).contains(timeslot)) {
+						collesOfTeacherAtTimeslotInWeek.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week]);
+					}
 				}
 
 				modelBuilder.AddAtMostOne(collesOfTeacherAtTimeslotInWeek);
@@ -74,7 +69,7 @@ bool Solver::compute(std::function<void(vector<Colle> const &colles, vector<Obje
 	// Trios cannot have two colles at the same time
 	for (auto const &week: state->getWeeks()) {
 		for (auto const &trio: state->getTrios()) {
-			for (auto const &timeslot: timeslots) {
+			for (auto const &timeslot: trio.getAvailableTimeslotsInWeek(week)) {
 				vector<BoolVar> collesOfTriosAtTimeslotInWeek;
 
 				for (auto const &teacher: state->getTeachers()) {
@@ -93,13 +88,13 @@ bool Solver::compute(std::function<void(vector<Colle> const &colles, vector<Obje
 		for (auto const &subject: state->getSubjects()) {
 			// We go through all consecutives sets of `frequency` weeks,
 			// which exclude some of the last weeks as starting point of the set.
-			for (auto startingWeek = state->getWeeks().cbegin(); startingWeek != std::prev(state->getWeeks().cend(), subject.getFrequency() - 1); ++startingWeek) {
+			for (int idStartingWeek = 0; idStartingWeek < state->getWeeks().size() - (subject.getFrequency() - 1); ++idStartingWeek) {
 				vector<BoolVar> collesOfTrioInSubjectInSetOfWeeks;
 
-				for (auto week = startingWeek; week != startingWeek + subject.getFrequency(); ++week) {
+				for (auto const &week: state->getWeeks() | std::views::drop(idStartingWeek) | std::views::take(subject.getFrequency())) {
 					for (auto const &teacher: state->getTeachersOfSubject(subject)) {
-						for (auto const &timeslot: teacher.getAvailableTimeslots()) {
-							collesOfTrioInSubjectInSetOfWeeks.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][*week]);
+						for (auto const &timeslot: state->getAvailableTimeslots(teacher, trio, week)) {
+							collesOfTrioInSubjectInSetOfWeeks.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week]);
 						}
 					}
 				}
@@ -122,7 +117,7 @@ bool Solver::compute(std::function<void(vector<Colle> const &colles, vector<Obje
 				vector<BoolVar> collesOfTrioInSubjectInWeek;
 
 				for (auto const &teacher: state->getTeachersOfSubject(subject)) {
-					for (auto const &timeslot: teacher.getAvailableTimeslots()) {
+					for (auto const &timeslot: state->getAvailableTimeslots(teacher, trio, week)) {
 						collesOfTrioInSubjectInWeek.push_back(isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week]);
 					}
 				}
@@ -247,7 +242,7 @@ vector<Colle> Solver::getColles(CpSolverResponse const &response, SolverVar cons
 	for (auto const &week: state->getWeeks()) {
 		for (auto const &teacher: state->getTeachers()) {
 			for (auto const &trio: state->getTrios()) {
-				for (auto const &timeslot: teacher.getAvailableTimeslots()) {
+				for (auto const &timeslot: state->getAvailableTimeslots(teacher, trio, week)) {
 					if (SolutionBooleanValue(response, isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week))) {
 						colles.push_back(Colle(teacher, timeslot, trio, week));
 					}

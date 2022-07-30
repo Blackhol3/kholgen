@@ -26,21 +26,24 @@ ObjectiveComputation NoConsecutiveCollesObjective::compute(
 	auto const &consecutiveSlots = state->getConsecutiveSlotsWithDifferentSubjects();
 	for (auto const &week: state->getWeeks()) {
 		for (auto const &trio: state->getTrios()) {
+			auto const &availableTimeslots = trio.getAvailableTimeslotsInWeek(week);
 			for (auto const &[slot1, slot2]: consecutiveSlots) {
-				auto areConsecutiveSlotsUsed = modelBuilder.NewBoolVar();
+				if (availableTimeslots.contains(slot1.getTimeslot()) && availableTimeslots.contains(slot2.getTimeslot())) {
+					auto areConsecutiveSlotsUsed = modelBuilder.NewBoolVar();
 
-				modelBuilder.AddBoolAnd({
-					isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot1.getTeacher()).at(slot1.getTimeslot()).at(week),
-					isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot2.getTeacher()).at(slot2.getTimeslot()).at(week),
-				}).OnlyEnforceIf(areConsecutiveSlotsUsed);
+					modelBuilder.AddBoolAnd({
+						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot1.getTeacher()).at(slot1.getTimeslot()).at(week),
+						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot2.getTeacher()).at(slot2.getTimeslot()).at(week),
+					}).OnlyEnforceIf(areConsecutiveSlotsUsed);
 
-				modelBuilder.AddBoolOr({
-					isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot1.getTeacher()).at(slot1.getTimeslot()).at(week).Not(),
-					isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot2.getTeacher()).at(slot2.getTimeslot()).at(week).Not(),
-				}).OnlyEnforceIf(areConsecutiveSlotsUsed.Not());
+					modelBuilder.AddBoolOr({
+						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot1.getTeacher()).at(slot1.getTimeslot()).at(week).Not(),
+						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot2.getTeacher()).at(slot2.getTimeslot()).at(week).Not(),
+					}).OnlyEnforceIf(areConsecutiveSlotsUsed.Not());
 
-				expression += areConsecutiveSlotsUsed;
-				maxValue++;
+					expression += areConsecutiveSlotsUsed;
+					maxValue++;
+				}
 			}
 		}
 	}

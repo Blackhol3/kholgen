@@ -26,6 +26,8 @@ add_executable(${PROJECT_NAME}
     ExcelExporter.h
     Exporter.cpp
     Exporter.h
+    Group.cpp
+    Group.h
     Slot.cpp
     Slot.h
     Solver.cpp

@@ -37,14 +37,14 @@ ObjectiveComputation EvenDistributionBetweenTeachersObjective::compute(
 		for (auto const &trio: state->getTrios()) {
 			unordered_map<Week, BoolVar> isTrioWithTeacherInWeek;
 			for (auto const &week: state->getWeeks() | std::views::take(nbWeeks)) {
-				vector<BoolVar> collesWithTeacherInStartingWeek;
-				for (auto const &timeslot: teacher.getAvailableTimeslots()) {
-					collesWithTeacherInStartingWeek.push_back(isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week));
+				LinearExpr nbCollesWithTeacherInStartingWeek;
+				for (auto const &timeslot: state->getAvailableTimeslots(teacher, trio, week)) {
+					nbCollesWithTeacherInStartingWeek += isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week);
 				}
 
 				isTrioWithTeacherInWeek[week] = modelBuilder.NewBoolVar();
-				modelBuilder.AddGreaterThan(LinearExpr().Sum(collesWithTeacherInStartingWeek), 0).OnlyEnforceIf(isTrioWithTeacherInWeek[week]);
-				modelBuilder.AddEquality(LinearExpr().Sum(collesWithTeacherInStartingWeek), 0).OnlyEnforceIf(isTrioWithTeacherInWeek[week].Not());
+				modelBuilder.AddGreaterThan(nbCollesWithTeacherInStartingWeek, 0).OnlyEnforceIf(isTrioWithTeacherInWeek[week]);
+				modelBuilder.AddEquality(nbCollesWithTeacherInStartingWeek, 0).OnlyEnforceIf(isTrioWithTeacherInWeek[week].Not());
 			}
 
 			for (int intervalSize = 0; intervalSize <= nbWeeks; ++intervalSize) {

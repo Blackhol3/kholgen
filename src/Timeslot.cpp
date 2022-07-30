@@ -1,5 +1,6 @@
 #include "Timeslot.h"
 
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QObject>
 
@@ -18,6 +19,16 @@ std::map<Day, QString> const Timeslot::dayShortNames = {
 	{Day::Thursday,  QObject::tr("j")},
 	{Day::Friday,    QObject::tr("v")},
 };
+
+std::set<Timeslot> Timeslot::getSet(QJsonArray const &json)
+{
+	std::set<Timeslot> timeslots;
+	for (auto const &jsonTimeslot: json) {
+		timeslots.insert(Timeslot(jsonTimeslot.toObject()));
+	}
+
+	return timeslots;
+}
 
 Timeslot::Timeslot(const Day &day, int hour): day(day), hour(hour)
 {
