@@ -1,4 +1,8 @@
+import { immerable } from 'immer';
+
 export class Objective {
+	[immerable] = true;
+	
 	protected value: number | undefined;
 	
 	constructor(

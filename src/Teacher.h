@@ -12,20 +12,21 @@ class Subject;
 class Teacher
 {
 	public:
-		Teacher(QString const &name, Subject const &subject, std::set<Timeslot> const &availableTimeslots);
-		Teacher(QString const &name, Subject const &&subject, std::set<Timeslot> const &availableTimeslots) = delete;
+		Teacher(QString const &id, QString const &name, Subject const &subject, std::set<Timeslot> const &availableTimeslots);
+		Teacher(QString const &id, QString const &name, Subject const &&subject, std::set<Timeslot> const &availableTimeslots) = delete;
 		Teacher(QJsonObject const &json, std::vector<Subject> const &subjects);
 
+		QString const &getId() const;
 		QString const &getName() const;
 		Subject const &getSubject() const;
 		std::set<Timeslot> const &getAvailableTimeslots() const;
 
 		bool isAvailableAtTimeslot(Timeslot const &timeslot) const;
 
-		QJsonObject toJsonObject() const;
 		bool operator==(Teacher const &) const = default;
 
 	protected:
+		QString id;
 		QString name;
 		Subject const *subject;
 		std::set<Timeslot> availableTimeslots;

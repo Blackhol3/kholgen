@@ -7,8 +7,8 @@
 	
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Classe</mat-label>
-		<mat-select formControlName="subject">
-			<mat-option *ngFor="let subject of state.subjects" [value]="subject" [style.color]="subject.color">{{subject.name}}</mat-option>
+		<mat-select formControlName="subjectId">
+			<mat-option *ngFor="let subject of store.state.subjects" [value]="subject.id" [style.color]="subject.color">{{subject.name}}</mat-option>
 		</mat-select>
 	</mat-form-field>
 	

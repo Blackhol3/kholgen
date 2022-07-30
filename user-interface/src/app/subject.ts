@@ -1,8 +1,16 @@
+import { immerable } from 'immer';
+import { nanoid } from 'nanoid/non-secure';
+
 export class Subject {
+	[immerable] = true;
+	readonly id: string;
+	
 	constructor(
-		public name: string,
-		public shortName: string,
-		public frequency: number,
-		public color: string,
-	) {}
+		readonly name: string,
+		readonly shortName: string,
+		readonly frequency: number,
+		readonly color: string,
+	) {
+		this.id = nanoid();
+	}
 }

@@ -5,8 +5,7 @@ import { Subscription } from 'rxjs';
 import * as FileSaver from 'file-saver-es';
 
 import { CommunicationService } from '../communication.service';
-import { StateService } from '../state.service';
-import { UndoStackService } from '../undo-stack.service';
+import { StoreService } from '../store.service';
 
 @Component({
 	selector: 'app-computation-page',
@@ -27,23 +26,23 @@ import { UndoStackService } from '../undo-stack.service';
 })
 export class ComputationPageComponent implements OnInit, OnDestroy {
 	isRunning = false;
-	undoStackSubscription: Subscription | undefined;
+	storeSubscription: Subscription | undefined;
 	@ViewChild(MatTable) objectivesTable: MatTable<any> | undefined;
 	
-	constructor(private communication: CommunicationService, public state: StateService, private undoStack: UndoStackService) {	}
+	constructor(private communication: CommunicationService, public store: StoreService) {	}
 	
 	ngOnInit() {
-		this.undoStackSubscription = this.undoStack.changeObservable.subscribe(() => this.objectivesTable!.renderRows());
+		this.storeSubscription = this.store.changeObservable.subscribe(() => this.objectivesTable!.renderRows());
 	}
 	
 	ngOnDestroy() {
-		this.undoStackSubscription?.unsubscribe();
+		this.storeSubscription?.unsubscribe();
 	}
 	
 	compute() {
 		this.communication.connect().then(() => {
 			this.isRunning = true;
-			this.communication.compute(this.state).subscribe({
+			this.communication.compute(this.store).subscribe({
 				complete: () => { this.isRunning = false; },
 			});
 		});

@@ -1,3 +1,5 @@
+import { immerable } from 'immer';
+
 export const enum Day {
 	Monday, Tuesday, Wednesday, Thursday, Friday
 }
@@ -14,6 +16,8 @@ export const dayShortNames: readonly string[] = [
 ];
 
 export class Timeslot {
+	[immerable] = true;
+	
 	constructor(
 		readonly day: Day,
 		readonly hour: number,

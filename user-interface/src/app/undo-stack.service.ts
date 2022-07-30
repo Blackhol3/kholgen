@@ -1,126 +1,56 @@
 import { Injectable } from '@angular/core';
-import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { get, set } from 'lodash-es';
-import { Subject } from 'rxjs';
+import { Draft, Patch } from 'immer';
 
-import { StateService } from './state.service';
+import { State } from './state';
+import { StoreService } from './store.service';
+
+function comparePath(patch1: Patch, patch2: Patch): boolean {
+	return patch1.path.length === patch2.path.length && patch1.path.every((value, key) => value === patch2.path[key]);
+}
 
 interface Command {
-	undo(state: object): void;
-	redo(state: object): void;
+	undo(): Patch[];
+	redo(): Patch[];
 	merge(command: Command): []|[Command]|[Command, Command];
 }
 
-class UpdateCommand implements Command {
-	protected path: string;
-	protected oldValue: any;
-	protected newValue: any;
-	
-	constructor(state: object, path: string, newValue: any) {
-		this.path = path;
-		this.oldValue = get(state, this.path);
-		this.newValue = newValue;
-	}
-	
-	undo(state: object): void {
-		set(state, this.path, this.oldValue);
-	}
-	
-	redo(state: object): void {
-		set(state, this.path, this.newValue);
-	}
-	
-	merge(command: Command): []|[UpdateCommand]|[Command, UpdateCommand] {
-		if (command instanceof UpdateCommand && command.path === this.path) {
-			command.newValue = this.newValue;
-			return command.newValue === command.oldValue ? [] : [command];
-		}
-		
-		return [command, this];
-	}
-}
-
-class PushCommand implements Command {
+class PatchesCommand implements Command {
 	constructor(
-		protected path: string,
-		protected value: any,
+		protected redoPatches: Patch[],
+		protected undoPatches: Patch[],
 	) { }
 	
-	undo(state: object): void {
-		get(state, this.path).pop();
+	undo() {
+		return this.undoPatches;
 	}
 	
-	redo(state: object): void {
-		get(state, this.path).push(this.value);
+	redo() {
+		return this.redoPatches;
 	}
 	
-	merge(command: Command): [Command, PushCommand] {
-		return [command, this];
-	}
-}
-
-class SpliceCommand implements Command {
-	protected path: string;
-	protected index: number;
-	protected value: any;
-	
-	constructor(state: object, path: string, index: number) {
-		this.path = path;
-		this.index = index;
-		this.value = get(state, this.path)[this.index];
-	}
-	
-	undo(state: object): void {
-		get(state, this.path).splice(this.index, 0, this.value);
-	}
-	
-	redo(state: object): void {
-		get(state, this.path).splice(this.index, 1);
-	}
-	
-	merge(command: Command): [Command, SpliceCommand] {
-		return [command, this];
-	}
-}
-
-class MoveCommand implements Command {
-	protected path: string;
-	protected oldIndex: number;
-	protected newIndex: number;
-	
-	constructor(path: string, oldIndex: number, newIndex: number) {
-		this.path = path;
-		this.oldIndex = oldIndex;
-		this.newIndex = newIndex;
-	}
-	
-	undo(state: object): void {
-		moveItemInArray(get(state, this.path), this.newIndex, this.oldIndex);
-	}
-	
-	redo(state: object): void {
-		moveItemInArray(get(state, this.path), this.oldIndex, this.newIndex);
-	}
-	
-	merge(command: Command): []|[MoveCommand]|[Command, MoveCommand] {
-		if (command instanceof MoveCommand && command.path === this.path) {
-			command.newIndex = this.newIndex;
-			return command.newIndex === command.oldIndex ? [] : [command];
+	merge(command: Command): []|[PatchesCommand]|[Command, PatchesCommand] {
+		if (command instanceof PatchesCommand && this.isMergeable() && command.isMergeable() && comparePath(this.redoPatches[0], command.redoPatches[0])) {
+			command.redoPatches = this.redoPatches;
+			return command.redoPatches[0].value === command.undoPatches[0].value ? [] : [command];
 		}
 		
 		return [command, this];
+	}
+	
+	protected isMergeable() {
+		return this.redoPatches.length === 1 && this.redoPatches[0].op === 'replace';
 	}
 }
 
 class GroupCommand implements Command {
 	protected commands: Command[] = [];
 	
-	undo(state: object): void {
-		this.commands.slice().reverse().map(command => command.undo(state));
+	undo() {
+		return ([] as Patch[]).concat(...this.commands.slice().reverse().map(command => command.undo()));
 	}
 	
-	redo(state: object): void {
-		this.commands.map(command => command.redo(state));
+	redo() {
+		return ([] as Patch[]).concat(...this.commands.map(command => command.redo()));
 	}
 	
 	merge(command: Command): [Command, GroupCommand] {
@@ -152,17 +82,11 @@ function last(collection: Command[]|GroupCommand): Command | undefined {
 	providedIn: 'root'
 })
 export class UndoStackService {
-	protected changeSubject = new Subject<void>();
-	public changeObservable = this.changeSubject.asObservable();
-	
-	protected readonly state: object;
-	
 	protected undoStack: Command[] = [];
 	protected redoStack: Command[] = [];
 	protected groupLevel = 0;
 	
-	constructor(state: StateService) {
-		this.state = state;
+	constructor(protected store: StoreService) {
 	}
 	
 	clear(): void {
@@ -171,31 +95,12 @@ export class UndoStackService {
 		this.groupLevel = 0;
 	}
 	
-	actions = {
-		update: (path: string, newValue: any, shouldMergeIfPossible: boolean = true): void => {
-			this.add(new UpdateCommand(this.state, path, newValue), shouldMergeIfPossible);
-		},
-		
-		push: (path: string, value: any): void => {
-			this.add(new PushCommand(path, value), false);
-		},
-		
-		splice: (path: string, index: any): void => {
-			this.add(new SpliceCommand(this.state, path, index), false);
-		},
-		
-		move: (path: string, oldIndex: number, newIndex: number, shouldMergeIfPossible: boolean = true): void => {
-			this.add(new MoveCommand(path, oldIndex, newIndex), shouldMergeIfPossible);
-		},
-		
-		clear: (path: string): void => {
-			this.startGroup();
-			for (let i = get(this.state, path).length - 1; i >= 0; --i) {
-				this.actions.splice(path, i);
-			}
-			this.endGroup();
-		},
-	};
+	do(recipe: (state: Draft<State>) => any, shouldMergeIfPossible: boolean = true) {
+		const [patches, inversePatches] = this.store.do(recipe);
+		if (patches.length !== 0) {
+			this.add(new PatchesCommand(patches, inversePatches), shouldMergeIfPossible);
+		}
+	}
 	
 	canUndo(): boolean {
 		return !this.isGrouped() && this.undoStack.length > 0;
@@ -212,9 +117,7 @@ export class UndoStackService {
 		
 		const command = this.undoStack.pop() as Command;
 		this.redoStack.unshift(command);
-		
-		command.undo(this.state);
-		this.changeSubject.next();
+		this.store.apply(command.undo());
 	}
 	
 	redo(): void {
@@ -224,9 +127,7 @@ export class UndoStackService {
 		
 		const command = this.redoStack.shift() as Command;
 		this.undoStack.push(command);
-		
-		command.redo(this.state);
-		this.changeSubject.next();
+		this.store.apply(command.redo());
 	}
 	
 	startGroup(): void {
@@ -255,6 +156,7 @@ export class UndoStackService {
 	protected add(command: Command, shouldMergeIfPossible: boolean) {
 		const stack = this.isGrouped() ? last(this.undoStack) as GroupCommand : this.undoStack;
 		const previousCommand = last(stack);
+		
 		if (shouldMergeIfPossible && previousCommand !== undefined) {
 			stack.splice(-1, 1, ...command.merge(previousCommand));
 		}
@@ -262,7 +164,6 @@ export class UndoStackService {
 			stack.push(command);
 		}
 		
-		command.redo(this.state);
 		this.redoStack = [];
 	}
 }

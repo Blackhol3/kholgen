@@ -1,17 +1,17 @@
 <section>
 	<div>
 		<div>
-			<button mat-raised-button (click)="addNewTeacher()" [disabled]="state.subjects.length === 0">Ajouter <mat-icon>add</mat-icon></button>
-			<button mat-raised-button (click)="deleteTeacher()" [disabled]="selectedTeachers.length === 0">Supprimer <mat-icon>remove</mat-icon></button>
+			<button mat-raised-button (click)="addNewTeacher()" [disabled]="store.state.subjects.length === 0">Ajouter <mat-icon>add</mat-icon></button>
+			<button mat-raised-button (click)="deleteTeacher()" [disabled]="selectedTeacherIds.length === 0">Supprimer <mat-icon>remove</mat-icon></button>
 		</div>
-		<mat-selection-list [multiple]="false" [(ngModel)]="selectedTeachers" [@listAnimation]="state.teachers.length" cdkDropListGroup>
-			<div *ngFor="let subject of state.subjects" cdkDropList [cdkDropListData]="subject" [cdkDropListEnterPredicate]="canDrop" (cdkDropListDropped)="onDrop($event)">
+		<mat-selection-list [multiple]="false" [(ngModel)]="selectedTeacherIds" [@listAnimation]="store.state.teachers.length" cdkDropListGroup>
+			<div *ngFor="let subject of store.state.subjects" cdkDropList [cdkDropListData]="subject" [cdkDropListEnterPredicate]="canDrop" (cdkDropListDropped)="onDrop($event)">
 				<div mat-subheader [style.color]="subject.color">{{subject.name}}</div>
-				<ng-container *ngFor="let teacher of state.teachers">
-					<mat-list-option *ngIf="teacher.subject === subject" cdkDrag [cdkDragData]="teacher" [value]="teacher">{{teacher.name}}</mat-list-option>
+				<ng-container *ngFor="let teacher of store.state.teachers">
+					<mat-list-option *ngIf="teacher.subjectId === subject.id" cdkDrag [cdkDragData]="teacher" [value]="teacher.id">{{teacher.name}}</mat-list-option>
 				</ng-container>
 			</div>
 		</mat-selection-list>
 	</div>
-	<app-teacher-form [teacher]="selectedTeachers[0]" *ngIf="selectedTeachers.length > 0" @slideAnimation></app-teacher-form>
+	<app-teacher-form [teacher]="store.state.findId('teachers', selectedTeacherIds[0])" *ngIf="selectedTeacherIds.length > 0" @slideAnimation></app-teacher-form>
 </section>

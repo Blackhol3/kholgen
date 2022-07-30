@@ -4,7 +4,7 @@ import { Timeslot } from '../timeslot';
 import { Trio } from '../trio';
 import { Week } from '../week';
 
-import { StateService } from '../state.service';
+import { StoreService } from '../store.service';
 
 @Component({
 	selector: 'app-colloscope',
@@ -17,19 +17,19 @@ export class ColloscopeComponent {
 	tableSubjectRowspan: number[] = [];
 	tableTeacherRowspan: number[] = [];
 	
-	constructor(public state: StateService) { }
+	constructor(public store: StoreService) { }
 	
 	getTableData() {
 		this.tableData = [];
-		for (let subject of this.state.subjects) {
-			for (let teacher of this.state.teachers.filter(t => t.subject === subject)) {
+		for (let subject of this.store.state.subjects) {
+			for (let teacher of this.store.state.teachers.filter(t => t.subjectId === subject.id)) {
 				for (let timeslot of teacher.availableTimeslots) {
 					let triosByWeek = [];
-					for (let week of this.state.weeks) {
+					for (let week of this.store.state.weeks) {
 						triosByWeek.push(this.getTrio(teacher, timeslot, week));
 					}
 					
-					if (this.state.colles.length === 0 || triosByWeek.some(trio => trio !== null)) {
+					if (this.store.state.colles.length === 0 || triosByWeek.some(trio => trio !== null)) {
 						this.tableData.push({
 							subject: subject,
 							teacher: teacher,
@@ -41,7 +41,7 @@ export class ColloscopeComponent {
 			}
 		}
 		
-		this.tableWeeksHeaderRowDef = this.state.weeks.map(week => 'week-' + week.id);
+		this.tableWeeksHeaderRowDef = this.store.state.weeks.map(week => 'week-' + week.id);
 		
 		this.tableSubjectRowspan = this.getRowspanArray('subject');
 		this.tableTeacherRowspan = this.getRowspanArray('teacher');
@@ -50,9 +50,9 @@ export class ColloscopeComponent {
 	}
 	
 	getTrio(teacher: Teacher, timeslot: Timeslot, week: Week): Trio | null {
-		for (let colle of this.state.colles) {
-			if (colle.teacher === teacher && colle.timeslot.isEqual(timeslot) && colle.week === week) {
-				return colle.trio;
+		for (let colle of this.store.state.colles) {
+			if (colle.teacherId === teacher.id && colle.timeslot.isEqual(timeslot) && colle.weekId === week.id) {
+				return this.store.state.findId('trios', colle.trioId)!;
 			}
 		}
 		

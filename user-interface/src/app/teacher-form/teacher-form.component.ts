@@ -1,43 +1,41 @@
-import { Component, Input, OnInit, OnChanges, OnDestroy } from '@angular/core';
-import { AbstractControl, FormControl, FormBuilder, ValidationErrors, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
+import { AbstractControl, FormControl, NonNullableFormBuilder , ValidationErrors, Validators } from '@angular/forms';
 
-import { Subject } from '../subject';
 import { Teacher } from '../teacher';
 import { Timeslot } from '../timeslot';
-import { StateService } from '../state.service';
+import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
+
+/** @link https://stackoverflow.com/questions/60141960/typescript-key-value-relation-preserving-object-entries-type/60142095#60142095 */
+type Entries<T> = {
+    [K in keyof T]: [K, T[K]]
+}[keyof T][];
 
 @Component({
 	selector: 'app-teacher-form',
 	templateUrl: './teacher-form.component.html',
-	styleUrls: ['./teacher-form.component.scss']
+	styleUrls: ['./teacher-form.component.scss'],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TeacherFormComponent implements  OnInit, OnChanges, OnDestroy {
+export class TeacherFormComponent implements OnInit, OnChanges {
 	@Input() teacher: Teacher | undefined;
 	
 	form = this.formBuilder.group({
 		name: ['', Validators.required],
-		subject: [new Subject('', '', 0, ''), Validators.required],
-		availableTimeslots: new FormControl([] as Timeslot[], {validators: Validators.required, nonNullable: true}),
+		subjectId: ['', Validators.required],
+		availableTimeslots: new FormControl([] as readonly Timeslot[], {validators: Validators.required}),
 	}, {validators: control => this.notUniqueValidator(control)});
-	undoStackSubscription: Subscription | undefined;
 	
-	constructor(public state: StateService, private undoStack: UndoStackService, private formBuilder: FormBuilder) {
+	constructor(public store: StoreService, private undoStack: UndoStackService, private formBuilder: NonNullableFormBuilder ) {
 		this.form.valueChanges.subscribe(() => this.formChange());
 	}
 
 	ngOnInit() {
 		this.updateForm();
-		this.undoStackSubscription = this.undoStack.changeObservable.subscribe(() => this.updateForm());
 	}
 	
 	ngOnChanges() {
 		this.updateForm();
-	}
-	
-	ngOnDestroy() {
-		this.undoStackSubscription?.unsubscribe();
 	}
 	
 	updateForm() {
@@ -45,14 +43,27 @@ export class TeacherFormComponent implements  OnInit, OnChanges, OnDestroy {
 			throw 'Teacher cannot be undefined.';
 		}
 		
-		this.form.setValue(this.teacher);
+		this.form.setValue({
+			name: this.teacher.name,
+			subjectId: this.teacher.subjectId,
+			availableTimeslots: this.teacher.availableTimeslots,
+		});
 	}
 	
 	formChange() {
-		let teacher = this.teacher as any;
-		for (let [key, control] of Object.entries(this.form.controls)) {
+		let teacher = this.teacher;
+		if (teacher === undefined) {
+			return;
+		}
+		
+		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
 			if (control.valid && teacher[key] !== this.getControlValue(key)) {
-				this.undoStack.actions.update(`teachers[${this.state.teachers.indexOf(teacher)}].${key}`, this.getControlValue(key), key !== 'availableTimeslots');
+				this.undoStack.do(
+					state => {
+						(state.teachers[this.store.state.teachers.indexOf(teacher!)] as any)[key] = this.getControlValue(key);
+					},
+					key !== 'availableTimeslots'
+				);
 			}
 			else {
 				control.markAsTouched();
@@ -68,22 +79,22 @@ export class TeacherFormComponent implements  OnInit, OnChanges, OnDestroy {
 	protected notUniqueValidator(control: AbstractControl): ValidationErrors | null {
 		let errors = {
 			name: control.get('name')?.errors ?? {},
-			subject: control.get('subject')?.errors ?? {},
+			subjectId: control.get('subjectId')?.errors ?? {},
 		};
 		
-		for (let teacher of this.state.teachers) {
-			if (teacher !== this.teacher && teacher.subject === this.getControlValue('subject') && teacher.name === this.getControlValue('name')) {
+		for (let teacher of this.store.state.teachers) {
+			if (teacher !== this.teacher && teacher.subjectId === this.getControlValue('subjectId') && teacher.name === this.getControlValue('name')) {
 				const error = {notUnique: {teacher: teacher}};
 				control.get('name')?.setErrors(Object.assign({}, errors.name, error));
-				control.get('subject')?.setErrors(Object.assign({}, errors.subject, error));
+				control.get('subjectId')?.setErrors(Object.assign({}, errors.subjectId, error));
 				return error;
 			}
 		}
 		
 		delete errors.name['notUnique'];
-		delete errors.subject['notUnique'];
+		delete errors.subjectId['notUnique'];
 		control.get('name')?.setErrors(Object.values(errors.name).length === 0 ? null : errors.name);
-		control.get('subject')?.setErrors(Object.values(errors.subject).length === 0 ? null : errors.subject);
+		control.get('subjectId')?.setErrors(Object.values(errors.subjectId).length === 0 ? null : errors.subjectId);
 		
 		return null;
 	}

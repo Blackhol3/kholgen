@@ -1,13 +1,13 @@
-import { Teacher } from './teacher';
+import { immerable } from 'immer';
 import { Timeslot } from './timeslot';
-import { Trio } from './trio';
-import { Week } from './week';
 
 export class Colle {
+	[immerable] = true;
+	
 	constructor(
-		readonly teacher: Teacher,
+		readonly teacherId: string,
 		readonly timeslot: Timeslot,
-		readonly trio: Trio,
-		readonly week: Week,
+		readonly trioId: number,
+		readonly weekId: number,
 	) {}
 }

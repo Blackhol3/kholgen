@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Draft } from 'immer';
 import { firstValueFrom, Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
 import { Subject } from '../subject';
-import { StateService } from '../state.service';
+import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
 
 const standardSubjects = {
@@ -55,51 +56,51 @@ const standardClasses: {[className: string]: StandardClass}[] = [
 	],
 })
 export class SubjectsPageComponent implements OnInit, OnDestroy {
-	selectedSubjects: Subject[] = [];
-	undoStackSubscription: Subscription | undefined;
+	selectedSubjectIds: string[] = [];
+	storeSubscription: Subscription | undefined;
 	
 	selectedStandardClass: StandardClass | undefined;
 	readonly standardClasses = standardClasses;
 	
-	constructor(public state: StateService, private snackBar: MatSnackBar, private undoStack: UndoStackService) { }
+	constructor(public store: StoreService, private snackBar: MatSnackBar, private undoStack: UndoStackService) { }
 	
 	ngOnInit() {
-		this.undoStackSubscription = this.undoStack.changeObservable.subscribe(() => this.updateSelectedSubject());
+		this.storeSubscription = this.store.changeObservable.subscribe(() => this.updateSelectedSubject());
 	}
 	
 	ngOnDestroy() {
-		this.undoStackSubscription?.unsubscribe();
+		this.storeSubscription?.unsubscribe();
 	}
 	
 	onDrop($event: CdkDragDrop<any[]>) {
-		this.selectedSubjects = [this.state.subjects[$event.previousIndex]];
-		this.undoStack.actions.move('subjects', $event.previousIndex, $event.currentIndex);
+		this.selectedSubjectIds = [this.store.state.subjects[$event.previousIndex].id];
+		this.undoStack.do(state => { moveItemInArray(state.subjects, $event.previousIndex, $event.currentIndex) });
 	}
 	
 	addNewSubject() {
 		let name = '';
-		for (let i = 1; name = `Matière ${i}`, this.state.subjects.some(subject => subject.name === name || subject.shortName === name); ++i) {
+		for (let i = 1; name = `Matière ${i}`, this.store.state.subjects.some(subject => subject.name === name || subject.shortName === name); ++i) {
 		}
 		
-		this.undoStack.actions.push('subjects', new Subject(name, name, 1, '#aaaaaa'));
+		this.undoStack.do(state => { state.subjects.push(new Subject(name, name, 1, '#aaaaaa') as Draft<Subject>) });
 	}
 	
 	deleteSubject() {
-		const subject = this.selectedSubjects[0];
-		const index = this.state.subjects.indexOf(subject);
+		const subject = this.store.state.findId('subjects', this.selectedSubjectIds[0]);
+		const index = this.store.state.subjects.indexOf(subject);
 		let hasAssociatedTeachers = false;
 		
-		this.undoStack.startGroup();
-		for (let i = this.state.teachers.length - 1; i >= 0; --i) {
-			if (this.state.teachers[i].subject === subject) {
-				this.undoStack.actions.splice('teachers', i);
-				hasAssociatedTeachers = true;
+		this.undoStack.do(state => {
+			for (let i = this.store.state.teachers.length - 1; i >= 0; --i) {
+				if (this.store.state.teachers[i].subjectId === subject.id) {
+					state.teachers.splice(i, 1);
+					hasAssociatedTeachers = true;
+				}
 			}
-		}
-		this.undoStack.actions.splice('subjects', index);
-		this.undoStack.endGroup();
+			state.subjects.splice(index, 1);
+		});
 		
-		this.selectedSubjects = this.state.subjects.length > 0 ? [this.state.subjects[Math.max(0, index - 1)]] : [];
+		this.selectedSubjectIds = this.store.state.subjects.length > 0 ? [this.store.state.subjects[Math.max(0, index - 1)].id] : [];
 		
 		if (hasAssociatedTeachers) {
 			let observable = this.snackBar.open(
@@ -117,26 +118,24 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	}
 	
 	updateSelectedSubject() {
-		const index = this.state.subjects.indexOf(this.selectedSubjects[0]);
-		if (index === -1) {
-			this.selectedSubjects = this.state.subjects.length > 0 ? [this.state.subjects[this.state.subjects.length - 1]] : [];
+		if (this.store.state.findId('subjects', this.selectedSubjectIds[0]) === undefined) {
+			this.selectedSubjectIds = this.store.state.subjects.length > 0 ? [this.store.state.subjects[this.store.state.subjects.length - 1].id] : [];
 		}
 	}
 	
 	useStandardClass() {
-		if (this.selectedStandardClass === undefined) {
-			return;
-		}
-		
-		this.undoStack.startGroup();
-		this.undoStack.actions.clear('subjects');
-		this.undoStack.actions.clear('teachers');
-		
-		for (let subject of this.selectedStandardClass) {
-			const standardSubject = standardSubjects[subject[0]];
-			this.undoStack.actions.push('subjects', new Subject(standardSubject.name, standardSubject.shortName, subject[1], standardSubject.color));
-		}
-		
-		this.undoStack.endGroup();
+		this.undoStack.do(state => {
+			if (this.selectedStandardClass === undefined) {
+				return;
+			}
+			
+			state.subjects = [];
+			state.teachers = [];
+			
+			for (let subject of this.selectedStandardClass) {
+				const standardSubject = standardSubjects[subject[0]];
+				state.subjects.push(new Subject(standardSubject.name, standardSubject.shortName, subject[1], standardSubject.color) as Draft<Subject>);
+			}
+		});
 	}
 }

@@ -3,7 +3,7 @@
 	<div class="objectives-list">
 		<div class="scale"></div>
 		<mat-list cdkDropList (cdkDropListDropped)="onDrop($event)">
-			<mat-list-item *ngFor="let objective of state.objectives" cdkDrag>
+			<mat-list-item *ngFor="let objective of store.state.objectives" cdkDrag>
 				{{objective.readableName}}
 			</mat-list-item>
 		</mat-list>

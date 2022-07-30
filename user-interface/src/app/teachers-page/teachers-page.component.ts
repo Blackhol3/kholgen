@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Draft } from 'immer';
 import { Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
 import { Subject } from '../subject';
 import { Teacher } from '../teacher';
 import { UndoStackService } from '../undo-stack.service';
-import { StateService } from '../state.service';
+import { StoreService } from '../store.service';
 
 @Component({
 	selector: 'app-teachers-page',
@@ -18,22 +19,22 @@ import { StateService } from '../state.service';
 	],
 })
 export class TeachersPageComponent implements OnInit, OnDestroy {
-	selectedTeachers: Teacher[] = [];
-	undoStackSubscription: Subscription | undefined;
+	selectedTeacherIds: string[] = [];
+	storeSubscription: Subscription | undefined;
 	
-	constructor(public state: StateService, private undoStack: UndoStackService) { }
+	constructor(public store: StoreService, private undoStack: UndoStackService) { }
 
 	ngOnInit() {
-		this.undoStackSubscription = this.undoStack.changeObservable.subscribe(() => this.updateSelectedTeacher());
+		this.storeSubscription = this.store.changeObservable.subscribe(() => this.updateSelectedTeacher());
 	}
 	
 	ngOnDestroy() {
-		this.undoStackSubscription?.unsubscribe();
+		this.storeSubscription?.unsubscribe();
 	}
 	
 	canDrop = (draggedTeacher: CdkDrag<Teacher>, droppedSubject: CdkDropList<Subject>): boolean => {
-		for (let teacher of this.state.teachers) {
-			if (teacher.subject === droppedSubject.data && teacher.name === draggedTeacher.data.name) {
+		for (let teacher of this.store.state.teachers) {
+			if (teacher.subjectId === droppedSubject.data.id && teacher.name === draggedTeacher.data.name) {
 				return false;
 			}
 		}
@@ -42,52 +43,48 @@ export class TeachersPageComponent implements OnInit, OnDestroy {
 	}
 	
 	onDrop($event: CdkDragDrop<Subject, Subject, Teacher>) {
+		const subject = $event.container.data;
 		const teacher = $event.item.data;
-		const teachersOfNewSubject = this.state.teachers.filter(t => t.subject === $event.container.data);
+		const teachersOfNewSubject = this.store.state.teachers.filter(t => t.subjectId === subject.id);
 		
-		const indexFrom = this.state.teachers.indexOf(teacher);
-		const indexBefore = this.state.teachers.indexOf(teachersOfNewSubject[$event.currentIndex]);
+		const indexFrom = this.store.state.teachers.indexOf(teacher);
+		const indexBefore = this.store.state.teachers.indexOf(teachersOfNewSubject[$event.currentIndex]);
 		const indexTo =
 			teachersOfNewSubject.length === 0 ? indexFrom :
-			teacher.subject === $event.container.data ? indexBefore :
-			indexBefore === -1 ? this.state.teachers.length - 1 :
+			teacher.subjectId === subject.id ? indexBefore :
+			indexBefore === -1 ? this.store.state.teachers.length - 1 :
 			indexFrom < indexBefore ? indexBefore - 1 :
 			indexBefore
 		;
-		this.selectedTeachers = [teacher];
+		this.selectedTeacherIds = [teacher.id];
 		
-		this.undoStack.startGroup();
-		if (teacher.subject !== $event.container.data) {
-			this.undoStack.actions.update(`teachers[${indexFrom}].subject`, $event.container.data);
-		}
-		this.undoStack.actions.move('teachers', indexFrom, indexTo);
-		this.undoStack.endGroup();
-		
-		/** @todo Really, really nasty way to update the form */
-		this.undoStack.undo();
-		this.undoStack.redo();
+		this.undoStack.do(state => {
+			if (teacher.subjectId !== subject.id) {
+				state.teachers[indexFrom].subjectId = subject.id;
+			}
+			moveItemInArray(state.teachers, indexFrom, indexTo);
+		});
 	}
 	
 	addNewTeacher() {
 		let name = '';
-		for (let i = 1; name = `Enseignant ${i}`, this.state.teachers.some(teacher => teacher.name === name); ++i) {
+		for (let i = 1; name = `Enseignant ${i}`, this.store.state.teachers.some(teacher => teacher.name === name); ++i) {
 		}
 		
-		this.undoStack.actions.push('teachers', new Teacher(name, this.selectedTeachers[0]?.subject ?? this.state.subjects[0], []));
+		this.undoStack.do(state => { state.teachers.push(new Teacher(name, this.store.state.findId('teachers', this.selectedTeacherIds[0])?.subjectId ?? this.store.state.subjects[0].id, []) as Draft<Teacher>) });
 	}
 	
 	deleteTeacher() {
-		const teacher = this.selectedTeachers[0];
-		const index = this.state.teachers.indexOf(teacher);
+		const teacher = this.store.state.findId('teachers', this.selectedTeacherIds[0]);
+		const index = this.store.state.teachers.indexOf(teacher);
 		
-		this.undoStack.actions.splice('teachers', index);
-		this.selectedTeachers = this.state.teachers.length > 0 ? [this.state.teachers[Math.max(0, index - 1)]] : [];
+		this.undoStack.do(state => { state.teachers.splice(index, 1) });
+		this.selectedTeacherIds = this.store.state.teachers.length > 0 ? [this.store.state.teachers[Math.max(0, index - 1)].id] : [];
 	}
 	
 	updateSelectedTeacher() {
-		const index = this.state.teachers.indexOf(this.selectedTeachers[0]);
-		if (index === -1) {
-			this.selectedTeachers = this.state.teachers.length > 0 ? [this.state.teachers[this.state.teachers.length - 1]] : [];
+		if (this.store.state.findId('teachers', this.selectedTeacherIds[0]) === undefined) {
+			this.selectedTeacherIds = this.store.state.teachers.length > 0 ? [this.store.state.teachers[this.store.state.teachers.length - 1].id] : [];
 		}
 	}
 }

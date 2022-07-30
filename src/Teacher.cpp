@@ -4,19 +4,25 @@
 #include <QJsonObject>
 #include "Subject.h"
 
-Teacher::Teacher(QString const &name, Subject const &subject, std::set<Timeslot> const &availableTimeslots):
-	name(name), subject(&subject), availableTimeslots(availableTimeslots)
+Teacher::Teacher(QString const &id, QString const &name, Subject const &subject, std::set<Timeslot> const &availableTimeslots):
+	id(id), name(name), subject(&subject), availableTimeslots(availableTimeslots)
 {
 
 }
 
 Teacher::Teacher(QJsonObject const &json, std::vector<Subject> const &subjects):
+	id(json["id"].toString()),
 	name(json["name"].toString()),
-	subject(&*std::find_if(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject.getName() == json["subject"].toObject()["name"]; }))
+	subject(&*std::find_if(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject.getId() == json["subjectId"]; }))
 {
 	for (auto const &jsonAvailableTimeslot: json["availableTimeslots"].toArray()) {
 		availableTimeslots.insert(Timeslot(jsonAvailableTimeslot.toObject()));
 	}
+}
+
+QString const &Teacher::getId() const
+{
+	return id;
 }
 
 QString const &Teacher::getName() const
@@ -39,21 +45,7 @@ bool Teacher::isAvailableAtTimeslot(const Timeslot &timeslot) const
 	return availableTimeslots.contains(timeslot);
 }
 
-QJsonObject Teacher::toJsonObject() const
-{
-	QJsonArray jsonAvailableTimeslots;
-	for (auto const &availableTimeslot: availableTimeslots) {
-		jsonAvailableTimeslots << availableTimeslot.toJsonObject();
-	}
-
-	return {
-		{"name", name},
-		{"subjectName", subject->getName()},
-		{"availableTimeslots", jsonAvailableTimeslots},
-	};
-}
-
 size_t std::hash<Teacher>::operator()(const Teacher& teacher) const
 {
-	return std::hash<QString>()(teacher.getName()) ^ std::hash<Subject>()(teacher.getSubject());
+	return std::hash<QString>()(teacher.getId());
 }

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-import { StateService } from '../state.service';
+import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
 
 @Component({
@@ -10,13 +10,9 @@ import { UndoStackService } from '../undo-stack.service';
 	styleUrls: ['./options-page.component.scss'],
 })
 export class OptionsPageComponent {
-	constructor(public state: StateService, private undoStack: UndoStackService) { }
+	constructor(public store: StoreService, private undoStack: UndoStackService) { }
 	
 	onDrop($event: CdkDragDrop<any[]>) {
-		this.undoStack.actions.move('objectives', $event.previousIndex, $event.currentIndex);
-		
-		/** @todo Really, really nasty way to update the views */
-		this.undoStack.undo();
-		this.undoStack.redo();
+		this.undoStack.do(state => { moveItemInArray(state.objectives, $event.previousIndex, $event.currentIndex) });
 	}
 }

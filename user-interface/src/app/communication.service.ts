@@ -5,9 +5,8 @@ import { Observable, Subject } from 'rxjs';
 
 import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
 import { Colle } from './colle';
-import { Teacher } from './teacher';
 import { Timeslot } from './timeslot';
-import { StateService } from './state.service';
+import { StoreService } from './store.service';
 
 @Injectable({
 	providedIn: 'root'
@@ -67,7 +66,7 @@ export class CommunicationService {
 		}
 	}
 	
-	compute(state: StateService): Observable<void> {
+	compute(store: StoreService): Observable<void> {
 		this.checkIfOpen();
 		
 		if (this.computeSubject !== undefined) {
@@ -77,14 +76,14 @@ export class CommunicationService {
 		this.computeSubject = new Subject<void>();
 		this.communication.solutionFound.connect((jsonColles: any[], jsonObjectiveComputations: any[]) => {
 			this.computeSubject?.next();
-			this.importJsonColles(state, jsonColles);
-			this.importJsonObjectiveComputations(state, jsonObjectiveComputations);
+			this.importJsonColles(store, jsonColles);
+			this.importJsonObjectiveComputations(store, jsonObjectiveComputations);
 		});
 		this.communication.computationFinished.connect(() => {
 			this.computeSubject?.complete();
 			this.computeSubject = undefined;
 		});
-		this.communication.compute(state.toSolverObject());
+		this.communication.compute(store.state.toSolverObject());
 		
 		return this.computeSubject.asObservable();
 	}
@@ -132,18 +131,22 @@ export class CommunicationService {
 		}
 	}
 	
-	protected importJsonColles(state: StateService, jsonColles: any[]): void {
-		state.colles = jsonColles.map((colle: any) => new Colle(
-			state.teachers.find(teacher => teacher.name === colle.teacherName) as Teacher,
-			new Timeslot(colle.timeslot.day, colle.timeslot.hour),
-			state.trios[colle.trioId],
-			state.weeks[colle.weekId],
-		));
+	protected importJsonColles(store: StoreService, jsonColles: any[]): void {
+		store.do(state => {
+			state.colles = jsonColles.map((colle: any) => new Colle(
+				colle.teacherId,
+				new Timeslot(colle.timeslot.day, colle.timeslot.hour),
+				state.trios[colle.trioId].id,
+				state.weeks[colle.weekId].id,
+			));
+		});
 	}
 	
-	protected importJsonObjectiveComputations(state: StateService, jsonObjectiveComputations: any[]): void {
-		for (let objectiveComputation of jsonObjectiveComputations) {
-			state.objectives.find(objective => objective.name === objectiveComputation.objectiveName)?.setValue(objectiveComputation.value);
-		};
+	protected importJsonObjectiveComputations(store: StoreService, jsonObjectiveComputations: any[]): void {
+		store.do(state => {
+			for (let objectiveComputation of jsonObjectiveComputations) {
+				state.objectives.find(objective => objective.name === objectiveComputation.objectiveName)?.setValue(objectiveComputation.value);
+			}
+		});
 	}
 }
