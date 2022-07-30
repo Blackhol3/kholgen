@@ -59,77 +59,40 @@ export class State {
 		return (this[property] as any[]).find(element => element.id === id);
 	}
 	
-	toHumanObject() {
+	toHumanJsonObject() {
 		return {
-			groups: this.groups.map(group => group.nextGroupId === null ?
-				{
-					name: group.name,
-					availableTimeslots: group.availableTimeslots.map(timeslot => timeslot.toString()),
-					numberOfTrios: group.numberOfTrios,
-				} :
-				{
-					name: group.name,
-					availableTimeslots: group.availableTimeslots.map(timeslot => timeslot.toString()),
-					numberOfTrios: group.numberOfTrios,
-					duration: group.duration,
-					nextGroup: this.findId('groups', group.nextGroupId).name,
-				}
-			),
-			subjects: this.subjects,
-			teachers: this.teachers.map(teacher => ({
-				name: teacher.name,
-				subject: this.findId('subjects', teacher.subjectId).name,
-				availableTimeslots: teacher.availableTimeslots.map(timeslot => timeslot.toString()),
-			})),
-			objectives: this.objectives.map(objective => objective.name),
+			groups: this.groups.map(group => group.toHumanJsonObject(this)),
+			subjects: this.subjects.map(subject => subject.toHumanJsonObject()),
+			teachers: this.teachers.map(teacher => teacher.toHumanJsonObject(this)),
+			objectives: this.objectives.map(objective => objective.toHumanJsonObject()),
 		};
 	}
 	
-	toSolverObject() {
+	toSolverJsonObject() {
 		return {
 			groups: this.groups,
 			subjects: this.subjects,
 			teachers: this.teachers,
 			trios: this.trios,
 			numberOfWeeks: this.weeks.length,
-			objectives: this.objectives.map(objective => objective.name),
+			objectives: this.objectives,
 		};
 	}
 	
 	/** @todo Throw better error messages **/
-	static fromJsonObject(jsonObject: any): State {
-		let groups = [];
-		for (let group of jsonObject.groups) {
-			groups.push(new Group(
-				group.name,
-				group.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
-				group.numberOfTrios,
-			));
-		}
+	static fromJsonObject(jsonObject: ReturnType<State['toHumanJsonObject']>) {
+		const groups = jsonObject.groups.map((group: any) => Group.fromJsonObject(group));
 		for (let idGroup = 0; idGroup < groups.length; ++idGroup) {
 			if (jsonObject.groups[idGroup].duration !== undefined && jsonObject.groups[idGroup].nextGroup !== undefined) {
 				groups[idGroup].setNextGroup(
-					jsonObject.groups[idGroup].duration,
+					jsonObject.groups[idGroup].duration!,
 					groups.find(group => group.name === jsonObject.groups[idGroup].nextGroup)!,
 				);
 			}
 		}
 		
-		let subjects = [];
-		for (let subject of jsonObject.subjects) {
-			subjects.push(new Subject(
-				subject.name, subject.shortName, subject.frequency, subject.color
-			));
-		}
-		
-		let teachers = [];
-		for (let teacher of jsonObject.teachers) {
-			teachers.push(new Teacher(
-				teacher.name,
-				subjects.find(subject => subject.name === teacher.subject)!.id,
-				teacher.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
-			));
-		}
+		const subjects = jsonObject.subjects.map((subject: any) => Subject.fromJsonObject(subject));
+		const teachers = jsonObject.teachers.map((teacher: any) => Teacher.fromJsonObject(teacher, subjects));
 		
 		let weeks = [];
 		for (let i = 0; i < 20; ++i) {

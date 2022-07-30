@@ -18,4 +18,8 @@ export class Objective {
 	getValueText(): string {
 		return this.value === undefined ? '–' : this.valueToText(this.value);
 	}
+	
+	toHumanJsonObject() {
+		return this.name;
+	}
 }

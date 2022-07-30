@@ -64,7 +64,7 @@ export class AppComponent {
 	exportFile() {
 		FileSaver.saveAs(
 			new Blob(
-				[JSON.stringify(this.store.state.toHumanObject(), undefined, "\t")],
+				[JSON.stringify(this.store.state.toHumanJsonObject(), undefined, "\t")],
 				{type: 'application/json'},
 			),
 			'Colloscope.json',

@@ -1,5 +1,7 @@
 import { immerable } from 'immer';
 import { nanoid } from 'nanoid/non-secure';
+
+import { State } from './state';
 import { Timeslot } from './timeslot';
 
 export class Group {
@@ -19,6 +21,28 @@ export class Group {
 	setNextGroup(duration: number, nextGroup: Group) {
 		toMutable(this).duration = duration;
 		toMutable(this).nextGroupId = nextGroup.id;
+	}
+	
+	toHumanJsonObject(state: State) {
+		return Object.assign(
+			{
+				name: this.name,
+				availableTimeslots: this.availableTimeslots.map(timeslot => timeslot.toString()),
+				numberOfTrios: this.numberOfTrios,
+			},
+			this.nextGroupId !== null ? {
+				duration: this.duration,
+				nextGroup: state.findId('groups', this.nextGroupId).name,
+			} : {}
+		);
+	}
+	
+	static fromJsonObject(json: ReturnType<Group['toHumanJsonObject']>) {
+		return new Group(
+			json.name,
+			json.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
+			json.numberOfTrios,
+		);
 	}
 }
 

@@ -83,7 +83,7 @@ export class CommunicationService {
 			this.computeSubject?.complete();
 			this.computeSubject = undefined;
 		});
-		this.communication.compute(store.state.toSolverObject());
+		this.communication.compute(store.state.toSolverJsonObject());
 		
 		return this.computeSubject.asObservable();
 	}
