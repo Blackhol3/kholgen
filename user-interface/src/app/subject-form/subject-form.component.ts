@@ -1,14 +1,10 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
-import { AbstractControl, NonNullableFormBuilder, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, NonNullableFormBuilder, Validators } from '@angular/forms';
 
+import { Entries, notUniqueValidator } from '../misc';
 import { Subject } from '../subject';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
-
-/** @link https://stackoverflow.com/questions/60141960/typescript-key-value-relation-preserving-object-entries-type/60142095#60142095 */
-type Entries<T> = {
-    [K in keyof T]: [K, T[K]]
-}[keyof T][];
 
 @Component({
 	selector: 'app-subject-form',
@@ -20,9 +16,9 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 	@Input() subject: Subject | undefined;
 	
 	form = this.formBuilder.group({
-		name: ['', [Validators.required, (control: AbstractControl) => this.notUniqueValidator(control, 'name')]],
-		shortName: ['', [Validators.required, (control: AbstractControl) => this.notUniqueValidator(control, 'shortName')]],
-		frequency: [1, [Validators.required, Validators.min(1), Validators.pattern('^[0-9]*$')]],
+		name: ['', [Validators.required, (control: AbstractControl) => notUniqueValidator(control, 'name', this.subject!, this.store.state.subjects)]],
+		shortName: ['', [Validators.required, (control: AbstractControl) => notUniqueValidator(control, 'shortName', this.subject!, this.store.state.subjects)]],
+		frequency: [1, [Validators.required, Validators.min(1), Validators.pattern('^-?[0-9]*$')]],
 		color: ['', Validators.required],
 	});
 	
@@ -71,15 +67,5 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 	protected getControlValue(key: string) {
 		const value = this.form?.controls[key as keyof typeof this.form.controls].value;
 		return typeof value === 'string' ? value.trim() : value;
-	}
-
-	protected notUniqueValidator(control: AbstractControl, property: keyof Subject): ValidationErrors | null {
-		for (let subject of this.store.state.subjects) {
-			if (subject !== this.subject && subject[property] === control.value.trim()) {
-				return {notUnique: {subject: subject, property: property}};
-			}
-		}
-		
-		return null;
 	}
 }

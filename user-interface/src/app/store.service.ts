@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Draft, Patch, applyPatches, enablePatches, produceWithPatches } from 'immer';
 import { Subject } from 'rxjs';
 
+import { toMutable } from './misc';
 import { State } from './state';
 
 @Injectable({
@@ -33,8 +34,4 @@ export class StoreService {
 		toMutable(this).state = applyPatches(this.state, patches);
 		this.changeSubject.next();
 	}
-}
-
-function toMutable<Class>(object: Class): {-readonly [property in keyof Class]: Class[property]} {
-	return object;
 }

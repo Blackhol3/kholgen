@@ -1,0 +1,22 @@
+<section>
+	<div>
+		<div>
+			<button mat-raised-button (click)="addNewGroup()">Ajouter <mat-icon>add</mat-icon></button>
+			<button mat-raised-button (click)="deleteGroup()" [disabled]="selectedGroupIds.length === 0">Supprimer <mat-icon>remove</mat-icon></button>
+		</div>
+		<mat-selection-list
+			[multiple]="false" [(ngModel)]="selectedGroupIds"
+			[@listAnimation]="store.state.groups.length"
+			cdkDropList (cdkDropListDropped)="onDrop($event)"
+			(paste)="onPaste($event)"
+		>
+			<mat-list-option
+				*ngFor="let group of store.state.groups" cdkDrag [value]="group.id"
+				[appCopyData]="group.toHumanJsonObject(store.state)" appCopyType="group"
+			>
+				{{group.name}}
+			</mat-list-option>
+		</mat-selection-list>
+	</div>
+	<app-group-form [group]="store.state.findId('groups', selectedGroupIds[0])" *ngIf="selectedGroupIds.length > 0" @slideAnimation></app-group-form>
+</section>

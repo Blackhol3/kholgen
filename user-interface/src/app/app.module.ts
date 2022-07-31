@@ -24,6 +24,8 @@ import { AppComponent } from './app.component';
 import { ColloscopeComponent } from './colloscope/colloscope.component';
 import { ComputationPageComponent } from './computation-page/computation-page.component';
 import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
+import { GroupFormComponent } from './group-form/group-form.component';
+import { GroupsPageComponent } from './groups-page/groups-page.component';
 import { OptionsPageComponent } from './options-page/options-page.component';
 import { SubjectFormComponent } from './subject-form/subject-form.component';
 import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
@@ -42,6 +44,8 @@ import { ReuseStrategy } from './reuse-strategy';
 		ComputationPageComponent,
     	ConnectionDialogComponent,
 		CopyDataDirective,
+		GroupFormComponent,
+		GroupsPageComponent,
 		OptionsPageComponent,
 		SubjectFormComponent,
 		SubjectsPageComponent,
@@ -56,11 +60,12 @@ import { ReuseStrategy } from './reuse-strategy';
 		FormsModule,
 		ReactiveFormsModule,
 		RouterModule.forRoot([
+			{path: 'groups', component: GroupsPageComponent},
 			{path: 'subjects', component: SubjectsPageComponent},
 			{path: 'teachers', component: TeachersPageComponent},
 			{path: 'options', component: OptionsPageComponent},
 			{path: 'computation', component: ComputationPageComponent},
-			{path: '**', redirectTo: '/subjects'},
+			{path: '**', redirectTo: '/groups'},
 		]),
 		
 		MatButtonModule,

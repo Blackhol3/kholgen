@@ -1,15 +1,11 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
-import { AbstractControl, FormControl, NonNullableFormBuilder , ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, NonNullableFormBuilder , ValidationErrors, Validators } from '@angular/forms';
 
+import { Entries, setErrors } from '../misc';
 import { Teacher } from '../teacher';
 import { Timeslot } from '../timeslot';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
-
-/** @link https://stackoverflow.com/questions/60141960/typescript-key-value-relation-preserving-object-entries-type/60142095#60142095 */
-type Entries<T> = {
-    [K in keyof T]: [K, T[K]]
-}[keyof T][];
 
 @Component({
 	selector: 'app-teacher-form',
@@ -23,7 +19,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 	form = this.formBuilder.group({
 		name: ['', Validators.required],
 		subjectId: ['', Validators.required],
-		availableTimeslots: new FormControl([] as readonly Timeslot[], {validators: Validators.required}),
+		availableTimeslots: [[] as readonly Timeslot[], Validators.required],
 	}, {validators: control => this.notUniqueValidator(control)});
 	
 	constructor(public store: StoreService, private undoStack: UndoStackService, private formBuilder: NonNullableFormBuilder ) {
@@ -51,7 +47,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 	}
 	
 	formChange() {
-		let teacher = this.teacher;
+		const teacher = this.teacher;
 		if (teacher === undefined) {
 			return;
 		}
@@ -60,7 +56,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 			if (control.valid && teacher[key] !== this.getControlValue(key)) {
 				this.undoStack.do(
 					state => {
-						(state.teachers[this.store.state.teachers.indexOf(teacher!)] as any)[key] = this.getControlValue(key);
+						(state.teachers[state.teachers.findIndex(t => t.id === teacher.id)] as any)[key] = this.getControlValue(key);
 					},
 					key !== 'availableTimeslots'
 				);
@@ -77,25 +73,18 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 	}
 	
 	protected notUniqueValidator(control: AbstractControl): ValidationErrors | null {
-		let errors = {
-			name: control.get('name')?.errors ?? {},
-			subjectId: control.get('subjectId')?.errors ?? {},
-		};
-		
 		for (let teacher of this.store.state.teachers) {
 			if (teacher !== this.teacher && teacher.subjectId === this.getControlValue('subjectId') && teacher.name === this.getControlValue('name')) {
 				const error = {notUnique: {teacher: teacher}};
-				control.get('name')?.setErrors(Object.assign({}, errors.name, error));
-				control.get('subjectId')?.setErrors(Object.assign({}, errors.subjectId, error));
+				setErrors(control, 'name', error);
+				setErrors(control, 'subjectId', error);
 				return error;
 			}
 		}
 		
-		delete errors.name['notUnique'];
-		delete errors.subjectId['notUnique'];
-		control.get('name')?.setErrors(Object.values(errors.name).length === 0 ? null : errors.name);
-		control.get('subjectId')?.setErrors(Object.values(errors.subjectId).length === 0 ? null : errors.subjectId);
-		
+		const error = {notUnique: undefined};
+		setErrors(control, 'name', error);
+		setErrors(control, 'subjectId', error);
 		return null;
 	}
 }

@@ -5,7 +5,6 @@ import { Group } from './group';
 import { Objective } from './objective';
 import { Subject } from './subject';
 import { Teacher } from './teacher';
-import { Timeslot } from './timeslot';
 import { Trio } from './trio';
 import { Week } from './week';
 
@@ -75,7 +74,7 @@ export class State {
 			teachers: this.teachers,
 			trios: this.trios,
 			numberOfWeeks: this.weeks.length,
-			objectives: this.objectives,
+			objectives: this.objectives.map(objective => objective.name),
 		};
 	}
 	
@@ -83,12 +82,7 @@ export class State {
 	static fromJsonObject(jsonObject: ReturnType<State['toHumanJsonObject']>) {
 		const groups = jsonObject.groups.map((group: any) => Group.fromJsonObject(group));
 		for (let idGroup = 0; idGroup < groups.length; ++idGroup) {
-			if (jsonObject.groups[idGroup].duration !== undefined && jsonObject.groups[idGroup].nextGroup !== undefined) {
-				groups[idGroup].setNextGroup(
-					jsonObject.groups[idGroup].duration!,
-					groups.find(group => group.name === jsonObject.groups[idGroup].nextGroup)!,
-				);
-			}
+			groups[idGroup].setNextGroupFromJsonObject(jsonObject.groups[idGroup], groups);
 		}
 		
 		const subjects = jsonObject.subjects.map((subject: any) => Subject.fromJsonObject(subject));
