@@ -1,0 +1,52 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+$palette: mat.define-palette(mat.$indigo-palette);
+$nextGroupColor: rgb(200, 200, 200);
+
+:host, svg {
+	display: block;
+	width: 100%;
+}
+
+defs path {
+	fill: $nextGroupColor;
+	stroke: $nextGroupColor;
+}
+
+.group {
+	circle {
+		fill: map.get($palette, 200);
+		filter: blur(0.1em);
+	}
+	
+	text {
+		font-size: 0.3em;
+	}
+}
+
+.next-group {
+	path {
+		fill: none;
+		stroke: $nextGroupColor;
+		stroke-width: 1;
+	}
+
+	text {
+		fill: $nextGroupColor;
+		font-weight: bold;
+		font-size: 0.3em;
+	}
+}
+
+.class {
+	circle {
+		fill: none;
+		stroke: rgba(0, 0, 0, 0.57);
+		stroke-dasharray: 3;
+	}
+	
+	text {
+		fill: rgba(0, 0, 0, 0.57);
+		font-size: 0.5em;
+	}
+}

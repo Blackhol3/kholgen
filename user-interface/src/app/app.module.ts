@@ -25,6 +25,7 @@ import { ColloscopeComponent } from './colloscope/colloscope.component';
 import { ComputationPageComponent } from './computation-page/computation-page.component';
 import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
 import { GroupFormComponent } from './group-form/group-form.component';
+import { GroupsGraphComponent } from './groups-graph/groups-graph.component';
 import { GroupsPageComponent } from './groups-page/groups-page.component';
 import { OptionsPageComponent } from './options-page/options-page.component';
 import { SubjectFormComponent } from './subject-form/subject-form.component';
@@ -45,6 +46,7 @@ import { ReuseStrategy } from './reuse-strategy';
     	ConnectionDialogComponent,
 		CopyDataDirective,
 		GroupFormComponent,
+		GroupsGraphComponent,
 		GroupsPageComponent,
 		OptionsPageComponent,
 		SubjectFormComponent,

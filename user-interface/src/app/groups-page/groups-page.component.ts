@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
@@ -14,6 +15,16 @@ import { UndoStackService } from '../undo-stack.service';
 	animations: [
 		listAnimation,
 		slideAnimation,
+		trigger('scaleAnimation', [
+			transition(':enter', [
+				style({width: 0}),
+				animate('200ms', style({width: '*'})),
+			]),
+			transition(':leave', [
+				style({width: '*'}),
+				animate('150ms', style({width: 0})),
+			]),
+		]),
 	],
 })
 export class GroupsPageComponent implements OnInit, OnDestroy {
@@ -32,7 +43,7 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 	
 	onDrop($event: CdkDragDrop<any[]>) {
 		this.selectedGroupIds = [this.store.state.groups[$event.previousIndex].id];
-		this.undoStack.do(state => { moveItemInArray(state.subjects, $event.previousIndex, $event.currentIndex) });
+		this.undoStack.do(state => { moveItemInArray(state.groups, $event.previousIndex, $event.currentIndex) });
 	}
 	
 	addNewGroup() {

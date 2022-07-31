@@ -1,0 +1,30 @@
+<svg [attr.viewBox]="[-(radius + individualRadius + 10), -(radius + individualRadius + 10), 2*(radius + individualRadius + 10) + 75, 2*(radius + individualRadius + 10)].join(' ')">
+	<defs>
+		<marker id="arrowEnd" style="overflow:visible;" refX="0.0" refY="0.0" orient="auto">
+			<path
+				transform="scale(0.4) rotate(180) translate(10,0)"
+				d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+			/>
+		</marker>
+	</defs>
+	<g class="group" *ngFor="let group of groups; index as index" [attr.transform]="getTransform(index)">
+		<circle x="0" y="0" [attr.r]="individualRadius" />
+		<text text-anchor="middle" dominant-baseline="middle">
+			<tspan x="0" dy="-0.6em">{{group.name}}</tspan>
+			<tspan x="0" dy="1.2em">({{getTriosText(group.numberOfTrios)}})</tspan>
+		</text>
+	</g>
+	<g class="next-group" *ngFor="let group of groups; index as index" [attr.transform]="getTransform(index)">
+		<ng-container *ngIf="group.nextGroupId !== null">
+			<path [attr.d]="getPath(index)" [attr.transform]="'rotate('+ getNextGroupDelta(index)[1] +')'" marker-end="url(#arrowEnd)" />
+			<text text-anchor="middle" dominant-baseline="middle" [attr.transform]="getNextGroupTextTransform(index)">{{group.duration}}</text>
+		</ng-container>
+	</g>
+	<g class="class">
+		<circle x="0" y="0" [attr.r]="radius + individualRadius + 5" />
+		<text [attr.transform]="'translate('+ (radius + individualRadius + 45) +' 0)'" text-anchor="middle" dominant-baseline="middle">
+			<tspan x="0" dy="-0.6em">{{getTriosText(getNumberOfTrios())}}</tspan>
+			<tspan x="0" dy="1.2em">(soit {{getNumberOfTrios()*3 - 2}} à {{getNumberOfTrios()*3}} étudiants)</tspan>
+		</text>
+	</g>
+</svg>
