@@ -65,6 +65,11 @@ export class GroupsGraphComponent implements OnChanges {
 		return `${numberOfTrios} trinôme${numberOfTrios > 1 ? 's' : ''}`;
 	}
 	
+	getStudentsText() {
+		const numberOfTrios = this.getNumberOfTrios();
+		return numberOfTrios === 0 ? `0 étudiant` : `${numberOfTrios - 2} à ${numberOfTrios} étudiants`;
+	}
+	
 	protected getAngle(index: number, unit: 'deg' | 'rad') {
 		const angle = -index * 360/(this.groups.length);
 		return unit === 'deg' ? angle : (angle * Math.PI/180);

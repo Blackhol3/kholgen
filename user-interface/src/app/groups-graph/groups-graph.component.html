@@ -24,7 +24,7 @@
 		<circle x="0" y="0" [attr.r]="radius + individualRadius + 5" />
 		<text [attr.transform]="'translate('+ (radius + individualRadius + 45) +' 0)'" text-anchor="middle" dominant-baseline="middle">
 			<tspan x="0" dy="-0.6em">{{getTriosText(getNumberOfTrios())}}</tspan>
-			<tspan x="0" dy="1.2em">(soit {{getNumberOfTrios()*3 - 2}} à {{getNumberOfTrios()*3}} étudiants)</tspan>
+			<tspan x="0" dy="1.2em">(soit {{getStudentsText()}})</tspan>
 		</text>
 	</g>
 </svg>

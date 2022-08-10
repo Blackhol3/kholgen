@@ -58,7 +58,15 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 		const group = this.store.state.findId('groups', this.selectedGroupIds[0])!;
 		const index = this.store.state.groups.indexOf(group);
 		
-		this.undoStack.do(state => { state.groups.splice(index, 1) });
+		this.undoStack.do(state => {
+			for (let otherGroup of state.groups) {
+				if (otherGroup.nextGroupId === group.id) {
+					otherGroup.nextGroupId = null;
+				}
+			}
+			
+			state.groups.splice(index, 1);
+		});
 		this.selectedGroupIds = this.store.state.groups.length > 0 ? [this.store.state.groups[Math.max(0, index - 1)].id] : [];
 	}
 	
