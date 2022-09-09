@@ -7,7 +7,7 @@
 			/>
 		</marker>
 	</defs>
-	<g class="group" *ngFor="let group of groups; index as index" [attr.transform]="getTransform(index)">
+	<g class="group" *ngFor="let group of groups; index as index" [attr.transform]="getTransform(index)" (click)="groupClick.emit(group)">
 		<circle x="0" y="0" [attr.r]="individualRadius" />
 		<text text-anchor="middle" dominant-baseline="middle">
 			<tspan x="0" dy="-0.6em">{{group.name}}</tspan>

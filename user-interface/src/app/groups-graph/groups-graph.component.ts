@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, EventEmitter, Component, Input, OnChanges, Output } from '@angular/core';
 
 import { Group } from '../group';
 
@@ -10,6 +10,7 @@ import { Group } from '../group';
 })
 export class GroupsGraphComponent implements OnChanges {
 	@Input() groups: readonly Group[] = [];
+	@Output() groupClick = new EventEmitter<Group>();
 	
 	readonly radius = 35;
 	readonly individualRadius = 10;
@@ -67,7 +68,7 @@ export class GroupsGraphComponent implements OnChanges {
 	
 	getStudentsText() {
 		const numberOfTrios = this.getNumberOfTrios();
-		return numberOfTrios === 0 ? `0 étudiant` : `${numberOfTrios - 2} à ${numberOfTrios} étudiants`;
+		return numberOfTrios === 0 ? `0 étudiant` : `${3*numberOfTrios - 2} à ${3*numberOfTrios} étudiants`;
 	}
 	
 	protected getAngle(index: number, unit: 'deg' | 'rad') {

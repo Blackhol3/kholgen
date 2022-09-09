@@ -1,4 +1,4 @@
-<app-groups-graph [groups]="store.state.groups" *ngIf="store.state.groups.length >= 2" @scaleAnimation></app-groups-graph>
+<app-groups-graph [groups]="store.state.groups" *ngIf="store.state.groups.length >= 2" (groupClick)="selectedGroupIds = [$event.id]" @scaleAnimation></app-groups-graph>
 <section>
 	<div>
 		<div>
