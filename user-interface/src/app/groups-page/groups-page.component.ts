@@ -88,8 +88,7 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 		}
 		
 		this.undoStack.do(state => {
-			const group = Group.fromJsonObject(jsonGroup);
-			group.setNextGroupFromJsonObject(jsonGroup, state.groups);
+			const group = Group.fromJsonObject(jsonGroup).setNextGroupFromJsonObject(jsonGroup, state.groups);
 			state.groups.push(group);
 		});
 	}

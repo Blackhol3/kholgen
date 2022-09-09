@@ -30,10 +30,6 @@ export function setErrors(parentControl: AbstractControl, key: string, newError:
 	control.setErrors(errors);
 }
 
-export function toMutable<Class>(object: Class): {-readonly [property in keyof Class]: Class[property]} {
-	return object;
-}
-
 /** @link https://stackoverflow.com/questions/60141960/typescript-key-value-relation-preserving-object-entries-type/60142095#60142095 */
 export type Entries<T> = {
     [K in keyof T]: [K, T[K]]

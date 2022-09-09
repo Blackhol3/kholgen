@@ -1,7 +1,6 @@
-import { immerable } from 'immer';
+import { immerable, produce } from 'immer';
 import { nanoid } from 'nanoid/non-secure';
 
-import { toMutable } from './misc';
 import { State } from './state';
 import { Timeslot } from './timeslot';
 
@@ -19,16 +18,20 @@ export class Group {
 		this.id = nanoid();
 	}
 	
-	setNextGroup(duration: number, nextGroup: Group) {
-		toMutable(this).duration = duration;
-		toMutable(this).nextGroupId = nextGroup.id;
+	setNextGroup(duration: number, nextGroup: Group): Group {
+		return produce(this, group => {
+			group.duration = duration;
+			group.nextGroupId = nextGroup.id;
+		});
 	}
 	
-	setNextGroupFromJsonObject(json: ReturnType<Group['toHumanJsonObject']>, groups: Group[]) {
+	setNextGroupFromJsonObject(json: ReturnType<Group['toHumanJsonObject']>, groups: Group[]): Group {
 		const nextGroup = groups.find(group => group.name === json.nextGroup);
 		if (json.duration !== undefined && nextGroup !== undefined) {
-			this.setNextGroup(json.duration!, nextGroup);
+			return this.setNextGroup(json.duration!, nextGroup);
 		}
+		
+		return this;
 	}
 	
 	toHumanJsonObject(state: State) {

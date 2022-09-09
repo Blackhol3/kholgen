@@ -82,7 +82,7 @@ export class State {
 	static fromJsonObject(jsonObject: ReturnType<State['toHumanJsonObject']>) {
 		const groups = jsonObject.groups.map((group: any) => Group.fromJsonObject(group));
 		for (let idGroup = 0; idGroup < groups.length; ++idGroup) {
-			groups[idGroup].setNextGroupFromJsonObject(jsonObject.groups[idGroup], groups);
+			groups[idGroup] = groups[idGroup].setNextGroupFromJsonObject(jsonObject.groups[idGroup], groups);
 		}
 		
 		const subjects = jsonObject.subjects.map((subject: any) => Subject.fromJsonObject(subject));
