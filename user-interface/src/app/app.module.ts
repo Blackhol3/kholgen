@@ -27,6 +27,7 @@ import { ConnectionDialogComponent } from './connection-dialog/connection-dialog
 import { GroupFormComponent } from './group-form/group-form.component';
 import { GroupsGraphComponent } from './groups-graph/groups-graph.component';
 import { GroupsPageComponent } from './groups-page/groups-page.component';
+import { ObjectivesComponent } from './objectives/objectives.component';
 import { OptionsPageComponent } from './options-page/options-page.component';
 import { SubjectFormComponent } from './subject-form/subject-form.component';
 import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
@@ -48,6 +49,7 @@ import { ReuseStrategy } from './reuse-strategy';
 		GroupFormComponent,
 		GroupsGraphComponent,
 		GroupsPageComponent,
+		ObjectivesComponent,
 		OptionsPageComponent,
 		SubjectFormComponent,
 		SubjectsPageComponent,

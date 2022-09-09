@@ -1,0 +1,6 @@
+<div class="scale"></div>
+<mat-list cdkDropList (cdkDropListDropped)="onDrop($event)">
+	<mat-list-item *ngFor="let objective of objectives" cdkDrag>
+		{{objective.readableName}}
+	</mat-list-item>
+</mat-list>

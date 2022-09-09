@@ -5,6 +5,7 @@ import { Group } from './group';
 import { Objective } from './objective';
 import { Subject } from './subject';
 import { Teacher } from './teacher';
+import { firstHour, lastHour } from './timeslot';
 import { Trio } from './trio';
 import { Week } from './week';
 
@@ -47,7 +48,7 @@ export class State {
 		readonly trios: readonly Trio[] = [],
 		readonly weeks: readonly Week[] = [],
 		readonly objectives: readonly Objective[] = defaultObjectives.slice(),
-		readonly lunchTimeRange: readonly [number, number] = [0, 24],
+		readonly lunchTimeRange: readonly [number, number] = [firstHour, lastHour + 1],
 	) {}
 	
 	findId(property: 'groups', id: string) : Group | undefined;
