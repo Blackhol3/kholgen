@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <set>
+#include <utility>
 #include "Group.h"
 #include "Subject.h"
 #include "Teacher.h"
@@ -25,6 +26,7 @@ class State
 		const std::vector<Trio>& getTrios() const;
 		const std::vector<Week>& getWeeks() const;
 		const std::vector<const Objective*>& getObjectives() const;
+		const std::pair<int, int>& getLunchTimeRange() const;
 
 		std::vector<Teacher> getTeachersOfSubject(Subject const &subject) const;
 		std::vector<std::pair<Slot, Slot>> getNotSimultaneousSameDaySlotsWithDifferentSubjects() const;
@@ -38,5 +40,6 @@ class State
 		std::vector<Trio> trios;
 		std::vector<Week> weeks;
 		std::vector<Objective const *> objectives;
+		std::pair<int, int> lunchTimeRange;
 };
 

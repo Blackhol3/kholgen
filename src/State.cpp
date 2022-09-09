@@ -53,6 +53,9 @@ void State::import(QJsonObject const &json)
 		);
 		++index;
 	}
+
+	auto const &jsonLunchTimeRange = json["lunchTimeRange"].toArray();
+	lunchTimeRange = {jsonLunchTimeRange[0].toInt(), jsonLunchTimeRange[1].toInt()};
 }
 
 const std::vector<Group>& State::getGroups() const
@@ -83,6 +86,11 @@ const std::vector<Week>& State::getWeeks() const
 const std::vector<const Objective*>& State::getObjectives() const
 {
 	return objectives;
+}
+
+const std::pair<int, int>& State::getLunchTimeRange() const
+{
+	return lunchTimeRange;
 }
 
 std::vector<Teacher> State::getTeachersOfSubject(const Subject& subject) const

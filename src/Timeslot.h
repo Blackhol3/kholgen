@@ -29,6 +29,7 @@ class Timeslot
 		QJsonObject toJsonObject() const;
 		auto operator<=>(Timeslot const &) const = default;
 
+		static std::vector<Day> const days;
 		static std::map<Day, QString> const dayNames;
 		static std::map<Day, QString> const dayShortNames;
 

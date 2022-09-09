@@ -4,6 +4,14 @@
 #include <QJsonObject>
 #include <QObject>
 
+std::vector<Day> const Timeslot::days = {
+	Day::Monday,
+	Day::Tuesday,
+	Day::Wednesday,
+	Day::Thursday,
+	Day::Friday,
+};
+
 std::map<Day, QString> const Timeslot::dayNames = {
 	{Day::Monday,    QObject::tr("Lundi")},
 	{Day::Tuesday,   QObject::tr("Mardi")},

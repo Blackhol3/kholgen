@@ -129,6 +129,31 @@ bool Solver::compute(std::function<void(vector<Colle> const &colles, vector<Obje
 		modelBuilder.AddExactlyOne(subjectsCombinationVars);
 	}
 
+	// Trios must have time to eat lunch
+	auto const &lunchTimeRange = state->getLunchTimeRange();
+	for (auto const &week: state->getWeeks()) {
+		for (auto const &day: Timeslot::days) {
+			for (auto const &trio: state->getTrios()) {
+				int nbAvailableTimeslotsOfTrioDuringLunchTimeInDayAndWeek = 0;
+				LinearExpr nbCollesOfTrioDuringLunchTimeInDayAndWeek;
+
+				for (auto const &timeslot: trio.getAvailableTimeslotsInWeek(week)) {
+					if (timeslot.getDay() == day && timeslot.getHour() >= lunchTimeRange.first && timeslot.getHour() < lunchTimeRange.second) {
+						++nbAvailableTimeslotsOfTrioDuringLunchTimeInDayAndWeek;
+
+						for (auto const &teacher: state->getTeachers()) {
+							if (teacher.getAvailableTimeslots().contains(timeslot)) {
+								nbCollesOfTrioDuringLunchTimeInDayAndWeek += isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week];
+							}
+						}
+					}
+				}
+
+				modelBuilder.AddLessThan(nbCollesOfTrioDuringLunchTimeInDayAndWeek, nbAvailableTimeslotsOfTrioDuringLunchTimeInDayAndWeek);
+			}
+		}
+	}
+
 	/****************************/
 	/***** ADD OPTIMISATION *****/
 	/****************************/

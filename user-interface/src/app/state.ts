@@ -47,6 +47,7 @@ export class State {
 		readonly trios: readonly Trio[] = [],
 		readonly weeks: readonly Week[] = [],
 		readonly objectives: readonly Objective[] = defaultObjectives.slice(),
+		readonly lunchTimeRange: readonly [number, number] = [0, 24],
 	) {}
 	
 	findId(property: 'groups', id: string) : Group | undefined;
@@ -75,6 +76,7 @@ export class State {
 			trios: this.trios,
 			numberOfWeeks: this.weeks.length,
 			objectives: this.objectives.map(objective => objective.name),
+			lunchTimeRange: this.lunchTimeRange,
 		};
 	}
 	
@@ -98,6 +100,8 @@ export class State {
 			objectives.push(defaultObjectives.find(defaultObjective => defaultObjective.name === objective)!);
 		}
 		
-		return new State([], groups, subjects, teachers, [], weeks, objectives);
+		const lunchTimeRange = [11, 14] as const;
+		
+		return new State([], groups, subjects, teachers, [], weeks, objectives, lunchTimeRange);
 	}
 }
