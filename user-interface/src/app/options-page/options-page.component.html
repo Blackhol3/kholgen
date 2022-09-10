@@ -1,22 +1,22 @@
 <form [formGroup]="form">
-	<p class="lunch-time">
+	<p>
 		Les étudiants peuvent déjeuner de
-		<mat-form-field appearance="fill" [hideRequiredMarker]="true" floatLabel="always">
+		<mat-form-field appearance="outline" class="inline" [hideRequiredMarker]="true" floatLabel="always">
 			<mat-label>Début</mat-label>
-			<input matInput type="number" formControlName="lunchTimeStart" [min]="firstHour" [max]="lastHour + 1">
+			<input matInput type="number" class="suffixed" formControlName="lunchTimeStart" [min]="firstHour" [max]="form.controls.lunchTimeEnd.value - 1">
 			<span matSuffix>&nbsp;h</span>
 		</mat-form-field>
 		à
-		<mat-form-field appearance="fill" [hideRequiredMarker]="true" floatLabel="always">
+		<mat-form-field appearance="outline" class="inline" [hideRequiredMarker]="true" floatLabel="always">
 			<mat-label>Fin</mat-label>
-			<input matInput type="number" formControlName="lunchTimeEnd" [min]="firstHour" [max]="lastHour + 1">
+			<input matInput type="number" class="suffixed" formControlName="lunchTimeEnd" [min]="form.controls.lunchTimeStart.value + 1" [max]="lastHour + 1">
 			<span matSuffix>&nbsp;h</span>
 		</mat-form-field>
 		.
 		<mat-error *ngIf="form.controls.lunchTimeStart.hasError('pattern') || form.controls.lunchTimeEnd.hasError('pattern')">Les horaires doivent être des entiers.</mat-error>
-		<mat-error *ngIf="form.controls.lunchTimeStart.hasError('min') || form.controls.lunchTimeEnd.hasError('min')">Le déjeuner ne peut commencer avant {{firstHour}}h.</mat-error>
-		<mat-error *ngIf="form.controls.lunchTimeStart.hasError('max') || form.controls.lunchTimeEnd.hasError('max')">Le déjeuner ne peut terminer après {{lastHour + 1}}h.</mat-error>
-		<mat-error *ngIf="form.controls.lunchTimeStart.hasError('invalidRange')">L'horaire de début doit être inférieur à celui de fin.</mat-error>
+		<mat-error *ngIf="form.controls.lunchTimeStart.hasError('min')">Le déjeuner ne peut commencer avant {{firstHour}}h.</mat-error>
+		<mat-error *ngIf="form.controls.lunchTimeEnd.hasError('max')">Le déjeuner ne peut terminer après {{lastHour + 1}}h.</mat-error>
+		<mat-error *ngIf="form.controls.lunchTimeStart.hasError('max') || form.controls.lunchTimeEnd.hasError('min')">L'horaire de début doit être inférieur à celui de fin.</mat-error>
 	</p>
 	
 	<p>Les contraintes <strong>en haut</strong> sont les plus <strong>importantes</strong> et seront imposées en premier.</p>

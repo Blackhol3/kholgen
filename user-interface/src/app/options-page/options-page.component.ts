@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AbstractControl, NonNullableFormBuilder , ValidationErrors, Validators } from '@angular/forms';
+import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
-import { Entries, setErrors } from '../misc';
+import { Entries } from '../misc';
 import { Objective } from '../objective';
 import { firstHour, lastHour } from '../timeslot';
 import { StoreService } from '../store.service';
@@ -18,7 +18,7 @@ export class OptionsPageComponent implements OnInit, OnDestroy {
 		lunchTimeStart: [firstHour, [Validators.required, Validators.min(firstHour), Validators.max(lastHour + 1), Validators.pattern('^-?[0-9]*$')]],
 		lunchTimeEnd: [lastHour + 1, [Validators.required, Validators.min(firstHour), Validators.max(lastHour + 1), Validators.pattern('^-?[0-9]*$')]],
 		objectives: [[] as readonly Objective[], Validators.required],
-	}, {validators: control => this.lunchTimeRangeValidator(control)});
+	});
 	storeSubscription: Subscription | undefined;
 	
 	firstHour = firstHour;
@@ -62,19 +62,5 @@ export class OptionsPageComponent implements OnInit, OnDestroy {
 				this.undoStack.do(state => { state.lunchTimeRange[1] = control.value as any; });
 			}
 		}
-	}
-	
-	protected lunchTimeRangeValidator(control: AbstractControl): ValidationErrors | null {
-		if (this.form?.controls.lunchTimeStart.value >= this.form?.controls.lunchTimeEnd.value) {
-			const error = {invalidRange: true};
-			setErrors(control, 'lunchTimeStart', error);
-			setErrors(control, 'lunchTimeEnd', error);
-			return error;
-		}
-		
-		const error = {invalidRange: undefined};
-		setErrors(control, 'lunchTimeStart', error);
-		setErrors(control, 'lunchTimeEnd', error);
-		return null;
 	}
 }

@@ -8,18 +8,6 @@ form {
 	align-items: center;
 }
 
-.lunch-time {
-	mat-form-field {
-		width: 5em;
-	}
-	
-	input {
-		-moz-appearance: textfield;
-		text-align: right;
-		
-		&::-webkit-outer-spin-button,
-		&::-webkit-inner-spin-button {
-			display: none;
-		}
-	}
+mat-form-field.inline {
+	width: 5em;
 }
