@@ -20,6 +20,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 		name: ['', Validators.required],
 		subjectId: ['', Validators.required],
 		availableTimeslots: [[] as readonly Timeslot[], Validators.required],
+		weeklyAvailabilityFrequency: [1, [Validators.required, Validators.min(1), Validators.pattern('^-?[0-9]*$')]],
 	}, {validators: control => this.notUniqueValidator(control)});
 	
 	constructor(public store: StoreService, private undoStack: UndoStackService, private formBuilder: NonNullableFormBuilder ) {
@@ -43,6 +44,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 			name: this.teacher.name,
 			subjectId: this.teacher.subjectId,
 			availableTimeslots: this.teacher.availableTimeslots,
+			weeklyAvailabilityFrequency: this.teacher.weeklyAvailabilityFrequency,
 		});
 	}
 	

@@ -13,6 +13,7 @@ export class Teacher {
 		readonly name: string,
 		readonly subjectId: string,
 		readonly availableTimeslots: readonly Timeslot[],
+		readonly weeklyAvailabilityFrequency: number = 1,
 	) {
 		this.id = nanoid();
 	}
@@ -22,6 +23,7 @@ export class Teacher {
 			name: this.name,
 			subject: state.findId('subjects', this.subjectId)!.name,
 			availableTimeslots: this.availableTimeslots.map(timeslot => timeslot.toString()),
+			weeklyAvailabilityFrequency: this.weeklyAvailabilityFrequency > 1 ? this.weeklyAvailabilityFrequency : undefined,
 		};
 	}
 	
@@ -31,6 +33,7 @@ export class Teacher {
 			json.name,
 			subject.id,
 			json.availableTimeslots.map(timeslot => Timeslot.fromString(timeslot)),
+			json.weeklyAvailabilityFrequency,
 		);
 	}
 }

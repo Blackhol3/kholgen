@@ -154,6 +154,36 @@ bool Solver::compute(std::function<void(vector<Colle> const &colles, vector<Obje
 		}
 	}
 
+	// Teachers must have colles according to their weekly availability frequency
+	for (auto const &teacher: state->getTeachers() | std::views::filter([](auto const &teacher) { return teacher.getWeeklyAvailabilityFrequency() > 1; })) {
+		unordered_map<Week, BoolVar> hasTeacherCollesInWeek;
+
+		for (auto const &week: state->getWeeks()) {
+			LinearExpr nbCollesOfTeacherInWeek;
+			for (auto const &trio: state->getTrios()) {
+				for (auto const &timeslot: state->getAvailableTimeslots(teacher, trio, week)) {
+					nbCollesOfTeacherInWeek += isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week];
+				}
+			}
+
+			hasTeacherCollesInWeek[week] = modelBuilder.NewBoolVar();
+			modelBuilder.AddGreaterThan(nbCollesOfTeacherInWeek, 0).OnlyEnforceIf(hasTeacherCollesInWeek[week]);
+			modelBuilder.AddEquality(nbCollesOfTeacherInWeek, 0).OnlyEnforceIf(hasTeacherCollesInWeek[week].Not());
+		}
+
+		// We go through all consecutives sets of `weeklyAvailabilityFrequency` weeks,
+		// which exclude some of the last weeks as starting point of the set.
+		for (int idStartingWeek = 0; idStartingWeek < state->getWeeks().size() - (teacher.getWeeklyAvailabilityFrequency() - 1); ++idStartingWeek) {
+			vector<BoolVar> weeksOfTeacherWithCollesInSetOfWeeks;
+
+			for (auto const &week: state->getWeeks() | std::views::drop(idStartingWeek) | std::views::take(teacher.getWeeklyAvailabilityFrequency())) {
+				weeksOfTeacherWithCollesInSetOfWeeks.push_back(hasTeacherCollesInWeek[week]);
+			}
+
+			modelBuilder.AddAtMostOne(weeksOfTeacherWithCollesInSetOfWeeks);
+		}
+	}
+
 	/****************************/
 	/***** ADD OPTIMISATION *****/
 	/****************************/

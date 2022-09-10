@@ -4,8 +4,8 @@
 #include <QJsonObject>
 #include "Subject.h"
 
-Teacher::Teacher(QString const &id, QString const &name, Subject const &subject, std::set<Timeslot> const &availableTimeslots):
-	id(id), name(name), subject(&subject), availableTimeslots(availableTimeslots)
+Teacher::Teacher(QString const &id, QString const &name, Subject const &subject, std::set<Timeslot> const &availableTimeslots, int weeklyAvailabilityFrequency):
+	id(id), name(name), subject(&subject), availableTimeslots(availableTimeslots), weeklyAvailabilityFrequency(weeklyAvailabilityFrequency)
 {
 
 }
@@ -14,7 +14,8 @@ Teacher::Teacher(QJsonObject const &json, std::vector<Subject> const &subjects):
 	json["id"].toString(),
 	json["name"].toString(),
 	*std::find_if(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject.getId() == json["subjectId"].toString(); }),
-	Timeslot::getSet(json["availableTimeslots"].toArray())
+	Timeslot::getSet(json["availableTimeslots"].toArray()),
+	json["weeklyAvailabilityFrequency"].toInt()
 )
 {
 }
@@ -37,6 +38,11 @@ Subject const &Teacher::getSubject() const
 std::set<Timeslot> const &Teacher::getAvailableTimeslots() const
 {
 	return availableTimeslots;
+}
+
+int Teacher::getWeeklyAvailabilityFrequency() const
+{
+	return weeklyAvailabilityFrequency;
 }
 
 bool Teacher::isAvailableAtTimeslot(const Timeslot &timeslot) const

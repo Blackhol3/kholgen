@@ -14,4 +14,11 @@
 	
 	<mat-label>Disponibilités</mat-label>
 	<app-weekly-timetable formControlName="availableTimeslots"></app-weekly-timetable>
+	
+	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+		<mat-label>Disponibilité hebdomadaire <small>(disponible toutes les … semaines)</small></mat-label>
+		<input matInput type="number" formControlName="weeklyAvailabilityFrequency" min="1">
+		<mat-error *ngIf="form.controls.weeklyAvailabilityFrequency.hasError('pattern')">La fréquence de disponibilité doit être un entier.</mat-error>
+		<mat-error *ngIf="form.controls.weeklyAvailabilityFrequency.hasError('min')">La fréquence de disponibilité doit être supérieure ou égale à 1.</mat-error>
+	</mat-form-field>
 </form>
