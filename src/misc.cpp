@@ -20,3 +20,8 @@ QTextStream& qStdout()
 	static QTextStream ts(stdout);
 	return ts;
 }
+
+unsigned int divideCeil(unsigned int a, unsigned int b)
+{
+	return a/b + (a % b != 0);
+}

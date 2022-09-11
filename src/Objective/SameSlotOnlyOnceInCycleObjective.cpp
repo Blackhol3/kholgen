@@ -4,6 +4,7 @@
 #include <QString>
 #include <ranges>
 #include "ObjectiveComputation.h"
+#include "../misc.h"
 #include "../State.h"
 #include "../Teacher.h"
 #include "../Trio.h"
@@ -50,10 +51,20 @@ ObjectiveComputation SameSlotOnlyOnceInCycleObjective::compute(
 
 	for (auto const &subject: state->getSubjects()) {
 		auto const intervalSizeExpr = nbTimeslotsInSubject[subject] * subject.getFrequency();
-		for (int intervalSize = 1; intervalSize <= state->getWeeks().size(); ++intervalSize) {
+		int const minIntervalSize = std::min(
+			divideCeil(state->getTrios().size(), subject.getFrequency()) * subject.getFrequency(),
+			static_cast<unsigned int>(state->getWeeks().size())
+		);
+		for (int intervalSize = minIntervalSize; intervalSize <= state->getWeeks().size(); ++intervalSize) {
 			auto isIntervalOfGivenSize = modelBuilder.NewBoolVar();
-			modelBuilder.AddEquality(intervalSizeExpr, intervalSize).OnlyEnforceIf(isIntervalOfGivenSize);
-			modelBuilder.AddNotEqual(intervalSizeExpr, intervalSize).OnlyEnforceIf(isIntervalOfGivenSize.Not());
+			if (intervalSize == state->getWeeks().size()) {
+				modelBuilder.AddGreaterOrEqual(intervalSizeExpr, intervalSize).OnlyEnforceIf(isIntervalOfGivenSize);
+				modelBuilder.AddLessThan(intervalSizeExpr, intervalSize).OnlyEnforceIf(isIntervalOfGivenSize.Not());
+			}
+			else {
+				modelBuilder.AddEquality(intervalSizeExpr, intervalSize).OnlyEnforceIf(isIntervalOfGivenSize);
+				modelBuilder.AddNotEqual(intervalSizeExpr, intervalSize).OnlyEnforceIf(isIntervalOfGivenSize.Not());
+			}
 
 			for (auto const &teacher: state->getTeachersOfSubject(subject)) {
 				for (auto const &timeslot: teacher.getAvailableTimeslots()) {
@@ -70,16 +81,16 @@ ObjectiveComputation SameSlotOnlyOnceInCycleObjective::compute(
 								}
 							}
 
-							auto hasTrioExactlyOneColleWithTeacherInTimeslotInInterval = modelBuilder.NewBoolVar();
-							modelBuilder.AddEquality(nbCollesOfTrioWithTeacherInTimeslotInInterval, 1).OnlyEnforceIf({shouldEnforce, hasTrioExactlyOneColleWithTeacherInTimeslotInInterval});
-							modelBuilder.AddNotEqual(nbCollesOfTrioWithTeacherInTimeslotInInterval, 0).OnlyEnforceIf({shouldEnforce, hasTrioExactlyOneColleWithTeacherInTimeslotInInterval.Not()});
-							modelBuilder.AddEquality(hasTrioExactlyOneColleWithTeacherInTimeslotInInterval, false).OnlyEnforceIf(shouldEnforce.Not());
+							auto hasTrioMoreThanOneColleWithTeacherInTimeslotInInterval = modelBuilder.NewBoolVar();
+							modelBuilder.AddGreaterThan(nbCollesOfTrioWithTeacherInTimeslotInInterval, 1).OnlyEnforceIf({shouldEnforce, hasTrioMoreThanOneColleWithTeacherInTimeslotInInterval});
+							modelBuilder.AddLessOrEqual(nbCollesOfTrioWithTeacherInTimeslotInInterval, 1).OnlyEnforceIf({shouldEnforce, hasTrioMoreThanOneColleWithTeacherInTimeslotInInterval.Not()});
+							modelBuilder.AddEquality(hasTrioMoreThanOneColleWithTeacherInTimeslotInInterval, false).OnlyEnforceIf(shouldEnforce.Not());
 
-							expression += hasTrioExactlyOneColleWithTeacherInTimeslotInInterval;
+							expression += hasTrioMoreThanOneColleWithTeacherInTimeslotInInterval;
 
 							// `hasTrioExactlyOneColleWithTeacherInTimeslotInInterval` is always false, except for one value of `intervalSize`,
 							// so we only need to increment `maxValue` for the wider possible loop.
-							if (intervalSize == 1) {
+							if (intervalSize == minIntervalSize) {
 								maxValue++;
 							}
 						}
