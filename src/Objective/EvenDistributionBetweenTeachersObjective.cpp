@@ -34,6 +34,13 @@ ObjectiveComputation EvenDistributionBetweenTeachersObjective::compute(
 		// the variable that we will maximize.
 		intervalSizeByTeacher[teacher] = modelBuilder.NewIntVar({0, nbWeeks});
 
+		unordered_map<int, BoolVar> isIntervalAtLeastOfGivenSize;
+		for (int intervalSize = 1; intervalSize <= nbWeeks; ++intervalSize) {
+			isIntervalAtLeastOfGivenSize[intervalSize] = modelBuilder.NewBoolVar();
+			modelBuilder.AddGreaterOrEqual(intervalSizeByTeacher[teacher], intervalSize).OnlyEnforceIf(isIntervalAtLeastOfGivenSize[intervalSize]);
+			modelBuilder.AddLessThan(intervalSizeByTeacher[teacher], intervalSize).OnlyEnforceIf(isIntervalAtLeastOfGivenSize[intervalSize].Not());
+		}
+
 		for (auto const &trio: state->getTrios()) {
 			unordered_map<Week, BoolVar> isTrioWithTeacherInWeek;
 			for (auto const &week: state->getWeeks() | std::views::take(nbWeeks)) {
@@ -47,19 +54,12 @@ ObjectiveComputation EvenDistributionBetweenTeachersObjective::compute(
 				modelBuilder.AddEquality(nbCollesWithTeacherInStartingWeek, 0).OnlyEnforceIf(isTrioWithTeacherInWeek[week].Not());
 			}
 
-			for (int intervalSize = 0; intervalSize <= nbWeeks; ++intervalSize) {
-				auto isIntervalOfGivenSize = modelBuilder.NewBoolVar();
-				modelBuilder.AddEquality(intervalSizeByTeacher[teacher], intervalSize).OnlyEnforceIf(isIntervalOfGivenSize);
-				modelBuilder.AddNotEqual(intervalSizeByTeacher[teacher], intervalSize).OnlyEnforceIf(isIntervalOfGivenSize.Not());
-
-				for (int idStartingWeek = 0; idStartingWeek < nbWeeks; ++idStartingWeek) {
-					auto shouldEnforce = modelBuilder.NewBoolVar();
-					modelBuilder.AddBoolAnd({isTrioWithTeacherInWeek[state->getWeeks().at(idStartingWeek)], isIntervalOfGivenSize}).OnlyEnforceIf(shouldEnforce);
-					modelBuilder.AddBoolOr({isTrioWithTeacherInWeek[state->getWeeks().at(idStartingWeek)].Not(), isIntervalOfGivenSize.Not()}).OnlyEnforceIf(shouldEnforce.Not());
-
-					for (auto const &week: state->getWeeks() | std::views::drop(idStartingWeek + 1) | std::views::take(intervalSize)) {
-						modelBuilder.AddEquality(isTrioWithTeacherInWeek[week], false).OnlyEnforceIf(shouldEnforce);
-					}
+			for (int idStartingWeek = 0; idStartingWeek < nbWeeks; ++idStartingWeek) {
+				for (auto const &week: state->getWeeks() | std::views::drop(idStartingWeek + 1)) {
+					modelBuilder.AddEquality(isTrioWithTeacherInWeek[week], false).OnlyEnforceIf({
+						isTrioWithTeacherInWeek[state->getWeeks().at(idStartingWeek)],
+						isIntervalAtLeastOfGivenSize[week.getId() - idStartingWeek]
+					});
 				}
 			}
 		}
