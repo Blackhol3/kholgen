@@ -12,7 +12,7 @@ export const dayNames: readonly string[] = [
 ];
 
 export const dayShortNames: readonly string[] = [
-	'l', 'm', 'M', 'j', 'v'
+	'l', 'm', 'w', 'j', 'v'
 ];
 
 export class Timeslot {
@@ -35,13 +35,13 @@ export class Timeslot {
 		return `${dayNames[this.day]} ${this.hour}`;
 	}
 	
-	/** @todo Rename Wednesday short name in "w" and simplify this method **/
 	static fromString(string: string): Timeslot {
 		let day: Day | undefined;
 		let hourString: string | undefined;
 		
+		string = string.toLowerCase();
 		for (let i = 0; i < dayNames.length; ++i) {
-			if (string.toLowerCase().startsWith(dayNames[i].toLowerCase())) {
+			if (string.startsWith(dayNames[i].toLowerCase())) {
 				day = i;
 				hourString = string.substring(dayNames[i].length);
 			}

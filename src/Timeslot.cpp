@@ -23,7 +23,7 @@ std::map<Day, QString> const Timeslot::dayNames = {
 std::map<Day, QString> const Timeslot::dayShortNames = {
 	{Day::Monday,    QObject::tr("l")},
 	{Day::Tuesday,   QObject::tr("m")},
-	{Day::Wednesday, QObject::tr("M")},
+	{Day::Wednesday, QObject::tr("w")},
 	{Day::Thursday,  QObject::tr("j")},
 	{Day::Friday,    QObject::tr("v")},
 };
