@@ -16,6 +16,9 @@ using operations_research::sat::LinearExpr;
 using std::unordered_map;
 using std::vector;
 
+/**
+ * @link https://or.stackexchange.com/questions/9243/maximize-the-minimal-distance-between-true-variables-in-a-list
+ */
 ObjectiveComputation EvenDistributionBetweenTeachersObjective::compute(
 	State const *state,
 	unordered_map<Trio, unordered_map<Teacher, unordered_map<Timeslot, unordered_map<Week, BoolVar>>>> const &isTrioWithTeacherAtTimeslotInWeek,
@@ -34,32 +37,36 @@ ObjectiveComputation EvenDistributionBetweenTeachersObjective::compute(
 		// the variable that we will maximize.
 		intervalSizeByTeacher[teacher] = modelBuilder.NewIntVar({0, nbWeeks});
 
-		unordered_map<int, BoolVar> isIntervalAtLeastOfGivenSize;
-		for (int intervalSize = 1; intervalSize <= nbWeeks; ++intervalSize) {
-			isIntervalAtLeastOfGivenSize[intervalSize] = modelBuilder.NewBoolVar();
-			modelBuilder.AddGreaterOrEqual(intervalSizeByTeacher[teacher], intervalSize).OnlyEnforceIf(isIntervalAtLeastOfGivenSize[intervalSize]);
-			modelBuilder.AddLessThan(intervalSizeByTeacher[teacher], intervalSize).OnlyEnforceIf(isIntervalAtLeastOfGivenSize[intervalSize].Not());
-		}
-
 		for (auto const &trio: state->getTrios()) {
-			unordered_map<Week, BoolVar> isTrioWithTeacherInWeek;
-			for (auto const &week: state->getWeeks() | std::views::take(nbWeeks)) {
-				LinearExpr nbCollesWithTeacherInStartingWeek;
+			vector<IntVar> nbWeeksSinceLastColleWithTeacher;
+			for (int idWeek = 0; idWeek < nbWeeks; ++idWeek) {
+				auto const &week = state->getWeeks().at(idWeek);
+
+				LinearExpr nbCollesWithTeacherInWeek;
 				for (auto const &timeslot: state->getAvailableTimeslots(teacher, trio, week)) {
-					nbCollesWithTeacherInStartingWeek += isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week);
+					nbCollesWithTeacherInWeek += isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week);
 				}
 
-				isTrioWithTeacherInWeek[week] = modelBuilder.NewBoolVar();
-				modelBuilder.AddGreaterThan(nbCollesWithTeacherInStartingWeek, 0).OnlyEnforceIf(isTrioWithTeacherInWeek[week]);
-				modelBuilder.AddEquality(nbCollesWithTeacherInStartingWeek, 0).OnlyEnforceIf(isTrioWithTeacherInWeek[week].Not());
-			}
+				auto isTrioWithTeacherInWeek = modelBuilder.NewBoolVar();
+				modelBuilder.AddGreaterThan(nbCollesWithTeacherInWeek, 0).OnlyEnforceIf(isTrioWithTeacherInWeek);
+				modelBuilder.AddEquality(nbCollesWithTeacherInWeek, 0).OnlyEnforceIf(isTrioWithTeacherInWeek.Not());
 
-			for (int idStartingWeek = 0; idStartingWeek < nbWeeks; ++idStartingWeek) {
-				for (auto const &week: state->getWeeks() | std::views::drop(idStartingWeek + 1)) {
-					modelBuilder.AddEquality(isTrioWithTeacherInWeek[week], false).OnlyEnforceIf({
-						isTrioWithTeacherInWeek[state->getWeeks().at(idStartingWeek)],
-						isIntervalAtLeastOfGivenSize[week.getId() - idStartingWeek]
-					});
+				if (idWeek == 0) {
+					nbWeeksSinceLastColleWithTeacher.push_back(modelBuilder.NewIntVar(operations_research::Domain::FromValues({0, nbWeeks})));
+					modelBuilder.AddEquality(nbWeeksSinceLastColleWithTeacher[idWeek], 0).OnlyEnforceIf(isTrioWithTeacherInWeek);
+					modelBuilder.AddEquality(nbWeeksSinceLastColleWithTeacher[idWeek], nbWeeks).OnlyEnforceIf(isTrioWithTeacherInWeek.Not());
+				}
+				else {
+					auto hadFirstColleWithTeacher = modelBuilder.NewBoolVar();
+					modelBuilder.AddEquality(nbWeeksSinceLastColleWithTeacher[idWeek - 1], nbWeeks).OnlyEnforceIf(hadFirstColleWithTeacher);
+					modelBuilder.AddNotEqual(nbWeeksSinceLastColleWithTeacher[idWeek - 1], nbWeeks).OnlyEnforceIf(hadFirstColleWithTeacher.Not());
+
+					nbWeeksSinceLastColleWithTeacher.push_back(modelBuilder.NewIntVar({0, nbWeeks}));
+					modelBuilder.AddEquality(nbWeeksSinceLastColleWithTeacher[idWeek], nbWeeks).OnlyEnforceIf({hadFirstColleWithTeacher, isTrioWithTeacherInWeek.Not()});
+					modelBuilder.AddEquality(nbWeeksSinceLastColleWithTeacher[idWeek], 0).OnlyEnforceIf(isTrioWithTeacherInWeek);
+					modelBuilder.AddEquality(nbWeeksSinceLastColleWithTeacher[idWeek], nbWeeksSinceLastColleWithTeacher[idWeek - 1] + 1).OnlyEnforceIf({hadFirstColleWithTeacher.Not(), isTrioWithTeacherInWeek.Not()});
+
+					modelBuilder.AddLessOrEqual(intervalSizeByTeacher[teacher], nbWeeksSinceLastColleWithTeacher[idWeek - 1]).OnlyEnforceIf(isTrioWithTeacherInWeek);
 				}
 			}
 		}
