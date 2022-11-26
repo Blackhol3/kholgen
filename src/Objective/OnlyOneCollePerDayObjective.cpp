@@ -4,9 +4,6 @@
 #include <QString>
 #include "ObjectiveComputation.h"
 #include "../State.h"
-#include "../Slot.h"
-#include "../Trio.h"
-#include "../Week.h"
 
 using operations_research::sat::BoolVar;
 using operations_research::sat::CpModelBuilder;
@@ -23,26 +20,41 @@ ObjectiveComputation OnlyOneCollePerDayObjective::compute(
 	LinearExpr expression;
 	int maxValue = 0;
 
-	auto const &sameDaySlots = state->getNotSimultaneousSameDaySlotsWithDifferentSubjects();
 	for (auto const &week: state->getWeeks()) {
 		for (auto const &trio: state->getTrios()) {
-			auto const &availableTimeslots = trio.getAvailableTimeslotsInWeek(week);
-			for (auto const &[slot1, slot2]: sameDaySlots) {
-				if (availableTimeslots.contains(slot1.getTimeslot()) && availableTimeslots.contains(slot2.getTimeslot())) {
-					auto areSameDaySlotsUsed = modelBuilder.NewBoolVar();
+			for (auto const &day: Timeslot::days) {
+				LinearExpr nbCollesOfTrioInDay;
+				std::set<Timeslot> timeslotsOfCollesOfTrioInDay;
 
-					modelBuilder.AddBoolAnd({
-						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot1.getTeacher()).at(slot1.getTimeslot()).at(week),
-						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot2.getTeacher()).at(slot2.getTimeslot()).at(week),
-					}).OnlyEnforceIf(areSameDaySlotsUsed);
+				for (auto const &teacher: state->getTeachers()) {
+					for (auto const &timeslot: state->getAvailableTimeslots(teacher, trio, week)) {
+						if (timeslot.getDay() == day) {
+							nbCollesOfTrioInDay += isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week);
+							timeslotsOfCollesOfTrioInDay.insert(timeslot);
+						}
+					}
+				}
 
-					modelBuilder.AddBoolOr({
-						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot1.getTeacher()).at(slot1.getTimeslot()).at(week).Not(),
-						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot2.getTeacher()).at(slot2.getTimeslot()).at(week).Not(),
-					}).OnlyEnforceIf(areSameDaySlotsUsed.Not());
+				int nbTimeslotsOfCollesOfTrioInDay = timeslotsOfCollesOfTrioInDay.size();
+				if (nbTimeslotsOfCollesOfTrioInDay < 2) {
+					continue;
+				}
 
-					expression += areSameDaySlotsUsed;
+				auto hasTrioMoreThanOneColleInDay = modelBuilder.NewBoolVar();
+				modelBuilder.AddGreaterThan(nbCollesOfTrioInDay, 1).OnlyEnforceIf(hasTrioMoreThanOneColleInDay);
+				modelBuilder.AddLessOrEqual(nbCollesOfTrioInDay, 1).OnlyEnforceIf(hasTrioMoreThanOneColleInDay.Not());
+
+				if (nbTimeslotsOfCollesOfTrioInDay == 2) {
+					expression += hasTrioMoreThanOneColleInDay;
 					maxValue++;
+				}
+				else {
+					auto nbRedundantCollesInDay = modelBuilder.NewIntVar({0, nbTimeslotsOfCollesOfTrioInDay - 1});
+					modelBuilder.AddEquality(nbRedundantCollesInDay, 0).OnlyEnforceIf(hasTrioMoreThanOneColleInDay.Not());
+					modelBuilder.AddEquality(nbRedundantCollesInDay, nbCollesOfTrioInDay - 1).OnlyEnforceIf(hasTrioMoreThanOneColleInDay);
+
+					expression += nbRedundantCollesInDay;
+					maxValue += nbTimeslotsOfCollesOfTrioInDay - 1;
 				}
 			}
 		}
