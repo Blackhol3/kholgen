@@ -64,6 +64,11 @@ bool Timeslot::isAdjacentTo(const Timeslot &timeslot) const
 	return day == timeslot.day && abs(hour - timeslot.hour) == 1;
 }
 
+Timeslot Timeslot::next() const
+{
+	return Timeslot(day, hour + 1);
+}
+
 QString Timeslot::getDayName() const
 {
 	return dayNames.at(day);

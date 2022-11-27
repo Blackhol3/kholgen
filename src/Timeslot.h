@@ -23,6 +23,7 @@ class Timeslot
 		int getHour() const;
 
 		bool isAdjacentTo(Timeslot const& timeslot) const;
+		Timeslot next() const;
 		QString getDayName() const;
 		QString getDayShortName() const;
 

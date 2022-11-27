@@ -4,9 +4,6 @@
 #include <QString>
 #include "ObjectiveComputation.h"
 #include "../State.h"
-#include "../Slot.h"
-#include "../Trio.h"
-#include "../Week.h"
 
 using operations_research::sat::BoolVar;
 using operations_research::sat::CpModelBuilder;
@@ -23,27 +20,28 @@ ObjectiveComputation NoConsecutiveCollesObjective::compute(
 	LinearExpr expression;
 	int maxValue = 0;
 
-	auto const &consecutiveSlots = state->getConsecutiveSlotsWithDifferentSubjects();
 	for (auto const &week: state->getWeeks()) {
 		for (auto const &trio: state->getTrios()) {
-			auto const &availableTimeslots = trio.getAvailableTimeslotsInWeek(week);
-			for (auto const &[slot1, slot2]: consecutiveSlots) {
-				if (availableTimeslots.contains(slot1.getTimeslot()) && availableTimeslots.contains(slot2.getTimeslot())) {
-					auto areConsecutiveSlotsUsed = modelBuilder.NewBoolVar();
-
-					modelBuilder.AddBoolAnd({
-						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot1.getTeacher()).at(slot1.getTimeslot()).at(week),
-						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot2.getTeacher()).at(slot2.getTimeslot()).at(week),
-					}).OnlyEnforceIf(areConsecutiveSlotsUsed);
-
-					modelBuilder.AddBoolOr({
-						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot1.getTeacher()).at(slot1.getTimeslot()).at(week).Not(),
-						isTrioWithTeacherAtTimeslotInWeek.at(trio).at(slot2.getTeacher()).at(slot2.getTimeslot()).at(week).Not(),
-					}).OnlyEnforceIf(areConsecutiveSlotsUsed.Not());
-
-					expression += areConsecutiveSlotsUsed;
-					maxValue++;
+			unordered_map<Timeslot, LinearExpr> nbCollesOfTrioByTimeslot;
+			for (auto const &teacher: state->getTeachers()) {
+				for (auto const &timeslot: state->getAvailableTimeslots(teacher, trio, week)) {
+					nbCollesOfTrioByTimeslot[timeslot] += isTrioWithTeacherAtTimeslotInWeek.at(trio).at(teacher).at(timeslot).at(week);
 				}
+			}
+
+			for (auto const &[timeslot, nbCollesOfTrioInTimeslot]: nbCollesOfTrioByTimeslot) {
+				auto nextTimeslot = timeslot.next();
+				if (!nbCollesOfTrioByTimeslot.contains(nextTimeslot)) {
+					continue;
+				}
+
+				auto nbCollesOfTrioInNextTimeslot = nbCollesOfTrioByTimeslot.at(nextTimeslot);
+				auto areConsecutiveSlotsUsed = modelBuilder.NewBoolVar();
+				modelBuilder.AddGreaterOrEqual(nbCollesOfTrioInTimeslot + nbCollesOfTrioInNextTimeslot, 2).OnlyEnforceIf(areConsecutiveSlotsUsed);
+				modelBuilder.AddLessThan(nbCollesOfTrioInTimeslot + nbCollesOfTrioInNextTimeslot, 2).OnlyEnforceIf(areConsecutiveSlotsUsed.Not());
+
+				expression += areConsecutiveSlotsUsed;
+				maxValue++;
 			}
 		}
 	}
