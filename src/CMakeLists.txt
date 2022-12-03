@@ -76,7 +76,7 @@ set(BUILD_EXAMPLES OFF)
 FetchContent_Declare(
     or-tools
     GIT_REPOSITORY https://github.com/google/or-tools.git
-    GIT_TAG        82750ac12f1ee5354e1c7869894d9af3508778f2 # v9.4
+    GIT_TAG        92eab40155d5566039c92662632f196174f8da47 # v9.5
 )
 FetchContent_Declare(
     xlnt
