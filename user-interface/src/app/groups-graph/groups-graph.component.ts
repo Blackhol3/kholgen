@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, EventEmitter, Component, Input, OnChanges, Output } from '@angular/core';
 
 import { Group } from '../group';
+import { State } from '../state';
 
 @Component({
 	selector: 'app-groups-graph',
@@ -9,7 +10,7 @@ import { Group } from '../group';
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GroupsGraphComponent implements OnChanges {
-	@Input() groups: readonly Group[] = [];
+	@Input() state: State = new State();
 	@Output() groupClick = new EventEmitter<Group>();
 	
 	readonly radius = 35;
@@ -52,16 +53,7 @@ export class GroupsGraphComponent implements OnChanges {
 		
 		return transform.join(' ');
 	}
-	
-	getNumberOfTrios() {
-		let numberOfTrios = 0;
-		for (let group of this.groups) {
-			numberOfTrios += group.numberOfTrios;
-		}
-		
-		return numberOfTrios;
-	}
-	
+
 	getTriosText(numberOfTrios: number) {
 		return `${numberOfTrios} trinôme${numberOfTrios > 1 ? 's' : ''}`;
 	}
@@ -70,14 +62,23 @@ export class GroupsGraphComponent implements OnChanges {
 		const numberOfTrios = this.getNumberOfTrios();
 		return numberOfTrios === 0 ? `0 étudiant` : `${3*numberOfTrios - 2} à ${3*numberOfTrios} étudiants`;
 	}
+
+	getNumberOfTrios() {
+		const trioIds = [];
+		for (let group of this.state.groups) {
+			trioIds.push(...group.trioIds);
+		}
+
+		return new Set(trioIds).size;
+	}
 	
 	protected getAngle(index: number, unit: 'deg' | 'rad') {
-		const angle = -index * 360/(this.groups.length);
+		const angle = -index * 360/(this.state.groups.length);
 		return unit === 'deg' ? angle : (angle * Math.PI/180);
 	}
 	
 	protected getNextGroupDelta(index: number) {
-		const nextGroupIndex = this.groups.findIndex(g => g.id === this.groups[index].nextGroupId)!;
+		const nextGroupIndex = this.state.groups.findIndex(g => g.id === this.state.groups[index].nextGroupId)!;
 		
 		const angle = this.getAngle(index, 'rad');
 		const nextGroupAngle = this.getAngle(nextGroupIndex, 'rad');

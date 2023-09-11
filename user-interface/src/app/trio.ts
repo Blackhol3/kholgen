@@ -5,6 +5,6 @@ export class Trio {
 	
 	constructor(
 		readonly id: number,
-		readonly initialGroupId: string,
+		readonly initialGroupIds: readonly string[],
 	) {}
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Draft, Patch, applyPatches, enablePatches, produceWithPatches } from 'immer';
+import { Draft, Patch, applyPatches, produceWithPatches } from 'immer';
 import { Subject } from 'rxjs';
 
 import { State } from './state';
@@ -12,10 +12,6 @@ export class StoreService {
 	changeObservable = this.changeSubject.asObservable();
 	
 	state = new State();
-	
-	constructor() {
-		enablePatches();
-	}
 	
 	do(recipe: (state: Draft<State>) => any): [Patch[], Patch[]] {
 		const [state, patches, inversePatches] = produceWithPatches(this.state, recipe);

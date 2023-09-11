@@ -1,6 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { MatTable } from '@angular/material/table';
+import { castDraft } from 'immer';
 import { Subscription } from 'rxjs';
 import * as FileSaver from 'file-saver-es';
 
@@ -41,13 +42,22 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 		this.storeSubscription?.unsubscribe();
 	}
 	
+	/** @todo Do not renumbered trios */
 	compute() {
 		this.store.do(state => {
-			state.trios = [];
+			const trioInitialGroupIds: string[][] = [];
 			for (let group of state.groups) {
-				for (let i = 0; i < group.numberOfTrios; ++i) {
-					state.trios.push(new Trio(state.trios.length, group.id));
+				for (let trioId of group.trioIds) {
+					if (trioInitialGroupIds[trioId] === undefined) {
+						trioInitialGroupIds[trioId] = [];
+					}
+					trioInitialGroupIds[trioId].push(group.id);
 				}
+			}
+
+			state.trios = [];
+			for (let initialGroupIds of trioInitialGroupIds.filter(x => x !== undefined)) {
+				state.trios.push(castDraft(new Trio(state.trios.length, initialGroupIds)));
 			}
 		});
 		

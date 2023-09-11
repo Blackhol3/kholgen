@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { castDraft } from 'immer';
 import { Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
@@ -51,7 +52,7 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 		for (let i = 1; name = `Groupe ${i}`, this.store.state.groups.some(group => group.name === name); ++i) {
 		}
 		
-		this.undoStack.do(state => { state.groups.push(new Group(name, [], 0)) });
+		this.undoStack.do(state => { state.groups.push(castDraft(new Group(name, [], new Set()))) });
 	}
 	
 	deleteGroup() {
@@ -88,7 +89,7 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 		}
 		
 		this.undoStack.do(state => {
-			const group = Group.fromJsonObject(jsonGroup).setNextGroupFromJsonObject(jsonGroup, state.groups);
+			const group = castDraft(Group.fromJsonObject(jsonGroup).setNextGroupFromJsonObject(jsonGroup, state.groups));
 			state.groups.push(group);
 		});
 	}

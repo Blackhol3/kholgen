@@ -6,10 +6,22 @@
 	</mat-form-field>
 	
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
-		<mat-label>Nombre initial de trinômes</mat-label>
-		<input matInput type="number" formControlName="numberOfTrios" min="0">
-		<mat-error *ngIf="form.controls.numberOfTrios.hasError('pattern')">Le nombre initial de trinômes doit être un entier.</mat-error>
-		<mat-error *ngIf="form.controls.numberOfTrios.hasError('min')">Le nombre initial de trinômes doit être positif.</mat-error>
+		<mat-label>Trinômes initiaux</mat-label>
+		<mat-chip-list #chipList formControlName="trioIds">
+			<mat-chip *ngFor="let trioId of form.controls.trioIds.value" (removed)="removeTrioId(trioId)">
+				{{trioId}}
+				<button matChipRemove>
+					<mat-icon>cancel</mat-icon>
+				</button>
+			</mat-chip>
+			<input
+				matInput
+				placeholder="Trinôme supplémentaire…"
+				[matChipInputFor]="chipList"
+				[matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+				(matChipInputTokenEnd)="addTrioIds($event)"
+			>
+		</mat-chip-list>
 	</mat-form-field>
 	
 	<mat-label>Disponibilités</mat-label>

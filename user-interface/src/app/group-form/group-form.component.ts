@@ -1,9 +1,12 @@
+import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, ValidationErrors, Validators } from '@angular/forms';
+import { MatChipInputEvent } from '@angular/material/chips';
 
 import { Entries, notUniqueValidator, setErrors } from '../misc';
 import { Group } from '../group';
 import { Timeslot } from '../timeslot';
+import { Trio } from '../trio';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
 
@@ -18,11 +21,12 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	
 	form = this.formBuilder.group({
 		name: ['', [Validators.required, (control: AbstractControl) => notUniqueValidator(control, 'name', this.group!, this.store.state.groups)]],
-		numberOfTrios: [0, [Validators.required, Validators.min(0), Validators.pattern('^-?[0-9]*$')]],
+		trioIds: [new Set() as ReadonlySet<number>, Validators.required],
 		availableTimeslots: [[] as readonly Timeslot[], Validators.required],
 		nextGroupId: ['' as (string | null)],
 		duration: [0 as (number | null)],
 	}, {validators: control => this.nextGroupRequiredValidator(control)});
+	readonly separatorKeysCodes = [COMMA, ENTER, SPACE] as const;
 	
 	constructor(public store: StoreService, private undoStack: UndoStackService, private formBuilder: NonNullableFormBuilder ) {
 		this.form.valueChanges.subscribe(() => this.formChange());
@@ -43,7 +47,7 @@ export class GroupFormComponent implements OnInit, OnChanges {
 		
 		this.form.setValue({
 			name: this.group.name,
-			numberOfTrios: this.group.numberOfTrios,
+			trioIds: this.group.trioIds,
 			availableTimeslots: this.group.availableTimeslots,
 			nextGroupId: this.group.nextGroupId,
 			duration: this.group.duration,
@@ -71,6 +75,40 @@ export class GroupFormComponent implements OnInit, OnChanges {
 		}
 		
 		this.form.controls.duration[this.getControlValue('nextGroupId') === null ? 'disable' : 'enable']({emitEvent: false});
+	}
+
+	/** @todo Show an error on invalid inputs */
+	addTrioIds(event: MatChipInputEvent) {
+		const results = event.value.trim().match(/^([0-9]+)(?:-([0-9]+))?$/);
+		if (results === null) {
+			return;
+		}
+
+		const trioIds = [...this.form.controls.trioIds.value];
+		if (results[2] === undefined) {
+			trioIds.push(parseInt(results[1]));
+		}
+		else {
+			const minTrioId = Math.min(parseInt(results[1]), parseInt(results[2]));
+			const maxTrioId = Math.max(parseInt(results[1]), parseInt(results[2]));
+
+			for (let trioId = minTrioId; trioId <= maxTrioId; ++trioId) {
+				trioIds.push(trioId);
+			}
+		}
+
+		trioIds.sort((a, b) => a - b);
+		const trioIdsSet = new Set(trioIds);
+		if (trioIdsSet.size != this.form.controls.trioIds.value.size || [...trioIdsSet].some(id => !this.form.controls.trioIds.value.has(id))) {
+			this.form.controls.trioIds.setValue(trioIdsSet);
+		}
+		event.chipInput.clear();
+	}
+
+	removeTrioId(trioId: number) {
+		const trioIds = new Set(this.form.controls.trioIds.value);
+		trioIds.delete(trioId);
+		this.form.controls.trioIds.setValue(trioIds);
 	}
 	
 	protected getControlValue(key: string) {

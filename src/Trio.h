@@ -11,18 +11,17 @@ class Week;
 class Trio
 {
 	public:
-		Trio(int id, Group const &initialGroup);
-		Trio(int id, Group const &&initialGroup) = delete;
+		Trio(int id, std::set<Group const *> const &initialGroups);
 		Trio(QJsonObject const &json, std::vector<Group> const &groups);
 
 		int getId() const;
-		std::set<Timeslot> const &getAvailableTimeslotsInWeek(Week const &week) const;
+		std::set<Timeslot> getAvailableTimeslotsInWeek(Week const &week) const;
 
 		bool operator==(Trio const &) const = default;
 
 	protected:
 		int id;
-		Group const *initialGroup;
+		std::set<Group const *> initialGroups;
 };
 
 namespace std {

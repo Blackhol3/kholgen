@@ -59,7 +59,7 @@ export class State {
 	findId(property: keyof State, id: any) {
 		return (this[property] as any[]).find(element => element.id === id);
 	}
-	
+
 	toHumanJsonObject() {
 		return {
 			groups: this.groups.map(group => group.toHumanJsonObject(this)),

@@ -6,6 +6,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { RouterModule, RouteReuseStrategy } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -38,6 +39,11 @@ import { WeeklyTimetableComponent } from './weekly-timetable/weekly-timetable.co
 import { CopyDataDirective } from './copy-data.directive';
 
 import { ReuseStrategy } from './reuse-strategy';
+
+import { enableMapSet, enablePatches } from 'immer';
+
+enableMapSet();
+enablePatches();
 
 @NgModule({
 	declarations: [
@@ -73,6 +79,7 @@ import { ReuseStrategy } from './reuse-strategy';
 		]),
 		
 		MatButtonModule,
+		MatChipsModule,
 		MatDialogModule,
 		MatFormFieldModule,
 		MatIconModule,

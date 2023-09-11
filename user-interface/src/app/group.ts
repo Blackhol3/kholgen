@@ -12,8 +12,8 @@ export class Group {
 	
 	constructor(
 		readonly name: string,
-		readonly availableTimeslots: Timeslot[],
-		readonly numberOfTrios: number,
+		readonly availableTimeslots: readonly Timeslot[],
+		readonly trioIds: ReadonlySet<number>,
 	) {
 		this.id = nanoid();
 	}
@@ -39,7 +39,7 @@ export class Group {
 			{
 				name: this.name,
 				availableTimeslots: this.availableTimeslots.map(timeslot => timeslot.toString()),
-				numberOfTrios: this.numberOfTrios,
+				trioIds: [...this.trioIds],
 			},
 			this.nextGroupId !== null ? {
 				duration: this.duration,
@@ -52,7 +52,7 @@ export class Group {
 		return new Group(
 			json.name,
 			json.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
-			json.numberOfTrios,
+			new Set(json.trioIds),
 		);
 	}
 }

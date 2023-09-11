@@ -7,14 +7,14 @@
 			/>
 		</marker>
 	</defs>
-	<g class="group" *ngFor="let group of groups; index as index" [attr.transform]="getTransform(index)" (click)="groupClick.emit(group)">
+	<g class="group" *ngFor="let group of state.groups; index as index" [attr.transform]="getTransform(index)" (click)="groupClick.emit(group)">
 		<circle x="0" y="0" [attr.r]="individualRadius" />
 		<text text-anchor="middle" dominant-baseline="middle">
 			<tspan x="0" dy="-0.6em">{{group.name}}</tspan>
-			<tspan x="0" dy="1.2em">({{getTriosText(group.numberOfTrios)}})</tspan>
+			<tspan x="0" dy="1.2em">({{getTriosText(group.trioIds.size)}})</tspan>
 		</text>
 	</g>
-	<g class="next-group" *ngFor="let group of groups; index as index" [attr.transform]="getTransform(index)">
+	<g class="next-group" *ngFor="let group of state.groups; index as index" [attr.transform]="getTransform(index)">
 		<ng-container *ngIf="group.nextGroupId !== null">
 			<path [attr.d]="getPath(index)" [attr.transform]="'rotate('+ getNextGroupDelta(index)[1] +')'" marker-end="url(#arrowEnd)" />
 			<text text-anchor="middle" dominant-baseline="middle" [attr.transform]="getNextGroupTextTransform(index)">{{group.duration}}</text>
