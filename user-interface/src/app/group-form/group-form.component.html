@@ -7,13 +7,13 @@
 	
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Trinômes initiaux</mat-label>
-		<mat-chip-list #chipList formControlName="trioIds">
-			<mat-chip *ngFor="let trioId of form.controls.trioIds.value" (removed)="removeTrioId(trioId)">
+		<mat-chip-grid #chipList formControlName="trioIds">
+			<mat-chip-row *ngFor="let trioId of form.controls.trioIds.value" (removed)="removeTrioId(trioId)">
 				{{trioId}}
 				<button matChipRemove>
 					<mat-icon>cancel</mat-icon>
 				</button>
-			</mat-chip>
+			</mat-chip-row>
 			<input
 				matInput
 				placeholder="Trinôme supplémentaire…"
@@ -21,7 +21,7 @@
 				[matChipInputSeparatorKeyCodes]="separatorKeysCodes"
 				(matChipInputTokenEnd)="addTrioIds($event)"
 			>
-		</mat-chip-list>
+		</mat-chip-grid>
 	</mat-form-field>
 	
 	<mat-label>Disponibilités</mat-label>

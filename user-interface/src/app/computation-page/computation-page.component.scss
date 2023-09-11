@@ -30,7 +30,7 @@ section {
 	}
 }
 
-.mat-header-row {
+.mat-mdc-header-row {
 	height: 60px;
 }
 
@@ -40,8 +40,9 @@ section {
 
 .mat-column-value {
 	text-align: center;
+	padding-left: 0;
 }
 
-::ng-deep .mat-menu-panel.no-overflow {
+::ng-deep .mat-mdc-menu-panel.no-overflow {
 	overflow: hidden !important;
 }

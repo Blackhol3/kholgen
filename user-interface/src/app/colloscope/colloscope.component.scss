@@ -1,15 +1,15 @@
 @use "sass:list";
 
-.mat-header-cell, .mat-cell {
+.mat-mdc-header-cell, .mat-mdc-cell {
     text-align: center;
     padding: 0 5px !important;
 }
 
 .week-header-cell {
-	width: 1.6em;
+	width: 30px;
 }
 
-.mat-header-row, .mat-row {
+.mat-mdc-header-row, .mat-mdc-row {
 	height: 30px;
 }
 

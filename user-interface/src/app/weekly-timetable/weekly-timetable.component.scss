@@ -8,17 +8,14 @@ $palette: mat.define-palette(mat.$indigo-palette);
 }
 
 table {
+	background: white;
 	width: 100%;
 	height: 100%;
+	border-collapse: collapse;
 	table-layout: fixed;
 }
 
 tr {
-	//height: 48px;
-	thead & {
-		//height: 56px;
-	}
-	
 	&:last-child {
 		border-bottom: none;
 	}

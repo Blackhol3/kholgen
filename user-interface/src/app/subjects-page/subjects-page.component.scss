@@ -19,7 +19,7 @@ section {
 	justify-content: center;
 	
 	&:not(:first-child) {
-		margin-top: 16px;
+		margin-top: 8px;
 		padding-top: 16px;
 		border-top: common.$border;
 	}

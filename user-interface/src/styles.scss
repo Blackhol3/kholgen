@@ -5,21 +5,22 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 mat-form-field {
 	&.inline {
-		.mat-form-field-infix {
-			padding: 0.3em 0 ;
+		.mat-mdc-form-field-infix {
+			padding: 0.3em 0 !important;
+			min-height: unset;
 		}
 		
-		.mat-form-field-suffix {
-			top: auto;
+		.mat-mdc-form-field-icon-suffix {
+			padding-right: 0.3em;
 		}
 		
-		.mat-form-field-wrapper {
-			padding-bottom: 0;
+		.mat-mdc-form-field-bottom-align {
+			display: none;
 		}
 	}
 	
 	input.suffixed[type="number"] {
-		-moz-appearance: textfield;
+		appearance: textfield;
 		text-align: right;
 		
 		&::-webkit-outer-spin-button,
@@ -28,3 +29,39 @@ mat-form-field {
 		}
 	}
 }
+
+mat-list-option {
+	.mdc-list-item__end {
+		display: none;
+	}
+
+	.mdc-list-item__primary-text {
+		color: inherit !important;
+	}
+
+	&[aria-selected="true"] {
+		background: rgba(0,0,0,.12);
+	}
+}
+
+.mat-mdc-option, .mat-mdc-optgroup-label {
+	min-height: 42px !important;
+}
+
+.mat-mdc-optgroup-label {
+	color: #0000008a;
+}
+
+.mdc-data-table__table {
+	min-width: unset !important;
+}
+
+.mat-mdc-header-cell {
+	color: #0000008a;
+	font-size: 12px;
+}
+
+.mdc-button {
+	letter-spacing: normal;
+}
+
