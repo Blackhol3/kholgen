@@ -51,13 +51,14 @@ export class State {
 		readonly lunchTimeRange: readonly [number, number] = [firstHour, lastHour + 1],
 	) {}
 	
-	findId(property: 'groups', id: string) : Group | undefined;
-	findId(property: 'subjects', id: string) : Subject | undefined;
-	findId(property: 'teachers', id: string) : Teacher | undefined;
-	findId(property: 'trios', id: number) : Trio | undefined;
-	findId(property: 'weeks', id: number) : Week | undefined;
-	findId(property: keyof State, id: any) {
-		return (this[property] as any[]).find(element => element.id === id);
+	findId<P extends 'groups' | 'subjects' | 'teachers' | 'trios' | 'weeks'>(property: P, id: this[P][number]['id']): this[P][number] | undefined {
+		for (let element of this[property]) {
+			if (element.id === id) {
+				return element;
+			}
+		}
+
+		return undefined;
 	}
 
 	toHumanJsonObject() {

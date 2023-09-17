@@ -10,6 +10,19 @@ export function notUniqueValidator<Type>(control: AbstractControl, property: key
 	return null;
 }
 
+export function trimValidator(control: AbstractControl): null {
+	if (typeof control.value !== 'string') {
+		return null;
+	}
+	
+	const trimmedValue = control.value.trim();
+	if (control.value !== trimmedValue) {
+		control.setValue(trimmedValue, {emitEvent: false, onlySelf: true, emitModelToViewChange: false});
+	}
+
+	return null;
+}
+
 export function setErrors(parentControl: AbstractControl, key: string, newError: {[key: string]: any}) {
 	const control = parentControl.get(key)!;
 	let errors: ValidationErrors | null = control.errors ?? {};
@@ -28,6 +41,13 @@ export function setErrors(parentControl: AbstractControl, key: string, newError:
 	}
 	
 	control.setErrors(errors);
+}
+
+export function equalIterables(x: Iterable<any>, y: Iterable<any>): boolean {
+	const arrayX = [...x];
+	const arrayY = [...y];
+
+	return arrayX.length === arrayY.length && arrayX.every(value => arrayY.includes(value));
 }
 
 /** @link https://stackoverflow.com/questions/60141960/typescript-key-value-relation-preserving-object-entries-type/60142095#60142095 */

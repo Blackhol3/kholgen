@@ -7,7 +7,7 @@
 		<button mat-menu-item (click)="saveAsCsv()">CSV (.csv)</button>
 	</mat-menu>
 </div>
-<mat-progress-bar *ngIf="isRunning" mode="indeterminate" @insertAnimation></mat-progress-bar>
+<mat-progress-bar *ngIf="isRunning" mode="indeterminate" @insertAnimation />
 <section>
 	<table mat-table #objectivesTable="matTable" [dataSource]="store.state.objectives" class="mat-elevation-z3">
 		<ng-container matColumnDef="objective">
@@ -23,5 +23,5 @@
 		<tr mat-header-row *matHeaderRowDef="['objective', 'value']"></tr>
 		<tr mat-row *matRowDef="let row; columns: ['objective', 'value']"></tr>
 	</table>
-	<app-colloscope></app-colloscope>
+	<app-colloscope />
 </section>

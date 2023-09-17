@@ -5,27 +5,10 @@
 		<mat-error *ngIf="form.controls.name.hasError('notUnique')">Un autre groupe porte déjà ce nom.</mat-error>
 	</mat-form-field>
 	
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
-		<mat-label>Trinômes initiaux</mat-label>
-		<mat-chip-grid #chipList formControlName="trioIds">
-			<mat-chip-row *ngFor="let trioId of form.controls.trioIds.value" (removed)="removeTrioId(trioId)">
-				{{trioId}}
-				<button matChipRemove>
-					<mat-icon>cancel</mat-icon>
-				</button>
-			</mat-chip-row>
-			<input
-				matInput
-				placeholder="Trinôme supplémentaire…"
-				[matChipInputFor]="chipList"
-				[matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-				(matChipInputTokenEnd)="addTrioIds($event)"
-			>
-		</mat-chip-grid>
-	</mat-form-field>
+	<app-unique-integers-chip-input formControlName="trioIds" label="Trinômes initiaux" placeholder="Trinôme supplémentaire…" />
 	
 	<mat-label>Disponibilités</mat-label>
-	<app-weekly-timetable formControlName="availableTimeslots"></app-weekly-timetable>
+	<app-weekly-timetable formControlName="availableTimeslots" />
 	
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Groupe suivant</mat-label>

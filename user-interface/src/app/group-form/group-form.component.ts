@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@a
 import { AbstractControl, NonNullableFormBuilder, ValidationErrors, Validators } from '@angular/forms';
 import { MatChipInputEvent } from '@angular/material/chips';
 
-import { Entries, notUniqueValidator, setErrors } from '../misc';
+import { Entries, equalIterables, notUniqueValidator, setErrors, trimValidator } from '../misc';
 import { Group } from '../group';
 import { Timeslot } from '../timeslot';
 import { Trio } from '../trio';
@@ -20,7 +20,7 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	@Input() group: Group | undefined;
 	
 	form = this.formBuilder.group({
-		name: ['', [Validators.required, (control: AbstractControl) => notUniqueValidator(control, 'name', this.group!, this.store.state.groups)]],
+		name: ['', [Validators.required, trimValidator, (control: AbstractControl) => notUniqueValidator(control, 'name', this.group!, this.store.state.groups)]],
 		trioIds: [new Set() as ReadonlySet<number>, Validators.required],
 		availableTimeslots: [[] as readonly Timeslot[], Validators.required],
 		nextGroupId: ['' as (string | null)],
@@ -61,10 +61,10 @@ export class GroupFormComponent implements OnInit, OnChanges {
 		}
 		
 		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
-			if (control.valid && group[key] !== this.getControlValue(key)) {
+			if (control.valid && this.controlValueUpdated(key)) {
 				this.undoStack.do(
 					state => {
-						(state.groups[state.groups.findIndex(g => g.id === group.id)] as any)[key] = this.getControlValue(key);
+						(state.groups.find(g => g.id === group.id) as any)[key] = control.value;
 					},
 					key !== 'availableTimeslots'
 				);
@@ -74,7 +74,7 @@ export class GroupFormComponent implements OnInit, OnChanges {
 			}
 		}
 		
-		this.form.controls.duration[this.getControlValue('nextGroupId') === null ? 'disable' : 'enable']({emitEvent: false});
+		this.form.controls.duration[this.form.controls.nextGroupId.value === null ? 'disable' : 'enable']({emitEvent: false});
 	}
 
 	/** @todo Show an error on invalid inputs */
@@ -99,7 +99,7 @@ export class GroupFormComponent implements OnInit, OnChanges {
 
 		trioIds.sort((a, b) => a - b);
 		const trioIdsSet = new Set(trioIds);
-		if (trioIdsSet.size != this.form.controls.trioIds.value.size || [...trioIdsSet].some(id => !this.form.controls.trioIds.value.has(id))) {
+		if (!equalIterables(trioIdsSet, this.form.controls.trioIds.value)) {
 			this.form.controls.trioIds.setValue(trioIdsSet);
 		}
 		event.chipInput.clear();
@@ -111,14 +111,26 @@ export class GroupFormComponent implements OnInit, OnChanges {
 		this.form.controls.trioIds.setValue(trioIds);
 	}
 	
-	protected getControlValue(key: string) {
-		const value = this.form?.controls[key as keyof typeof this.form.controls].value;
-		return typeof value === 'string' ? value.trim() : value;
+	protected controlValueUpdated(key: keyof typeof this.form.controls): boolean {
+		const group = this.group;
+		if (group === undefined) {
+			return false;
+		}
+
+		if (key !== 'trioIds') {
+			return group[key] !== this.form.controls[key].value;
+		}
+
+		return !equalIterables(group[key], this.form.controls[key].value);
 	}
 	
 	protected nextGroupRequiredValidator(control: AbstractControl): ValidationErrors | null {
-		const nextGroupId = this.getControlValue('nextGroupId');
-		const duration = this.getControlValue('duration');
+		if (this.form === undefined) {
+			return null;
+		}
+
+		const nextGroupId = this.form.controls.nextGroupId.value;
+		const duration = this.form.controls.duration.value;
 		
 		if (nextGroupId !== null && duration === null) {
 			const error = {nextGroupRequired: {nextGroupId: nextGroupId, duration: duration}};

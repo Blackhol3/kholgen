@@ -20,7 +20,7 @@
 			</mat-list-option>
 		</mat-selection-list>
 	</div>
-	<app-subject-form [subject]="store.state.findId('subjects', selectedSubjectIds[0])" *ngIf="selectedSubjectIds.length > 0" @slideAnimation></app-subject-form>
+	<app-subject-form [subject]="store.state.findId('subjects', selectedSubjectIds[0])" *ngIf="selectedSubjectIds.length > 0" @slideAnimation />
 </section>
 <section>
 	<h1>Utiliser les matières prédéfinies</h1>

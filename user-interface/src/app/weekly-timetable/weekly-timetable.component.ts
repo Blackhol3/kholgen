@@ -24,8 +24,6 @@ export class WeeklyTimetableComponent implements ControlValueAccessor {
 	
 	protected onChange = (_: Timeslot[]) => {};
 	
-	constructor() { }
-	
 	isTimeslotSelected(day: Day, hour: number): boolean {
 		let timeslot = new Timeslot(day, hour);
 		return this.timeslots.some(t => timeslot.isEqual(t));

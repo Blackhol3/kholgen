@@ -4,13 +4,13 @@
 		<mat-form-field appearance="outline" class="inline" [hideRequiredMarker]="true" floatLabel="always">
 			<mat-label>Début</mat-label>
 			<input matInput type="number" class="suffixed" formControlName="lunchTimeStart" [min]="firstHour" [max]="form.controls.lunchTimeEnd.value - 1">
-			<span matSuffix>&nbsp;h</span>
+			<span matTextSuffix>&nbsp;h</span>
 		</mat-form-field>
 		à
 		<mat-form-field appearance="outline" class="inline" [hideRequiredMarker]="true" floatLabel="always">
 			<mat-label>Fin</mat-label>
 			<input matInput type="number" class="suffixed" formControlName="lunchTimeEnd" [min]="form.controls.lunchTimeStart.value + 1" [max]="lastHour + 1">
-			<span matSuffix>&nbsp;h</span>
+			<span matTextSuffix>&nbsp;h</span>
 		</mat-form-field>
 		.
 		<mat-error *ngIf="form.controls.lunchTimeStart.hasError('pattern') || form.controls.lunchTimeEnd.hasError('pattern')">Les horaires doivent être des entiers.</mat-error>
@@ -20,5 +20,5 @@
 	</p>
 	
 	<p>Les contraintes <strong>en haut</strong> sont les plus <strong>importantes</strong> et seront imposées en premier.</p>
-	<app-objectives formControlName="objectives"></app-objectives>
+	<app-objectives formControlName="objectives" />
 </form>

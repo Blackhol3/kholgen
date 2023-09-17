@@ -1,4 +1,4 @@
-<app-groups-graph [state]="store.state" *ngIf="store.state.groups.length >= 2" (groupClick)="selectedGroupIds = [$event.id]" @scaleAnimation></app-groups-graph>
+<app-groups-graph [state]="store.state" *ngIf="store.state.groups.length >= 2" (groupClick)="selectedGroupIds = [$event.id]" @scaleAnimation />
 <section>
 	<div>
 		<div>
@@ -19,5 +19,5 @@
 			</mat-list-option>
 		</mat-selection-list>
 	</div>
-	<app-group-form [group]="store.state.findId('groups', selectedGroupIds[0])" *ngIf="selectedGroupIds.length > 0" @slideAnimation></app-group-form>
+	<app-group-form [group]="store.state.findId('groups', selectedGroupIds[0])" *ngIf="selectedGroupIds.length > 0" @slideAnimation />
 </section>

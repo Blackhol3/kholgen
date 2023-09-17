@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, Validators } from '@angular/forms';
 
-import { Entries, notUniqueValidator } from '../misc';
+import { Entries, notUniqueValidator, trimValidator } from '../misc';
 import { Subject } from '../subject';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
@@ -16,8 +16,8 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 	@Input() subject: Subject | undefined;
 	
 	form = this.formBuilder.group({
-		name: ['', [Validators.required, (control: AbstractControl) => notUniqueValidator(control, 'name', this.subject!, this.store.state.subjects)]],
-		shortName: ['', [Validators.required, (control: AbstractControl) => notUniqueValidator(control, 'shortName', this.subject!, this.store.state.subjects)]],
+		name: ['', [Validators.required, trimValidator, (control: AbstractControl) => notUniqueValidator(control, 'name', this.subject!, this.store.state.subjects)]],
+		shortName: ['', [Validators.required, trimValidator, (control: AbstractControl) => notUniqueValidator(control, 'shortName', this.subject!, this.store.state.subjects)]],
 		frequency: [1, [Validators.required, Validators.min(1), Validators.pattern('^-?[0-9]*$')]],
 		color: ['', Validators.required],
 	});
@@ -53,19 +53,14 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 		}
 		
 		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
-			if (control.valid && this.subject[key] !== this.getControlValue(key)) {
+			if (control.valid && this.subject[key] !== control.value) {
 				this.undoStack.do(state => {
-					(state.findId('subjects', this.subject!.id) as any)[key] = this.getControlValue(key);
+					(state.findId('subjects', this.subject!.id) as any)[key] = control.value;
 				});
 			}
 			else {
 				control.markAsTouched();
 			}
 		}
-	}
-	
-	protected getControlValue(key: string) {
-		const value = this.form?.controls[key as keyof typeof this.form.controls].value;
-		return typeof value === 'string' ? value.trim() : value;
 	}
 }

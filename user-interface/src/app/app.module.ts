@@ -34,6 +34,7 @@ import { SubjectFormComponent } from './subject-form/subject-form.component';
 import { SubjectsPageComponent } from './subjects-page/subjects-page.component';
 import { TeacherFormComponent } from './teacher-form/teacher-form.component';
 import { TeachersPageComponent } from './teachers-page/teachers-page.component';
+import { UniqueIntegersChipInputComponent } from './unique-integers-chip-input/unique-integers-chip-input.component';
 import { WeeklyTimetableComponent } from './weekly-timetable/weekly-timetable.component';
 
 import { CopyDataDirective } from './copy-data.directive';
@@ -61,6 +62,7 @@ enablePatches();
 		SubjectsPageComponent,
 		TeacherFormComponent,
 		TeachersPageComponent,
+		UniqueIntegersChipInputComponent,
 		WeeklyTimetableComponent,
 	],
 	imports: [

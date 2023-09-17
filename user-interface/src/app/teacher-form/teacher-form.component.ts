@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder , ValidationErrors, Validators } from '@angular/forms';
 
-import { Entries, setErrors } from '../misc';
+import { Entries, setErrors, trimValidator } from '../misc';
 import { Teacher } from '../teacher';
 import { Timeslot } from '../timeslot';
 import { StoreService } from '../store.service';
@@ -17,7 +17,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 	@Input() teacher: Teacher | undefined;
 	
 	form = this.formBuilder.group({
-		name: ['', Validators.required],
+		name: ['', [Validators.required, trimValidator]],
 		subjectId: ['', Validators.required],
 		availableTimeslots: [[] as readonly Timeslot[], Validators.required],
 		weeklyAvailabilityFrequency: [1, [Validators.required, Validators.min(1), Validators.pattern('^-?[0-9]*$')]],
@@ -55,10 +55,10 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 		}
 		
 		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
-			if (control.valid && teacher[key] !== this.getControlValue(key)) {
+			if (control.valid && teacher[key] !== control.value) {
 				this.undoStack.do(
 					state => {
-						(state.teachers[state.teachers.findIndex(t => t.id === teacher.id)] as any)[key] = this.getControlValue(key);
+						(state.teachers[state.teachers.findIndex(t => t.id === teacher.id)] as any)[key] = control.value;
 					},
 					key !== 'availableTimeslots'
 				);
@@ -69,14 +69,13 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 		}
 	}
 	
-	protected getControlValue(key: string) {
-		const value = this.form?.controls[key as keyof typeof this.form.controls].value;
-		return typeof value === 'string' ? value.trim() : value;
-	}
-	
 	protected notUniqueValidator(control: AbstractControl): ValidationErrors | null {
+		if (this.form === undefined) {
+			return null;
+		}
+		
 		for (let teacher of this.store.state.teachers) {
-			if (teacher !== this.teacher && teacher.subjectId === this.getControlValue('subjectId') && teacher.name === this.getControlValue('name')) {
+			if (teacher !== this.teacher && teacher.subjectId === this.form.controls.subjectId.value && teacher.name === this.form.controls.name.value) {
 				const error = {notUnique: {teacher: teacher}};
 				setErrors(control, 'name', error);
 				setErrors(control, 'subjectId', error);
