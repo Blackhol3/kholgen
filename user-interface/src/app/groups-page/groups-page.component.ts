@@ -52,7 +52,9 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 		for (let i = 1; name = `Groupe ${i}`, this.store.state.groups.some(group => group.name === name); ++i) {
 		}
 		
-		this.undoStack.do(state => { state.groups.push(castDraft(new Group(name, [], new Set()))) });
+		const group = new Group(name, [], new Set());
+		this.undoStack.do(state => { state.groups.push(castDraft(group)) });
+		this.selectedGroupIds = [group.id];
 	}
 	
 	deleteGroup() {
@@ -88,9 +90,8 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 			jsonGroup.name += ' (copie)';
 		}
 		
-		this.undoStack.do(state => {
-			const group = castDraft(Group.fromJsonObject(jsonGroup).setNextGroupFromJsonObject(jsonGroup, state.groups));
-			state.groups.push(group);
-		});
+		const group = Group.fromJsonObject(jsonGroup).setNextGroupFromJsonObject(jsonGroup, this.store.state.groups);
+		this.undoStack.do(state => { state.groups.push(castDraft(group)); });
+		this.selectedGroupIds = [group.id];
 	}
 }

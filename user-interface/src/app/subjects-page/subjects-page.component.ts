@@ -81,7 +81,9 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 		for (let i = 1; name = `Matière ${i}`, this.store.state.subjects.some(subject => subject.name === name || subject.shortName === name); ++i) {
 		}
 		
-		this.undoStack.do(state => { state.subjects.push(new Subject(name, name, 1, '#aaaaaa')) });
+		const subject = new Subject(name, name, 1, '#aaaaaa');
+		this.undoStack.do(state => { state.subjects.push(subject) });
+		this.selectedSubjectIds = [subject.id];
 	}
 	
 	deleteSubject() {
@@ -150,6 +152,8 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 			jsonSubject.shortName += ' (copie)';
 		}
 		
-		this.undoStack.do(state => { state.subjects.push(Subject.fromJsonObject(jsonSubject)) });
+		const subject = Subject.fromJsonObject(jsonSubject);
+		this.undoStack.do(state => { state.subjects.push(subject) });
+		this.selectedSubjectIds = [subject.id];
 	}
 }

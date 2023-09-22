@@ -25,7 +25,7 @@ export class Group {
 		});
 	}
 	
-	setNextGroupFromJsonObject(json: ReturnType<Group['toHumanJsonObject']>, groups: Group[]): Group {
+	setNextGroupFromJsonObject(json: ReturnType<Group['toHumanJsonObject']>, groups: readonly Group[]): Group {
 		const nextGroup = groups.find(group => group.name === json.nextGroup);
 		if (json.duration !== undefined && nextGroup !== undefined) {
 			return this.setNextGroup(json.duration!, nextGroup);

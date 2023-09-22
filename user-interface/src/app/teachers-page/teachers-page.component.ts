@@ -71,7 +71,9 @@ export class TeachersPageComponent implements OnInit, OnDestroy {
 		for (let i = 1; name = `Enseignant ${i}`, this.store.state.teachers.some(teacher => teacher.name === name); ++i) {
 		}
 		
-		this.undoStack.do(state => { state.teachers.push(castDraft(new Teacher(name, this.store.state.findId('teachers', this.selectedTeacherIds[0])?.subjectId ?? this.store.state.subjects[0].id, []))) });
+		const teacher = new Teacher(name, this.store.state.findId('teachers', this.selectedTeacherIds[0])?.subjectId ?? this.store.state.subjects[0].id, []);
+		this.undoStack.do(state => { state.teachers.push(castDraft(teacher)) });
+		this.selectedTeacherIds = [teacher.id];
 	}
 	
 	deleteTeacher() {
@@ -106,6 +108,7 @@ export class TeachersPageComponent implements OnInit, OnDestroy {
 		const teacher = Teacher.fromJsonObject(jsonTeacher, this.store.state.subjects);
 		if (teacher !== undefined) {
 			this.undoStack.do(state => { state.teachers.push(castDraft(teacher)) });
+			this.selectedTeacherIds = [teacher.id];
 		}
 	}
 }
