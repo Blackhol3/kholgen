@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, EventEmitter, Component, Input, OnChanges, Output } from '@angular/core';
+import { NgIf, NgFor } from '@angular/common';
 
 import { Group } from '../group';
 import { State } from '../state';
@@ -8,6 +9,8 @@ import { State } from '../state';
 	templateUrl: './groups-graph.component.html',
 	styleUrls: ['./groups-graph.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
+	standalone: true,
+	imports: [NgIf, NgFor],
 })
 export class GroupsGraphComponent implements OnChanges {
 	@Input() state: State = new State();

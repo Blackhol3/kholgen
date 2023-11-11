@@ -1,6 +1,13 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { MatTable } from '@angular/material/table';
+import { NgIf } from '@angular/common';
+
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTable, MatTableModule } from '@angular/material/table';
+
 import { castDraft } from 'immer';
 import { Subscription } from 'rxjs';
 import * as FileSaver from 'file-saver-es';
@@ -9,6 +16,7 @@ import { CommunicationService } from '../communication.service';
 import { StoreService } from '../store.service';
 
 import { Trio } from '../trio';
+import { ColloscopeComponent } from '../colloscope/colloscope.component';
 
 @Component({
 	selector: 'app-computation-page',
@@ -25,6 +33,18 @@ import { Trio } from '../trio';
 				animate('150ms', style({height: 0})),
 			]),
 		]),
+	],
+	standalone: true,
+	imports: [
+		NgIf,
+
+		MatButtonModule,
+		MatIconModule,
+		MatMenuModule,
+		MatProgressBarModule,
+		MatTableModule,
+		
+		ColloscopeComponent,
 	],
 })
 export class ComputationPageComponent implements OnInit, OnDestroy {

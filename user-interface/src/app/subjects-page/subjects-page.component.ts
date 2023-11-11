@@ -1,12 +1,25 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { KeyValuePipe, NgIf, NgFor  } from '@angular/common';
+import { CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
+import { FormsModule } from '@angular/forms';
+
+import { MatButtonModule } from '@angular/material/button';
+import { MatOptionModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
 import { firstValueFrom, Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
 import { Subject } from '../subject';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
+
+import { CopyDataDirective } from '../copy-data.directive';
+import { SubjectFormComponent } from '../subject-form/subject-form.component';
 
 const standardSubjects = {
 	mathematics: new Subject("Mathématiques", "M", 1, "#B82035"),
@@ -52,6 +65,26 @@ const standardClasses: {[className: string]: StandardClass}[] = [
 	animations: [
 		listAnimation,
 		slideAnimation,
+	],
+	standalone: true,
+	imports: [
+		NgIf,
+		NgFor,
+		CdkDrag,
+		CdkDropList,
+		FormsModule,
+		KeyValuePipe,
+
+		MatButtonModule,
+		MatFormFieldModule,
+		MatIconModule,
+		MatListModule,
+		MatOptionModule,
+		MatSelectModule,
+		MatSnackBarModule,
+
+		CopyDataDirective,
+		SubjectFormComponent,
 	],
 })
 export class SubjectsPageComponent implements OnInit, OnDestroy {

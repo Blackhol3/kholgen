@@ -1,7 +1,13 @@
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
-import { AbstractControl, NonNullableFormBuilder, ValidationErrors, Validators } from '@angular/forms';
+import { NgFor, NgIf } from '@angular/common';
+import { AbstractControl, FormsModule, ReactiveFormsModule, NonNullableFormBuilder, ValidationErrors, Validators } from '@angular/forms';
+
 import { MatChipInputEvent } from '@angular/material/chips';
+import { MatOptionModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 
 import { Entries, equalIterables, notUniqueValidator, setErrors, trimValidator } from '../misc';
 import { Group } from '../group';
@@ -10,11 +16,30 @@ import { Trio } from '../trio';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
 
+import { WeeklyTimetableComponent } from '../weekly-timetable/weekly-timetable.component';
+import { UniqueIntegersChipInputComponent } from '../unique-integers-chip-input/unique-integers-chip-input.component';
+
 @Component({
 	selector: 'app-group-form',
 	templateUrl: './group-form.component.html',
 	styleUrls: ['./group-form.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
+	standalone: true,
+	imports: [
+		NgFor,
+		NgIf,
+
+		FormsModule,
+		ReactiveFormsModule,
+
+		MatFormFieldModule,
+		MatInputModule,
+		MatOptionModule,
+		MatSelectModule,
+
+		UniqueIntegersChipInputComponent,
+		WeeklyTimetableComponent,
+	],
 })
 export class GroupFormComponent implements OnInit, OnChanges {
 	@Input() group: Group | undefined;

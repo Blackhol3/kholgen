@@ -1,5 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import { NgIf, NgFor } from '@angular/common';
+import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup, moveItemInArray } from '@angular/cdk/drag-drop';
+import { FormsModule } from '@angular/forms';
+
+import { MatListModule } from '@angular/material/list';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+
 import { castDraft } from 'immer';
 import { Subscription } from 'rxjs';
 
@@ -9,6 +16,9 @@ import { Teacher } from '../teacher';
 import { UndoStackService } from '../undo-stack.service';
 import { StoreService } from '../store.service';
 
+import { CopyDataDirective } from '../copy-data.directive';
+import { TeacherFormComponent } from '../teacher-form/teacher-form.component';
+
 @Component({
 	selector: 'app-teachers-page',
 	templateUrl: './teachers-page.component.html',
@@ -16,6 +26,22 @@ import { StoreService } from '../store.service';
 	animations: [
 		listAnimation,
 		slideAnimation,
+	],
+	standalone: true,
+	imports: [
+		NgFor,
+		NgIf,
+		CdkDrag,
+		CdkDropList,
+		CdkDropListGroup,
+		FormsModule,
+
+		MatButtonModule,
+		MatIconModule,
+		MatListModule,
+
+		CopyDataDirective,
+		TeacherFormComponent,
 	],
 })
 export class TeachersPageComponent implements OnInit, OnDestroy {

@@ -3,21 +3,21 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { OptionsPageComponent } from './options-page.component';
 
 describe('OptionsPageComponent', () => {
-  let component: OptionsPageComponent;
-  let fixture: ComponentFixture<OptionsPageComponent>;
+	let component: OptionsPageComponent;
+	let fixture: ComponentFixture<OptionsPageComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [ OptionsPageComponent ]
-    })
-    .compileComponents();
+	beforeEach(async () => {
+		await TestBed.configureTestingModule({
+			imports: [OptionsPageComponent]
+		})
+		.compileComponents();
 
-    fixture = TestBed.createComponent(OptionsPageComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+		fixture = TestBed.createComponent(OptionsPageComponent);
+		component = fixture.componentInstance;
+		fixture.detectChanges();
+	});
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+	it('should create', () => {
+		expect(component).toBeTruthy();
+	});
 });

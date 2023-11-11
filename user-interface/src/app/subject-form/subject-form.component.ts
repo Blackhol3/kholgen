@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
-import { AbstractControl, NonNullableFormBuilder, Validators } from '@angular/forms';
+import { NgIf } from '@angular/common';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 import { Entries, notUniqueValidator, trimValidator } from '../misc';
 import { Subject } from '../subject';
@@ -11,6 +15,15 @@ import { UndoStackService } from '../undo-stack.service';
 	templateUrl: './subject-form.component.html',
 	styleUrls: ['./subject-form.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
+	standalone: true,
+	imports: [
+		NgIf,
+		FormsModule,
+		ReactiveFormsModule,
+		
+		MatFormFieldModule,
+		MatInputModule,
+	],
 })
 export class SubjectFormComponent implements OnInit, OnChanges {
 	@Input() subject: Subject | undefined;

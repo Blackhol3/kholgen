@@ -1,7 +1,12 @@
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { Component, Input } from '@angular/core';
+import { NgIf, NgFor } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatChipInputEvent } from '@angular/material/chips';
+
+import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 
 /** @link https://blog.angular-university.io/angular-custom-form-controls/ **/
 @Component({
@@ -13,6 +18,16 @@ import { MatChipInputEvent } from '@angular/material/chips';
 		multi: true,
 		useExisting: UniqueIntegersChipInputComponent,
 	}],
+	standalone: true,
+	imports: [
+		NgIf,
+		NgFor,
+
+		MatChipsModule,
+		MatFormFieldModule,
+		MatIconModule,
+		MatInputModule,
+	],
 })
 export class UniqueIntegersChipInputComponent implements ControlValueAccessor {
 	@Input() label?: string;

@@ -1,6 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { NgIf, NgFor } from '@angular/common';
+import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag } from '@angular/cdk/drag-drop';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { FormsModule } from '@angular/forms';
+
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+
 import { castDraft } from 'immer';
 import { Subscription } from 'rxjs';
 
@@ -8,6 +15,10 @@ import { listAnimation, slideAnimation } from '../animations';
 import { Group } from '../group';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
+import { CopyDataDirective } from '../copy-data.directive';
+
+import { GroupFormComponent } from '../group-form/group-form.component';
+import { GroupsGraphComponent } from '../groups-graph/groups-graph.component';
 
 @Component({
 	selector: 'app-groups-page',
@@ -26,6 +37,22 @@ import { UndoStackService } from '../undo-stack.service';
 				animate('150ms', style({width: 0})),
 			]),
 		]),
+	],
+	standalone: true,
+	imports: [
+		NgIf,
+		NgFor,
+
+		CdkDrag,
+		CdkDropList,
+		FormsModule,
+		MatButtonModule,
+		MatIconModule,
+		MatListModule,
+
+		CopyDataDirective,
+		GroupsGraphComponent,
+		GroupFormComponent,
 	],
 })
 export class GroupsPageComponent implements OnInit, OnDestroy {

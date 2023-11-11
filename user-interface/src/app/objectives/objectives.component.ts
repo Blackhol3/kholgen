@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { NgFor } from '@angular/common';
+import { CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+
+import { MatListModule } from '@angular/material/list';
 
 import { Objective } from '../objective';
 
@@ -14,6 +17,13 @@ import { Objective } from '../objective';
 		multi: true,
 		useExisting: ObjectivesComponent,
 	}],
+	standalone: true,
+	imports: [
+		NgFor,
+		CdkDrag,
+		CdkDropList,
+		MatListModule,
+	],
 })
 export class ObjectivesComponent implements ControlValueAccessor {
 	objectives: Objective[] = [];

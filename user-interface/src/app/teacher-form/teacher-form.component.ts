@@ -1,5 +1,11 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
-import { AbstractControl, NonNullableFormBuilder , ValidationErrors, Validators } from '@angular/forms';
+import { NgIf, NgFor } from '@angular/common';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+
+import { MatOptionModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 import { Entries, setErrors, trimValidator } from '../misc';
 import { Teacher } from '../teacher';
@@ -7,11 +13,27 @@ import { Timeslot } from '../timeslot';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
 
+import { WeeklyTimetableComponent } from '../weekly-timetable/weekly-timetable.component';
+
 @Component({
 	selector: 'app-teacher-form',
 	templateUrl: './teacher-form.component.html',
 	styleUrls: ['./teacher-form.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
+	standalone: true,
+	imports: [
+		NgIf,
+		NgFor,
+		FormsModule,
+		ReactiveFormsModule,
+
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatOptionModule,
+
+		WeeklyTimetableComponent,
+	],
 })
 export class TeacherFormComponent implements OnInit, OnChanges {
 	@Input() teacher: Teacher | undefined;

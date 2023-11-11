@@ -1,5 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { NonNullableFormBuilder, Validators } from '@angular/forms';
+import { NgIf } from '@angular/common';
+import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+
 import { Subscription } from 'rxjs';
 
 import { Entries } from '../misc';
@@ -8,10 +13,23 @@ import { firstHour, lastHour } from '../timeslot';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
 
+import { ObjectivesComponent } from '../objectives/objectives.component';
+
 @Component({
 	selector: 'app-options-page',
 	templateUrl: './options-page.component.html',
 	styleUrls: ['./options-page.component.scss'],
+	standalone: true,
+	imports: [
+		NgIf,
+		FormsModule,
+		ReactiveFormsModule,
+
+		MatFormFieldModule,
+		MatInputModule,
+
+		ObjectivesComponent,
+	],
 })
 export class OptionsPageComponent implements OnInit, OnDestroy {
 	form = this.formBuilder.group({

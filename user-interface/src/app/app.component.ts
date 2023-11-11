@@ -1,5 +1,13 @@
 import { animate, query, style, transition, trigger } from '@angular/animations';
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
+
 import * as FileSaver from 'file-saver-es';
 
 import { State } from './state';
@@ -26,6 +34,18 @@ import { UndoStackService } from './undo-stack.service';
 				], {optional: true}),
 			]),
 		]),
+	],
+	standalone: true,
+	imports: [
+		RouterLink,
+		RouterLinkActive,
+		RouterOutlet,
+
+		MatButtonModule,
+		MatIconModule,
+		MatListModule,
+		MatSidenavModule,
+		MatToolbarModule,
 	],
 })
 export class AppComponent {

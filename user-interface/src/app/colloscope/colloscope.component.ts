@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { NgFor } from '@angular/common';
+import { MatTableModule } from '@angular/material/table';
+
 import { Teacher } from '../teacher';
 import { Timeslot } from '../timeslot';
 import { Trio } from '../trio';
@@ -9,7 +12,9 @@ import { StoreService } from '../store.service';
 @Component({
 	selector: 'app-colloscope',
 	templateUrl: './colloscope.component.html',
-	styleUrls: ['./colloscope.component.scss']
+	styleUrls: ['./colloscope.component.scss'],
+	standalone: true,
+	imports: [NgFor, MatTableModule],
 })
 export class ColloscopeComponent {
 	tableData: any[] = [];
