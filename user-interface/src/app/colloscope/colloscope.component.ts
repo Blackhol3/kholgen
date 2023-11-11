@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { NgFor } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 
 import { Teacher } from '../teacher';
@@ -14,7 +13,7 @@ import { StoreService } from '../store.service';
 	templateUrl: './colloscope.component.html',
 	styleUrls: ['./colloscope.component.scss'],
 	standalone: true,
-	imports: [NgFor, MatTableModule],
+	imports: [MatTableModule],
 })
 export class ColloscopeComponent {
 	tableData: any[] = [];

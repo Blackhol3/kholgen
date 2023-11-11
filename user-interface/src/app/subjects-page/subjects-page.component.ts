@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { KeyValuePipe, NgIf, NgFor  } from '@angular/common';
+import { KeyValuePipe } from '@angular/common';
 import { CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 
@@ -68,8 +68,6 @@ const standardClasses: {[className: string]: StandardClass}[] = [
 	],
 	standalone: true,
 	imports: [
-		NgIf,
-		NgFor,
 		CdkDrag,
 		CdkDropList,
 		FormsModule,

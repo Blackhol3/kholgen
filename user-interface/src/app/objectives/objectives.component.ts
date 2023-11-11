@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { NgFor } from '@angular/common';
 import { CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -19,7 +18,6 @@ import { Objective } from '../objective';
 	}],
 	standalone: true,
 	imports: [
-		NgFor,
 		CdkDrag,
 		CdkDropList,
 		MatListModule,

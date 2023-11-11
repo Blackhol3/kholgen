@@ -2,13 +2,15 @@
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Nom</mat-label>
 		<input matInput type="text" formControlName="name">
-		<mat-error *ngIf="form.controls.name.hasError('notUnique')">Un·e autre enseignant·e de cette matière porte déjà ce nom.</mat-error>
+		@if (form.controls.name.hasError('notUnique')) { <mat-error>Un·e autre enseignant·e de cette matière porte déjà ce nom.</mat-error> }
 	</mat-form-field>
 	
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Matière</mat-label>
 		<mat-select formControlName="subjectId">
-			<mat-option *ngFor="let subject of store.state.subjects" [value]="subject.id" [style.color]="subject.color">{{subject.name}}</mat-option>
+			@for (subject of store.state.subjects; track subject.id) {
+				<mat-option [value]="subject.id" [style.color]="subject.color">{{subject.name}}</mat-option>
+			}
 		</mat-select>
 	</mat-form-field>
 	
@@ -18,7 +20,7 @@
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Disponibilité hebdomadaire <small>(disponible toutes les … semaines)</small></mat-label>
 		<input matInput type="number" formControlName="weeklyAvailabilityFrequency" min="1">
-		<mat-error *ngIf="form.controls.weeklyAvailabilityFrequency.hasError('pattern')">La fréquence de disponibilité doit être un entier.</mat-error>
-		<mat-error *ngIf="form.controls.weeklyAvailabilityFrequency.hasError('min')">La fréquence de disponibilité doit être supérieure ou égale à 1.</mat-error>
+		@if (form.controls.weeklyAvailabilityFrequency.hasError('pattern')) { <mat-error>La fréquence de disponibilité doit être un entier.</mat-error> }
+		@if (form.controls.weeklyAvailabilityFrequency.hasError('min')) { <mat-error>La fréquence de disponibilité doit être supérieure ou égale à 1.</mat-error> }
 	</mat-form-field>
 </form>

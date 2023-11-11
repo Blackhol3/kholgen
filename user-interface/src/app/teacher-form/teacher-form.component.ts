@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
-import { NgIf, NgFor } from '@angular/common';
 import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 
 import { MatOptionModule } from '@angular/material/core';
@@ -22,8 +21,6 @@ import { WeeklyTimetableComponent } from '../weekly-timetable/weekly-timetable.c
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	standalone: true,
 	imports: [
-		NgIf,
-		NgFor,
 		FormsModule,
 		ReactiveFormsModule,
 

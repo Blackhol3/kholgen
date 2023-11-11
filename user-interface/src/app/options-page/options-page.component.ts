@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { NgIf } from '@angular/common';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,7 +20,6 @@ import { ObjectivesComponent } from '../objectives/objectives.component';
 	styleUrls: ['./options-page.component.scss'],
 	standalone: true,
 	imports: [
-		NgIf,
 		FormsModule,
 		ReactiveFormsModule,
 

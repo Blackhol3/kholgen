@@ -2,7 +2,7 @@
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Nom</mat-label>
 		<input matInput type="text" formControlName="name">
-		<mat-error *ngIf="form.controls.name.hasError('notUnique')">Un autre groupe porte déjà ce nom.</mat-error>
+		@if (form.controls.name.hasError('notUnique')) { <mat-error>Un autre groupe porte déjà ce nom.</mat-error> }
 	</mat-form-field>
 	
 	<app-unique-integers-chip-input formControlName="trioIds" label="Trinômes initiaux" placeholder="Trinôme supplémentaire…" />
@@ -14,16 +14,18 @@
 		<mat-label>Groupe suivant</mat-label>
 		<mat-select formControlName="nextGroupId">
 			<mat-option [value]="null" [style.fontStyle]="'italic'">[Aucun]</mat-option>
-			<ng-container *ngFor="let nextGroup of store.state.groups">
-				<mat-option *ngIf="group !== nextGroup" [value]="nextGroup.id">{{nextGroup.name}}</mat-option>
-			</ng-container>
+			@for (nextGroup of store.state.groups; track nextGroup.id) {
+				@if (group !== nextGroup) {
+					<mat-option [value]="nextGroup.id">{{nextGroup.name}}</mat-option>
+				}
+			}
 		</mat-select>
 	</mat-form-field>
 	
 	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
 		<mat-label>Nombre de semaines avant le passage au groupe suivant</mat-label>
 		<input matInput type="number" formControlName="duration" min="1">
-		<mat-error *ngIf="form.controls.duration.hasError('pattern')">Le nombre de semaines  doit être un entier.</mat-error>
-		<mat-error *ngIf="form.controls.duration.hasError('min')">Le nombre de semaines doit être supérieur ou égal à 1.</mat-error>
+		@if (form.controls.duration.hasError('pattern')) { <mat-error>Le nombre de semaines doit être un entier.</mat-error> }
+		@if (form.controls.duration.hasError('min')) { <mat-error>Le nombre de semaines doit être supérieur ou égal à 1.</mat-error> }
 	</mat-form-field>
 </form>

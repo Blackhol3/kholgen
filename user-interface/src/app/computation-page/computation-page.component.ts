@@ -1,6 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { NgIf } from '@angular/common';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,8 +35,6 @@ import { ColloscopeComponent } from '../colloscope/colloscope.component';
 	],
 	standalone: true,
 	imports: [
-		NgIf,
-
 		MatButtonModule,
 		MatIconModule,
 		MatMenuModule,

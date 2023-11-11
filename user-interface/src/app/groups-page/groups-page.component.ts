@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { NgIf, NgFor } from '@angular/common';
 import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag } from '@angular/cdk/drag-drop';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { FormsModule } from '@angular/forms';
@@ -40,9 +39,6 @@ import { GroupsGraphComponent } from '../groups-graph/groups-graph.component';
 	],
 	standalone: true,
 	imports: [
-		NgIf,
-		NgFor,
-
 		CdkDrag,
 		CdkDropList,
 		FormsModule,

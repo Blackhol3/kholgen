@@ -1,13 +1,17 @@
 <div>
-	<button mat-raised-button *ngIf="!isRunning" (click)="compute()">Démarrer le calcul <mat-icon>play_arrow</mat-icon></button>
-	<button mat-raised-button *ngIf="isRunning" (click)="stopComputation()">Arrêter le calcul <mat-icon>stop</mat-icon></button>
+	@if (!isRunning) { <button mat-raised-button (click)="compute()">Démarrer le calcul <mat-icon>play_arrow</mat-icon></button> }
+	@else { <button mat-raised-button (click)="stopComputation()">Arrêter le calcul <mat-icon>stop</mat-icon></button> }
 	<button mat-raised-button [disabled]="store.state.colles.length === 0" [matMenuTriggerFor]="saveMenu">Sauvegarder…</button>
 	<mat-menu #saveMenu="matMenu" class="no-overflow">
 		<button mat-menu-item (click)="saveAsExcel()">Excel (.xlsx)</button>
 		<button mat-menu-item (click)="saveAsCsv()">CSV (.csv)</button>
 	</mat-menu>
 </div>
-<mat-progress-bar *ngIf="isRunning" mode="indeterminate" @insertAnimation />
+
+@if (isRunning) {
+	<mat-progress-bar mode="indeterminate" @insertAnimation />
+}
+
 <section>
 	<table mat-table #objectivesTable="matTable" [dataSource]="store.state.objectives" class="mat-elevation-z3">
 		<ng-container matColumnDef="objective">

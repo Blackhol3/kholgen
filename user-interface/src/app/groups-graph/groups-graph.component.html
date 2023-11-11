@@ -7,19 +7,26 @@
 			/>
 		</marker>
 	</defs>
-	<g class="group" *ngFor="let group of state.groups; index as index" [attr.transform]="getTransform(index)" (click)="groupClick.emit(group)">
-		<circle x="0" y="0" [attr.r]="individualRadius" />
-		<text text-anchor="middle" dominant-baseline="middle">
-			<tspan x="0" dy="-0.6em">{{group.name}}</tspan>
-			<tspan x="0" dy="1.2em">({{getTriosText(group.trioIds.size)}})</tspan>
-		</text>
-	</g>
-	<g class="next-group" *ngFor="let group of state.groups; index as index" [attr.transform]="getTransform(index)">
-		<ng-container *ngIf="group.nextGroupId !== null">
-			<path [attr.d]="getPath(index)" [attr.transform]="'rotate('+ getNextGroupDelta(index)[1] +')'" marker-end="url(#arrowEnd)" />
-			<text text-anchor="middle" dominant-baseline="middle" [attr.transform]="getNextGroupTextTransform(index)">{{group.duration}}</text>
-		</ng-container>
-	</g>
+
+	@for (group of state.groups; track group.id) {
+		<g class="group" [attr.transform]="getTransform($index)" (click)="groupClick.emit(group)">
+			<circle x="0" y="0" [attr.r]="individualRadius" />
+			<text text-anchor="middle" dominant-baseline="middle">
+				<tspan x="0" dy="-0.6em">{{group.name}}</tspan>
+				<tspan x="0" dy="1.2em">({{getTriosText(group.trioIds.size)}})</tspan>
+			</text>
+		</g>
+	}
+
+	@for (group of state.groups; track group.id) {
+		<g class="next-group" [attr.transform]="getTransform($index)">
+			@if (group.nextGroupId !== null) {
+				<path [attr.d]="getPath($index)" [attr.transform]="'rotate('+ getNextGroupDelta($index)[1] +')'" marker-end="url(#arrowEnd)" />
+				<text text-anchor="middle" dominant-baseline="middle" [attr.transform]="getNextGroupTextTransform($index)">{{group.duration}}</text>
+			}
+		</g>
+	}
+
 	<g class="class">
 		<circle x="0" y="0" [attr.r]="radius + individualRadius + 5" />
 		<text [attr.transform]="'translate('+ (radius + individualRadius + 45) +' 0)'" text-anchor="middle" dominant-baseline="middle">

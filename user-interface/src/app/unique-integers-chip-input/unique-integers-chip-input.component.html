@@ -1,12 +1,14 @@
 <mat-form-field appearance="fill" [hideRequiredMarker]="true">
-	<mat-label *ngIf="label !== undefined">{{label}}</mat-label>
+	@if (label !== undefined) { <mat-label>{{label}}</mat-label> }
 	<mat-chip-grid #chipList>
-		<mat-chip-row *ngFor="let integer of integers" [disabled]="disabled" (removed)="remove(integer)">
-			{{integer}}
-			<button matChipRemove>
-				<mat-icon>cancel</mat-icon>
-			</button>
-		</mat-chip-row>
+		@for (integer of integers; track $index) {
+			<mat-chip-row [disabled]="disabled" (removed)="remove(integer)">
+				{{integer}}
+				<button matChipRemove>
+					<mat-icon>cancel</mat-icon>
+				</button>
+			</mat-chip-row> 
+		}
 		<input
 			matInput
 			[placeholder]="placeholder ?? ''"

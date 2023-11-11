@@ -1,5 +1,4 @@
 import { Component, HostListener } from '@angular/core';
-import { NgFor } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { MatTableModule } from '@angular/material/table';
@@ -17,7 +16,7 @@ import { dayNames, firstHour, lastHour, Day, Timeslot } from '../timeslot';
 		useExisting: WeeklyTimetableComponent,
 	}],
 	standalone: true,
-	imports: [NgFor, MatTableModule],
+	imports: [MatTableModule],
 })
 export class WeeklyTimetableComponent implements ControlValueAccessor {
 	timeslots: Timeslot[] = [];

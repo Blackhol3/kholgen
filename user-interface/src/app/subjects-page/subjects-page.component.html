@@ -11,16 +11,21 @@
 			cdkDropList (cdkDropListDropped)="onDrop($event)"
 			(paste)="onPaste($event)"
 		>
-			<mat-list-option
-				*ngFor="let subject of store.state.subjects" cdkDrag [value]="subject.id"
-				[appCopyData]="subject.toHumanJsonObject()" appCopyType="subject"
-				[style.color]="subject.color"
-			>
-				{{subject.name}}
-			</mat-list-option>
+			@for (subject of store.state.subjects; track subject.id) {
+				<mat-list-option
+					cdkDrag [value]="subject.id"
+					[appCopyData]="subject.toHumanJsonObject()" appCopyType="subject"
+					[style.color]="subject.color"
+				>
+					{{subject.name}}
+				</mat-list-option>
+			}
 		</mat-selection-list>
 	</div>
-	<app-subject-form [subject]="store.state.findId('subjects', selectedSubjectIds[0])" *ngIf="selectedSubjectIds.length > 0" @slideAnimation />
+
+	@if (selectedSubjectIds.length > 0) {
+		<app-subject-form [subject]="store.state.findId('subjects', selectedSubjectIds[0])" @slideAnimation />
+	}
 </section>
 <section>
 	<h1>Utiliser les matières prédéfinies</h1>
@@ -28,11 +33,15 @@
 		<mat-form-field appearance="fill">
 			<mat-label>Classe</mat-label>
 			<mat-select [(ngModel)]="selectedStandardClass" [ngModelOptions]="{standalone: true}">
-				<mat-optgroup *ngFor="let groupLabel of ['Première année', 'Deuxième année']; index as i" [label]="groupLabel">
-					<mat-option *ngFor="let item of standardClasses[i] | keyvalue" [value]="item.value">
-						{{item.key}}
-					</mat-option>
-				</mat-optgroup>
+				@for (groupLabel of ['Première année', 'Deuxième année']; track $index) {
+					<mat-optgroup [label]="groupLabel">
+						@for (item of standardClasses[$index] | keyvalue; track $index) {
+							<mat-option [value]="item.value">
+								{{item.key}}
+							</mat-option>
+						}
+					</mat-optgroup>
+				}
 			</mat-select>
 		</mat-form-field>
 		<button mat-raised-button [disabled]="selectedStandardClass === undefined" (click)="useStandardClass()">Utiliser</button>

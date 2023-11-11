@@ -13,10 +13,10 @@
 			<span matTextSuffix>&nbsp;h</span>
 		</mat-form-field>
 		.
-		<mat-error *ngIf="form.controls.lunchTimeStart.hasError('pattern') || form.controls.lunchTimeEnd.hasError('pattern')">Les horaires doivent être des entiers.</mat-error>
-		<mat-error *ngIf="form.controls.lunchTimeStart.hasError('min')">Le déjeuner ne peut commencer avant {{firstHour}}h.</mat-error>
-		<mat-error *ngIf="form.controls.lunchTimeEnd.hasError('max')">Le déjeuner ne peut terminer après {{lastHour + 1}}h.</mat-error>
-		<mat-error *ngIf="form.controls.lunchTimeStart.hasError('max') || form.controls.lunchTimeEnd.hasError('min')">L'horaire de début doit être inférieur à celui de fin.</mat-error>
+		@if (form.controls.lunchTimeStart.hasError('pattern') || form.controls.lunchTimeEnd.hasError('pattern')) { <mat-error>Les horaires doivent être des entiers.</mat-error> }
+		@if (form.controls.lunchTimeStart.hasError('min')) { <mat-error>Le déjeuner ne peut commencer avant {{firstHour}}h.</mat-error> }
+		@if (form.controls.lunchTimeEnd.hasError('max')) { <mat-error>Le déjeuner ne peut terminer après {{lastHour + 1}}h.</mat-error> }
+		@if (form.controls.lunchTimeStart.hasError('max') || form.controls.lunchTimeEnd.hasError('min')) { <mat-error>L'horaire de début doit être inférieur à celui de fin.</mat-error> }
 	</p>
 	
 	<p>Les contraintes <strong>en haut</strong> sont les plus <strong>importantes</strong> et seront imposées en premier.</p>

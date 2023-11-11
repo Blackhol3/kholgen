@@ -1,6 +1,5 @@
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
 import { AbstractControl, FormsModule, ReactiveFormsModule, NonNullableFormBuilder, ValidationErrors, Validators } from '@angular/forms';
 
 import { MatChipInputEvent } from '@angular/material/chips';
@@ -26,9 +25,6 @@ import { UniqueIntegersChipInputComponent } from '../unique-integers-chip-input/
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	standalone: true,
 	imports: [
-		NgFor,
-		NgIf,
-
 		FormsModule,
 		ReactiveFormsModule,
 

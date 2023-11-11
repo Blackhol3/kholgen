@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
-import { NgIf } from '@angular/common';
 import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatInputModule } from '@angular/material/input';
@@ -17,7 +16,6 @@ import { UndoStackService } from '../undo-stack.service';
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	standalone: true,
 	imports: [
-		NgIf,
 		FormsModule,
 		ReactiveFormsModule,
 		

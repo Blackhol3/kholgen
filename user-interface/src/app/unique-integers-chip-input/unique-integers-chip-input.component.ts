@@ -1,6 +1,5 @@
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { Component, Input } from '@angular/core';
-import { NgIf, NgFor } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
@@ -20,9 +19,6 @@ import { MatInputModule } from '@angular/material/input';
 	}],
 	standalone: true,
 	imports: [
-		NgIf,
-		NgFor,
-
 		MatChipsModule,
 		MatFormFieldModule,
 		MatIconModule,

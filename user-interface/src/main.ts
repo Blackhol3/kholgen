@@ -1,9 +1,7 @@
-import { enableProdMode, importProvidersFrom } from '@angular/core';
+import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouteReuseStrategy, provideRouter } from '@angular/router';
-
-import { MatDialogModule } from '@angular/material/dialog';
 
 import { enableMapSet, enablePatches } from 'immer';
 
@@ -27,7 +25,6 @@ if (environment.production) {
 bootstrapApplication(AppComponent, {
 	providers: [
 		{provide: RouteReuseStrategy, useClass: ReuseStrategy},
-		importProvidersFrom(MatDialogModule),
 		provideAnimations(),
 		provideRouter([
 			{path: 'groups', component: GroupsPageComponent},

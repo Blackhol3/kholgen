@@ -2,20 +2,25 @@
 	<thead>
 		<tr>
 			<th class="hour-cell"></th>
-			<th *ngFor="let dayName of dayNames" scope="col">{{dayName}}</th>
+			@for (dayName of dayNames; track $index) {
+				<th scope="col">{{dayName}}</th>
+			}
 		</tr>
 	</thead>
 	<tbody (mousedown)="onMousedown($event)" (mouseover)="onMouseover($event)">
-		<tr *ngFor="let hour of hours">
-			<th class="hour-cell" scope="row">{{hour}}h</th>
-			<td
-				*ngFor="let dayName of dayNames; index as day"
-				[class.editable-cell]="editable"
-				[class.selected-cell]="isTimeslotSelected(day, hour)"
-				[attr.data-day]="day"
-				[attr.data-hour]="hour"
-			></td>
-		</tr>
+		@for (hour of hours; track $index) {
+			<tr>
+				<th class="hour-cell" scope="row">{{hour}}h</th>
+				@for (dayName of dayNames; let day = $index; track day) {
+					<td
+						[class.editable-cell]="editable"
+						[class.selected-cell]="isTimeslotSelected(day, hour)"
+						[attr.data-day]="day"
+						[attr.data-hour]="hour"
+					></td>
+				}
+			</tr>
+		}
 	</tbody>
 </table>
 

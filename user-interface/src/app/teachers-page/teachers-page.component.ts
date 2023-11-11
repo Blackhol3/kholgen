@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { NgIf, NgFor } from '@angular/common';
 import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 
@@ -29,8 +28,6 @@ import { TeacherFormComponent } from '../teacher-form/teacher-form.component';
 	],
 	standalone: true,
 	imports: [
-		NgFor,
-		NgIf,
 		CdkDrag,
 		CdkDropList,
 		CdkDropListGroup,
