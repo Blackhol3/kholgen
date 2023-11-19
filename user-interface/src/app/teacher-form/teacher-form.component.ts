@@ -33,7 +33,7 @@ import { WeeklyTimetableComponent } from '../weekly-timetable/weekly-timetable.c
 	],
 })
 export class TeacherFormComponent implements OnInit, OnChanges {
-	@Input() teacher: Teacher | undefined;
+	@Input({required: true}) teacher!: Teacher;
 	
 	form = this.formBuilder.group({
 		name: ['', [Validators.required, trimValidator]],
@@ -55,10 +55,6 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 	}
 	
 	updateForm() {
-		if (this.teacher === undefined) {
-			throw 'Teacher cannot be undefined.';
-		}
-		
 		this.form.setValue({
 			name: this.teacher.name,
 			subjectId: this.teacher.subjectId,
@@ -68,16 +64,11 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 	}
 	
 	formChange() {
-		const teacher = this.teacher;
-		if (teacher === undefined) {
-			return;
-		}
-		
 		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
-			if (control.valid && teacher[key] !== control.value) {
+			if (control.valid && this.teacher[key] !== control.value) {
 				this.undoStack.do(
 					state => {
-						(state.teachers[state.teachers.findIndex(t => t.id === teacher.id)] as any)[key] = control.value;
+						(state.teachers[state.teachers.findIndex(t => t.id === this.teacher.id)] as any)[key] = control.value;
 					},
 					key !== 'availableTimeslots'
 				);

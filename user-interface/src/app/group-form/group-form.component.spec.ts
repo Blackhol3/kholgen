@@ -2,9 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { GroupFormComponent } from './group-form.component';
 
+import { Group } from '../group';
+
 describe('GroupFormComponent', () => {
 	let component: GroupFormComponent;
 	let fixture: ComponentFixture<GroupFormComponent>;
+	const group = new Group('name', [], new Set());
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
@@ -14,6 +17,7 @@ describe('GroupFormComponent', () => {
 
 		fixture = TestBed.createComponent(GroupFormComponent);
 		component = fixture.componentInstance;
+		component.group = group;
 		fixture.detectChanges();
 	});
 

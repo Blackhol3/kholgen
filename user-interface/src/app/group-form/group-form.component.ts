@@ -38,7 +38,7 @@ import { UniqueIntegersChipInputComponent } from '../unique-integers-chip-input/
 	],
 })
 export class GroupFormComponent implements OnInit, OnChanges {
-	@Input() group: Group | undefined;
+	@Input({required: true}) group!: Group;
 	
 	form = this.formBuilder.group({
 		name: ['', [Validators.required, trimValidator, (control: AbstractControl) => notUniqueValidator(control, 'name', this.group!, this.store.state.groups)]],
@@ -62,10 +62,6 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	}
 	
 	updateForm() {
-		if (this.group === undefined) {
-			throw 'Group cannot be undefined.';
-		}
-		
 		this.form.setValue({
 			name: this.group.name,
 			trioIds: this.group.trioIds,
@@ -77,10 +73,6 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	
 	formChange() {
 		const group = this.group;
-		if (group === undefined) {
-			return;
-		}
-		
 		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
 			if (control.valid && this.controlValueUpdated(key)) {
 				this.undoStack.do(
@@ -133,16 +125,11 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	}
 	
 	protected controlValueUpdated(key: keyof typeof this.form.controls): boolean {
-		const group = this.group;
-		if (group === undefined) {
-			return false;
-		}
-
 		if (key !== 'trioIds') {
-			return group[key] !== this.form.controls[key].value;
+			return this.group[key] !== this.form.controls[key].value;
 		}
 
-		return !equalIterables(group[key], this.form.controls[key].value);
+		return !equalIterables(this.group[key], this.form.controls[key].value);
 	}
 	
 	protected nextGroupRequiredValidator(control: AbstractControl): ValidationErrors | null {

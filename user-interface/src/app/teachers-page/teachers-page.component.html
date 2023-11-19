@@ -24,6 +24,6 @@
 		</mat-selection-list>
 	</div>
 	@if (selectedTeacherIds.length > 0) {
-		<app-teacher-form [teacher]="store.state.findId('teachers', selectedTeacherIds[0])" @slideAnimation />
+		<app-teacher-form [teacher]="store.state.findId('teachers', selectedTeacherIds[0])!" @slideAnimation />
 	}
 </section>

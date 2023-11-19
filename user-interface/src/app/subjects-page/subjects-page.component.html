@@ -24,7 +24,7 @@
 	</div>
 
 	@if (selectedSubjectIds.length > 0) {
-		<app-subject-form [subject]="store.state.findId('subjects', selectedSubjectIds[0])" @slideAnimation />
+		<app-subject-form [subject]="store.state.findId('subjects', selectedSubjectIds[0])!" @slideAnimation />
 	}
 </section>
 <section>

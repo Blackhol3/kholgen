@@ -24,7 +24,7 @@ import { UndoStackService } from '../undo-stack.service';
 	],
 })
 export class SubjectFormComponent implements OnInit, OnChanges {
-	@Input() subject: Subject | undefined;
+	@Input({required: true}) subject!: Subject;
 	
 	form = this.formBuilder.group({
 		name: ['', [Validators.required, trimValidator, (control: AbstractControl) => notUniqueValidator(control, 'name', this.subject!, this.store.state.subjects)]],
@@ -46,10 +46,6 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 	}
 	
 	updateForm() {
-		if (this.subject === undefined) {
-			throw 'Subject cannot be undefined.';
-		}
-		
 		this.form.setValue({
 			name: this.subject.name,
 			shortName: this.subject.shortName,
@@ -59,14 +55,10 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 	}
 	
 	formChange() {
-		if (this.subject === undefined) {
-			return;
-		}
-		
 		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
 			if (control.valid && this.subject[key] !== control.value) {
 				this.undoStack.do(state => {
-					(state.findId('subjects', this.subject!.id) as any)[key] = control.value;
+					(state.findId('subjects', this.subject.id) as any)[key] = control.value;
 				});
 			}
 			else {

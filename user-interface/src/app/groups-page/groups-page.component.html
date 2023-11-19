@@ -22,6 +22,6 @@
 	</div>
 	
 	@if (selectedGroupIds.length > 0) {
-		<app-group-form [group]="store.state.findId('groups', selectedGroupIds[0])" @slideAnimation />
+		<app-group-form [group]="store.state.findId('groups', selectedGroupIds[0])!" @slideAnimation />
 	}
 </section>
