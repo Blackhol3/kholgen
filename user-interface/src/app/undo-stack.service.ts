@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Draft, Patch } from 'immer';
+import { type Patch } from 'immer';
 
-import { State } from './state';
 import { StoreService } from './store.service';
 
 function comparePath(patch1: Patch, patch2: Patch): boolean {
@@ -95,7 +94,7 @@ export class UndoStackService {
 		this.groupLevel = 0;
 	}
 	
-	do(recipe: (state: Draft<State>) => any, shouldMergeIfPossible: boolean = true) {
+	do(recipe: Parameters<typeof this.store.do>[0], shouldMergeIfPossible: boolean = true) {
 		const [patches, inversePatches] = this.store.do(recipe);
 		if (patches.length !== 0) {
 			this.add(new PatchesCommand(patches, inversePatches), shouldMergeIfPossible);

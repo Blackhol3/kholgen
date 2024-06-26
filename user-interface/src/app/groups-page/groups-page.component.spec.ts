@@ -9,8 +9,7 @@ describe('GroupsPageComponent', () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [GroupsPageComponent]
-		})
-		.compileComponents();
+		}).compileComponents();
 
 		fixture = TestBed.createComponent(GroupsPageComponent);
 		component = fixture.componentInstance;

@@ -9,6 +9,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
 import * as FileSaver from 'file-saver-es';
+import { type Draft } from 'immer';
 
 import { State } from './state';
 import { StoreService } from './store.service';
@@ -59,7 +60,7 @@ export class AppComponent {
 	
 	/** @todo Add file drag and drop */
 	importFile() {
-		let files = this.importFileInput.nativeElement.files;
+		const files = this.importFileInput.nativeElement.files;
 		if (files === null || files[0] === undefined) {
 			return;
 		}
@@ -67,8 +68,8 @@ export class AppComponent {
 		files[0]
 			.text()
 			.then(JSON.parse)
-			.then((jsonObject: any) => this.undoStack.do(() => State.fromJsonObject(jsonObject)))
-			.catch((exception: any) => {
+			.then((jsonObject: ReturnType<State['toHumanJsonObject']>) => this.undoStack.do(() => State.fromJsonObject(jsonObject) as unknown as Draft<State>))
+			.catch(exception => {
 				/** @todo Display an error dialog **/
 				if (exception instanceof SyntaxError) {
 					console.error(exception.message);

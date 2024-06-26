@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { type CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
+import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { MatListModule } from '@angular/material/list';
 
@@ -30,7 +30,7 @@ export class ObjectivesComponent implements ControlValueAccessor {
 	
 	constructor() { }
 	
-	onDrop($event: CdkDragDrop<any[]>) {
+	onDrop($event: CdkDragDrop<unknown[]>) {
 		if ($event.previousIndex !== $event.currentIndex) {
 			moveItemInArray(this.objectives, $event.previousIndex, $event.currentIndex);
 			this.onChange(this.objectives.slice());

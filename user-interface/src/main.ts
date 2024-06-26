@@ -35,5 +35,4 @@ bootstrapApplication(AppComponent, {
 			{path: '**', redirectTo: '/groups'},
 		])
 	]
-})
-.catch(err => console.error(err));
+}).catch(err => console.error(err));

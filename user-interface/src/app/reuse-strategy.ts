@@ -1,4 +1,4 @@
-import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
+import { ActivatedRouteSnapshot, type DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
 
 /** @link https://stackoverflow.com/questions/41280471/how-to-implement-routereusestrategy-shoulddetach-for-specific-routes-in-angular/44854611#44854611 */
 export class ReuseStrategy implements RouteReuseStrategy {

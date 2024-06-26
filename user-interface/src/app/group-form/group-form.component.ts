@@ -1,17 +1,16 @@
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
-import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
-import { AbstractControl, FormsModule, ReactiveFormsModule, NonNullableFormBuilder, ValidationErrors, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges } from '@angular/core';
+import { AbstractControl, FormsModule, ReactiveFormsModule, NonNullableFormBuilder, type ValidationErrors, Validators } from '@angular/forms';
 
-import { MatChipInputEvent } from '@angular/material/chips';
+import { type MatChipInputEvent } from '@angular/material/chips';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
-import { Entries, equalIterables, notUniqueValidator, setErrors, trimValidator } from '../misc';
+import { type Entries, equalIterables, notUniqueValidator, setErrors, trimValidator } from '../misc';
 import { Group } from '../group';
 import { Timeslot } from '../timeslot';
-import { Trio } from '../trio';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
 
@@ -41,7 +40,7 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	@Input({required: true}) group!: Group;
 	
 	form = this.formBuilder.group({
-		name: ['', [Validators.required, trimValidator, (control: AbstractControl) => notUniqueValidator(control, 'name', this.group!, this.store.state.groups)]],
+		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string, string>) => notUniqueValidator(control, 'name', this.group, this.store.state.groups)]],
 		trioIds: [new Set() as ReadonlySet<number>, Validators.required],
 		availableTimeslots: [[] as readonly Timeslot[], Validators.required],
 		nextGroupId: ['' as (string | null)],
@@ -72,12 +71,11 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	}
 	
 	formChange() {
-		const group = this.group;
-		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
+		for (const [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
 			if (control.valid && this.controlValueUpdated(key)) {
 				this.undoStack.do(
 					state => {
-						(state.groups.find(g => g.id === group.id) as any)[key] = control.value;
+						(state.findId('groups', this.group.id)![key] as unknown) = control.value;
 					},
 					key !== 'availableTimeslots'
 				);

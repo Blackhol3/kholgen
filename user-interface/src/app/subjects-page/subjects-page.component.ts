@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, type OnInit, type OnDestroy } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
-import { CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
+import { type CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -102,7 +102,7 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 		this.storeSubscription?.unsubscribe();
 	}
 	
-	onDrop($event: CdkDragDrop<any[]>) {
+	onDrop($event: CdkDragDrop<unknown[]>) {
 		this.selectedSubjectIds = [this.store.state.subjects[$event.previousIndex].id];
 		this.undoStack.do(state => { moveItemInArray(state.subjects, $event.previousIndex, $event.currentIndex) });
 	}
@@ -110,6 +110,7 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	addNewSubject() {
 		let name = '';
 		for (let i = 1; name = `Matière ${i}`, this.store.state.subjects.some(subject => subject.name === name || subject.shortName === name); ++i) {
+			// Empty
 		}
 		
 		const subject = new Subject(name, name, 1, '#aaaaaa');
@@ -135,13 +136,13 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 		this.selectedSubjectIds = this.store.state.subjects.length > 0 ? [this.store.state.subjects[Math.max(0, index - 1)].id] : [];
 		
 		if (hasAssociatedTeachers) {
-			let observable = this.snackBar.open(
+			const observable = this.snackBar.open(
 				`Un ou plusieurs enseignant·es de « ${subject.name} » ont également été supprimé·es.`,
 				'Annuler',
 				{duration: 3000}
 			).afterDismissed();
 			
-			firstValueFrom(observable).then(event => {
+			void firstValueFrom(observable).then(event => {
 				if (event?.dismissedByAction) {
 					this.undoStack.undo();
 				}
@@ -164,7 +165,7 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 			state.subjects = [];
 			state.teachers = [];
 			
-			for (let subject of this.selectedStandardClass) {
+			for (const subject of this.selectedStandardClass) {
 				const standardSubject = standardSubjects[subject[0]];
 				state.subjects.push(new Subject(standardSubject.name, standardSubject.shortName, subject[1], standardSubject.color));
 			}

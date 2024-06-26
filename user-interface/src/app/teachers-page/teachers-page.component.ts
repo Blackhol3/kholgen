@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Component, type OnInit, type OnDestroy } from '@angular/core';
+import { CdkDrag, type CdkDragDrop, CdkDropList, CdkDropListGroup, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 
 import { MatListModule } from '@angular/material/list';
@@ -56,7 +56,7 @@ export class TeachersPageComponent implements OnInit, OnDestroy {
 	}
 	
 	canDrop = (draggedTeacher: CdkDrag<Teacher>, droppedSubject: CdkDropList<Subject>): boolean => {
-		for (let teacher of this.store.state.teachers) {
+		for (const teacher of this.store.state.teachers) {
 			if (teacher.subjectId === droppedSubject.data.id && teacher.name === draggedTeacher.data.name) {
 				return false;
 			}
@@ -92,6 +92,7 @@ export class TeachersPageComponent implements OnInit, OnDestroy {
 	addNewTeacher() {
 		let name = '';
 		for (let i = 1; name = `Enseignant ${i}`, this.store.state.teachers.some(teacher => teacher.name === name); ++i) {
+			// Empty
 		}
 		
 		const teacher = new Teacher(name, this.store.state.findId('teachers', this.selectedTeacherIds[0])?.subjectId ?? this.store.state.subjects[0].id, []);

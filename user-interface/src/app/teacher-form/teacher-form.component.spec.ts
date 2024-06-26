@@ -12,8 +12,7 @@ describe('TeacherFormComponent', () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [TeacherFormComponent]
-		})
-		.compileComponents();
+		}).compileComponents();
 
 		fixture = TestBed.createComponent(TeacherFormComponent);
 		component = fixture.componentInstance;

@@ -1,5 +1,5 @@
 import { Component, HostListener } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { MatTableModule } from '@angular/material/table';
 
@@ -29,7 +29,7 @@ export class WeeklyTimetableComponent implements ControlValueAccessor {
 	protected onChange = (_: Timeslot[]) => {};
 	
 	isTimeslotSelected(day: Day, hour: number): boolean {
-		let timeslot = new Timeslot(day, hour);
+		const timeslot = new Timeslot(day, hour);
 		return this.timeslots.some(t => timeslot.isEqual(t));
 	}
 	

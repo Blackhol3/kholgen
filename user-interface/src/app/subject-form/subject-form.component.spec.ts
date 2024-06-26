@@ -12,8 +12,7 @@ describe('SubjectFormComponent', () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [SubjectFormComponent]
-		})
-		.compileComponents();
+		}).compileComponents();
 
 		fixture = TestBed.createComponent(SubjectFormComponent);
 		component = fixture.componentInstance;

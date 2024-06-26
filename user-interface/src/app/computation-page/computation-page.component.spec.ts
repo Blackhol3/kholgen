@@ -9,8 +9,7 @@ describe('ComputationPageComponent', () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [ComputationPageComponent]
-		})
-		.compileComponents();
+		}).compileComponents();
 
 		fixture = TestBed.createComponent(ComputationPageComponent);
 		component = fixture.componentInstance;

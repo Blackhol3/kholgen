@@ -9,8 +9,7 @@ describe('ColloscopeComponent', () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [ColloscopeComponent]
-		})
-		.compileComponents();
+		}).compileComponents();
 
 		fixture = TestBed.createComponent(ColloscopeComponent);
 		component = fixture.componentInstance;

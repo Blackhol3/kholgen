@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, type OnInit, type OnDestroy } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 
 import { Subscription } from 'rxjs';
 
-import { Entries } from '../misc';
+import { type Entries } from '../misc';
 import { Objective } from '../objective';
 import { firstHour, lastHour } from '../timeslot';
 import { StoreService } from '../store.service';
@@ -62,20 +62,20 @@ export class OptionsPageComponent implements OnInit, OnDestroy {
 	}
 	
 	formChange() {
-		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
+		for (const [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
 			if (!control.valid) {
 				control.markAsTouched();
 				continue;
 			}
 			
 			if (key === 'objectives' && this.store.state.objectives !== control.value) {
-				this.undoStack.do(state => { state.objectives = control.value as any; });
+				this.undoStack.do(state => { state.objectives = control.value as Objective[]; });
 			}
 			else if (key === 'lunchTimeStart' && this.store.state.lunchTimeRange[0] !== control.value) {
-				this.undoStack.do(state => { state.lunchTimeRange[0] = control.value as any; });
+				this.undoStack.do(state => { state.lunchTimeRange[0] = control.value; });
 			}
 			else if (key === 'lunchTimeEnd' && this.store.state.lunchTimeRange[1] !== control.value) {
-				this.undoStack.do(state => { state.lunchTimeRange[1] = control.value as any; });
+				this.undoStack.do(state => { state.lunchTimeRange[1] = control.value; });
 			}
 		}
 	}

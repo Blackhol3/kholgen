@@ -15,8 +15,7 @@ describe('ConnectionDialogComponent', () => {
 				provide: MatDialogRef,
 				useValue: jasmine.createSpyObj<MatDialogRef<ConnectionDialogComponent>>,
 			}]
-		})
-		.compileComponents();
+		}).compileComponents();
 
 		fixture = TestBed.createComponent(ConnectionDialogComponent);
 		component = fixture.componentInstance;

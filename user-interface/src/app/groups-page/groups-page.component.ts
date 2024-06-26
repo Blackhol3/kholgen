@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag } from '@angular/cdk/drag-drop';
+import { Component, type OnInit, type OnDestroy } from '@angular/core';
+import { type CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag } from '@angular/cdk/drag-drop';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { FormsModule } from '@angular/forms';
 
@@ -65,7 +65,7 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 		this.storeSubscription?.unsubscribe();
 	}
 	
-	onDrop($event: CdkDragDrop<any[]>) {
+	onDrop($event: CdkDragDrop<unknown[]>) {
 		this.selectedGroupIds = [this.store.state.groups[$event.previousIndex].id];
 		this.undoStack.do(state => { moveItemInArray(state.groups, $event.previousIndex, $event.currentIndex) });
 	}
@@ -73,6 +73,7 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 	addNewGroup() {
 		let name = '';
 		for (let i = 1; name = `Groupe ${i}`, this.store.state.groups.some(group => group.name === name); ++i) {
+			// Empty
 		}
 		
 		const group = new Group(name, [], new Set());
@@ -85,7 +86,7 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 		const index = this.store.state.groups.indexOf(group);
 		
 		this.undoStack.do(state => {
-			for (let otherGroup of state.groups) {
+			for (const otherGroup of state.groups) {
 				if (otherGroup.nextGroupId === group.id) {
 					otherGroup.nextGroupId = null;
 				}

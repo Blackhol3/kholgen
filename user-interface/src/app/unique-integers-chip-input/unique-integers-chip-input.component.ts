@@ -1,8 +1,8 @@
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { Component, Input } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
+import { type MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -33,7 +33,7 @@ export class UniqueIntegersChipInputComponent implements ControlValueAccessor {
 	disabled = false;
 	readonly separatorKeysCodes = [COMMA, ENTER, SPACE] as const;
 	
-	protected onChange = (_: Set<Number>) => {};
+	protected onChange = (_: Set<number>) => {};
 	
 	writeValue(integers: Set<number> | null) {
 		this.integers = new Set(integers);

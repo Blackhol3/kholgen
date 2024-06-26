@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, EventEmitter, Component, Input, OnChanges, Output } from '@angular/core';
+import { ChangeDetectionStrategy, EventEmitter, Component, Input, type OnChanges, Output } from '@angular/core';
 
 import { Group } from '../group';
 import { State } from '../state';
@@ -66,7 +66,7 @@ export class GroupsGraphComponent implements OnChanges {
 
 	getNumberOfTrios() {
 		const trioIds = [];
-		for (let group of this.state.groups) {
+		for (const group of this.state.groups) {
 			trioIds.push(...group.trioIds);
 		}
 
@@ -79,7 +79,7 @@ export class GroupsGraphComponent implements OnChanges {
 	}
 	
 	protected getNextGroupDelta(index: number) {
-		const nextGroupIndex = this.state.groups.findIndex(g => g.id === this.state.groups[index].nextGroupId)!;
+		const nextGroupIndex = this.state.groups.findIndex(g => g.id === this.state.groups[index].nextGroupId);
 		
 		const angle = this.getAngle(index, 'rad');
 		const nextGroupAngle = this.getAngle(nextGroupIndex, 'rad');

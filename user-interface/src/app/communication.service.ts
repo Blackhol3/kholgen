@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { QWebChannel } from 'qwebchannel';
+import { type ChannelObject, QWebChannel } from 'qwebchannel';
 import { Observable, Subject } from 'rxjs';
 
 import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
@@ -8,12 +8,41 @@ import { Colle } from './colle';
 import { Timeslot } from './timeslot';
 import { StoreService } from './store.service';
 
+type JsonColle = {
+	teacherId: string,
+	timeslot: {
+		day: number,
+		hour: number,
+	},
+	trioId: number,
+	weekId: number,
+};
+
+type JsonObjectiveComputation = {
+	objectiveName: string,
+	value: number,
+};
+
+type Communication = {
+	slots: {
+		compute: (state: unknown) => Promise<void>,
+		stopComputation: () => Promise<void>,
+		exportAsCsv: () => Promise<string>,
+		exportAsExcel: () => Promise<string>,
+	},
+
+	signals: {
+		solutionFound: (colles: JsonColle[], objectiveComputations: JsonObjectiveComputation[]) => void,
+		computationFinished: (success: boolean) => void,
+	},
+}
+
 @Injectable({
 	providedIn: 'root'
 })
 export class CommunicationService {
 	protected websocket: WebSocket | undefined;
-	protected communication: any;
+	protected communication: ChannelObject<Communication> | undefined;
 	protected computeSubject: Subject<void> | undefined;
 	
 	constructor(private dialog: MatDialog) { }
@@ -32,8 +61,8 @@ export class CommunicationService {
 					500
 				);
 			}
-			let closeDialog = () => {
-				let dialog = this.dialog.getDialogById('connection');
+			const closeDialog = () => {
+				const dialog = this.dialog.getDialogById('connection');
 				if (dialog !== undefined) {
 					dialog.close();
 				}
@@ -42,7 +71,7 @@ export class CommunicationService {
 			 
 			this.websocket = new WebSocket('ws://localhost:4201');
 			this.websocket.addEventListener('open', () => {
-				new QWebChannel(this.websocket!, (channel: any) => {
+				new QWebChannel<{communication: Communication}>(this.websocket!, channel => {
 					this.communication = channel.objects.communication;
 					
 					closeDialog();
@@ -50,7 +79,7 @@ export class CommunicationService {
 				});
 			});
 			this.websocket.addEventListener('close', (event: CloseEvent) => {
-				let tryToReconnect = this.communication === undefined && !event.wasClean;
+				const tryToReconnect = this.communication === undefined && !event.wasClean;
 				this.websocket = undefined;
 				this.communication = undefined;
 				this.computeSubject = undefined;
@@ -74,7 +103,7 @@ export class CommunicationService {
 		}
 		
 		this.computeSubject = new Subject<void>();
-		this.communication.solutionFound.connect((jsonColles: any[], jsonObjectiveComputations: any[]) => {
+		this.communication.solutionFound.connect((jsonColles, jsonObjectiveComputations) => {
 			this.computeSubject?.next();
 			this.importJsonColles(store, jsonColles);
 			this.importJsonObjectiveComputations(store, jsonObjectiveComputations);
@@ -83,19 +112,19 @@ export class CommunicationService {
 			this.computeSubject?.complete();
 			this.computeSubject = undefined;
 		});
-		this.communication.compute(store.state.toSolverJsonObject());
+		void this.communication.compute(store.state.toSolverJsonObject());
 		
 		return this.computeSubject.asObservable();
 	}
 	
 	stopComputation() {
 		this.checkIfOpen();
-		this.communication.stopComputation();
+		void this.communication.stopComputation();
 	}
 	
 	async exportAsCsv(): Promise<Blob> {
 		this.checkIfOpen();
-		const csv = await this.communication.exportAsCsv() as string;
+		const csv = await this.communication.exportAsCsv();
 		
 		const blob = new Blob(
 			[csv],
@@ -107,7 +136,7 @@ export class CommunicationService {
 	
 	async exportAsExcel(): Promise<Blob> {
 		this.checkIfOpen();
-		const base64ByteArray = await this.communication.exportAsExcel() as string;
+		const base64ByteArray = await this.communication.exportAsExcel();
 		
 		/** @link https://stackoverflow.com/questions/16245768/creating-a-blob-from-a-base64-string-in-javascript/2057033#2057033 */
 		const byteCharacters = atob(base64ByteArray);
@@ -125,15 +154,15 @@ export class CommunicationService {
 		return blob;
 	}
 	
-	protected checkIfOpen() {
+	protected checkIfOpen(): asserts this is {communication: ChannelObject<Communication>} {
 		if (this.communication === undefined) {
-			throw 'The communication is not opened.';
+			throw new Error('The communication is not opened.');
 		}
 	}
 	
-	protected importJsonColles(store: StoreService, jsonColles: any[]): void {
+	protected importJsonColles(store: StoreService, jsonColles: JsonColle[]): void {
 		store.do(state => {
-			state.colles = jsonColles.map((colle: any) => new Colle(
+			state.colles = jsonColles.map(colle => new Colle(
 				colle.teacherId,
 				new Timeslot(colle.timeslot.day, colle.timeslot.hour),
 				state.trios[colle.trioId].id,
@@ -142,9 +171,9 @@ export class CommunicationService {
 		});
 	}
 	
-	protected importJsonObjectiveComputations(store: StoreService, jsonObjectiveComputations: any[]): void {
+	protected importJsonObjectiveComputations(store: StoreService, jsonObjectiveComputations: JsonObjectiveComputation[]): void {
 		store.do(state => {
-			for (let objectiveComputation of jsonObjectiveComputations) {
+			for (const objectiveComputation of jsonObjectiveComputations) {
 				state.objectives.find(objective => objective.name === objectiveComputation.objectiveName)?.setValue(objectiveComputation.value);
 			}
 		});

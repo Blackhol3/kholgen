@@ -1,4 +1,4 @@
-import { immerable } from 'immer';
+import { immerable, type Draft } from 'immer';
 
 import { Colle } from './colle';
 import { Group } from './group';
@@ -51,8 +51,8 @@ export class State {
 		readonly lunchTimeRange: readonly [number, number] = [firstHour, lastHour + 1],
 	) {}
 	
-	findId<P extends 'groups' | 'subjects' | 'teachers' | 'trios' | 'weeks'>(property: P, id: this[P][number]['id']): this[P][number] | undefined {
-		for (let element of this[property]) {
+	findId<S extends this | Draft<this>, P extends 'groups' | 'subjects' | 'teachers' | 'trios' | 'weeks'>(this: S, property: P, id: S[P][number]['id']): S[P][number] | undefined {
+		for (const element of this[property]) {
 			if (element.id === id) {
 				return element;
 			}
@@ -84,21 +84,21 @@ export class State {
 	
 	/** @todo Throw better error messages **/
 	static fromJsonObject(jsonObject: ReturnType<State['toHumanJsonObject']>) {
-		const groups = jsonObject.groups.map((group: any) => Group.fromJsonObject(group));
+		const groups = jsonObject.groups.map(group => Group.fromJsonObject(group));
 		for (let idGroup = 0; idGroup < groups.length; ++idGroup) {
 			groups[idGroup] = groups[idGroup].setNextGroupFromJsonObject(jsonObject.groups[idGroup], groups);
 		}
 		
-		const subjects = jsonObject.subjects.map((subject: any) => Subject.fromJsonObject(subject));
-		const teachers = jsonObject.teachers.map((teacher: any) => Teacher.fromJsonObject(teacher, subjects)!);
+		const subjects = jsonObject.subjects.map(subject => Subject.fromJsonObject(subject));
+		const teachers = jsonObject.teachers.map(teacher => Teacher.fromJsonObject(teacher, subjects)!);
 		
-		let weeks = [];
+		const weeks = [];
 		for (let i = 0; i < 20; ++i) {
 			weeks.push(new Week(i));
 		}
 		
-		let objectives = [];
-		for (let objective of jsonObject.objectives) {
+		const objectives = [];
+		for (const objective of jsonObject.objectives) {
 			objectives.push(defaultObjectives.find(defaultObjective => defaultObjective.name === objective)!);
 		}
 		

@@ -1,5 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, type OnInit, type OnDestroy, ViewChild } from '@angular/core';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -47,7 +47,7 @@ import { ColloscopeComponent } from '../colloscope/colloscope.component';
 export class ComputationPageComponent implements OnInit, OnDestroy {
 	isRunning = false;
 	storeSubscription: Subscription | undefined;
-	@ViewChild(MatTable) objectivesTable: MatTable<any> | undefined;
+	@ViewChild(MatTable) objectivesTable: MatTable<unknown> | undefined;
 	
 	constructor(private communication: CommunicationService, public store: StoreService) {	}
 	
@@ -63,8 +63,8 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 	compute() {
 		this.store.do(state => {
 			const trioInitialGroupIds: string[][] = [];
-			for (let group of state.groups) {
-				for (let trioId of group.trioIds) {
+			for (const group of state.groups) {
+				for (const trioId of group.trioIds) {
 					if (trioInitialGroupIds[trioId] === undefined) {
 						trioInitialGroupIds[trioId] = [];
 					}
@@ -73,12 +73,12 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 			}
 
 			state.trios = [];
-			for (let initialGroupIds of trioInitialGroupIds.filter(x => x !== undefined)) {
+			for (const initialGroupIds of trioInitialGroupIds.filter(x => x !== undefined)) {
 				state.trios.push(castDraft(new Trio(state.trios.length, initialGroupIds)));
 			}
 		});
 		
-		this.communication.connect().then(() => {
+		void this.communication.connect().then(() => {
 			this.isRunning = true;
 			this.communication.compute(this.store).subscribe({
 				complete: () => { this.isRunning = false; },

@@ -9,8 +9,7 @@ describe('WeeklyTimetableComponent', () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [WeeklyTimetableComponent]
-		})
-		.compileComponents();
+		}).compileComponents();
 
 		fixture = TestBed.createComponent(WeeklyTimetableComponent);
 		component = fixture.componentInstance;

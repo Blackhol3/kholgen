@@ -57,12 +57,12 @@ export class Timeslot {
 		}
 		
 		if (day === undefined) {
-			throw `Le jour associé au créneau « ${string} » est mal défini.`;
+			throw new Error(`Le jour associé au créneau « ${string} » est mal défini.`);
 		}
 		
-		let hour = parseInt(hourString!.trim());
+		const hour = parseInt(hourString!.trim());
 		if (hour < firstHour || hour > lastHour) {
-			throw `L'horaire associé au créneau « ${string} » est mal défini.`;
+			throw new Error(`L'horaire associé au créneau « ${string} » est mal défini.`);
 		}
 
 		return new Timeslot(day, hour);

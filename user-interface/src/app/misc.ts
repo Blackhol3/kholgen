@@ -1,7 +1,7 @@
-import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { AbstractControl, type ValidationErrors } from '@angular/forms';
 
-export function notUniqueValidator<Type>(control: AbstractControl, property: keyof Type, formObject: Type, objects: readonly Type[]): ValidationErrors | null {
-	for (let object of objects) {
+export function notUniqueValidator<Type>(control: AbstractControl<string, string>, property: keyof Type, formObject: Type, objects: readonly Type[]): ValidationErrors | null {
+	for (const object of objects) {
 		if (object !== formObject && object[property] === control.value.trim()) {
 			return {notUnique: {object: object, property: property}};
 		}
@@ -23,11 +23,11 @@ export function trimValidator(control: AbstractControl): null {
 	return null;
 }
 
-export function setErrors(parentControl: AbstractControl, key: string, newError: {[key: string]: any}) {
+export function setErrors(parentControl: AbstractControl, key: string, newError: {[key: string]: unknown}) {
 	const control = parentControl.get(key)!;
 	let errors: ValidationErrors | null = control.errors ?? {};
 	
-	for (let key in newError) {
+	for (const key in newError) {
 		if (newError[key] === undefined) {
 			delete errors[key];
 		}
@@ -43,7 +43,7 @@ export function setErrors(parentControl: AbstractControl, key: string, newError:
 	control.setErrors(errors);
 }
 
-export function equalIterables(x: Iterable<any>, y: Iterable<any>): boolean {
+export function equalIterables(x: Iterable<unknown>, y: Iterable<unknown>): boolean {
 	const arrayX = [...x];
 	const arrayY = [...y];
 
@@ -52,5 +52,5 @@ export function equalIterables(x: Iterable<any>, y: Iterable<any>): boolean {
 
 /** @link https://stackoverflow.com/questions/60141960/typescript-key-value-relation-preserving-object-entries-type/60142095#60142095 */
 export type Entries<T> = {
-    [K in keyof T]: [K, T[K]]
+	[K in keyof T]: [K, T[K]]
 }[keyof T][];

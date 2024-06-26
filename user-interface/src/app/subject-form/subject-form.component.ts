@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges } from '@angular/core';
 import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
-import { Entries, notUniqueValidator, trimValidator } from '../misc';
+import { type Entries, notUniqueValidator, trimValidator } from '../misc';
 import { Subject } from '../subject';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
@@ -27,8 +27,8 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 	@Input({required: true}) subject!: Subject;
 	
 	form = this.formBuilder.group({
-		name: ['', [Validators.required, trimValidator, (control: AbstractControl) => notUniqueValidator(control, 'name', this.subject!, this.store.state.subjects)]],
-		shortName: ['', [Validators.required, trimValidator, (control: AbstractControl) => notUniqueValidator(control, 'shortName', this.subject!, this.store.state.subjects)]],
+		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string, string>) => notUniqueValidator(control, 'name', this.subject, this.store.state.subjects)]],
+		shortName: ['', [Validators.required, trimValidator, (control: AbstractControl<string, string>) => notUniqueValidator(control, 'shortName', this.subject, this.store.state.subjects)]],
 		frequency: [1, [Validators.required, Validators.min(1), Validators.pattern('^-?[0-9]*$')]],
 		color: ['', Validators.required],
 	});
@@ -55,10 +55,10 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 	}
 	
 	formChange() {
-		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
+		for (const [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
 			if (control.valid && this.subject[key] !== control.value) {
 				this.undoStack.do(state => {
-					(state.findId('subjects', this.subject.id) as any)[key] = control.value;
+					(state.findId('subjects', this.subject.id)![key] as unknown) = control.value;
 				});
 			}
 			else {

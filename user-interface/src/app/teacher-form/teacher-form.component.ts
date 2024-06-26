@@ -1,12 +1,12 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, OnChanges } from '@angular/core';
-import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges } from '@angular/core';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, type ValidationErrors, Validators } from '@angular/forms';
 
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
-import { Entries, setErrors, trimValidator } from '../misc';
+import { type Entries, setErrors, trimValidator } from '../misc';
 import { Teacher } from '../teacher';
 import { Timeslot } from '../timeslot';
 import { StoreService } from '../store.service';
@@ -64,11 +64,11 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 	}
 	
 	formChange() {
-		for (let [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
+		for (const [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
 			if (control.valid && this.teacher[key] !== control.value) {
 				this.undoStack.do(
 					state => {
-						(state.teachers[state.teachers.findIndex(t => t.id === this.teacher.id)] as any)[key] = control.value;
+						(state.findId('teachers', this.teacher.id)![key] as unknown) = control.value;
 					},
 					key !== 'availableTimeslots'
 				);
@@ -84,7 +84,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 			return null;
 		}
 		
-		for (let teacher of this.store.state.teachers) {
+		for (const teacher of this.store.state.teachers) {
 			if (teacher !== this.teacher && teacher.subjectId === this.form.controls.subjectId.value && teacher.name === this.form.controls.name.value) {
 				const error = {notUnique: {teacher: teacher}};
 				setErrors(control, 'name', error);
