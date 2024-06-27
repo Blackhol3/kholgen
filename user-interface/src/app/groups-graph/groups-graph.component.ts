@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, EventEmitter, Component, Input, type OnChanges, Output } from '@angular/core';
+import { ChangeDetectionStrategy, EventEmitter, Component, Input, Output } from '@angular/core';
 
 import { Group } from '../group';
 import { State } from '../state';
@@ -10,7 +10,7 @@ import { State } from '../state';
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	standalone: true,
 })
-export class GroupsGraphComponent implements OnChanges {
+export class GroupsGraphComponent {
 	@Input() state: State = new State();
 	@Output() groupClick = new EventEmitter<Group>();
 	
@@ -18,10 +18,6 @@ export class GroupsGraphComponent implements OnChanges {
 	readonly individualRadius = 10;
 	
 	constructor() { }
-	
-	ngOnChanges() {
-		
-	}
 	
 	getTransform(index: number) {
 		const angle = this.getAngle(index, 'deg');
