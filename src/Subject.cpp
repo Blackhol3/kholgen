@@ -2,8 +2,8 @@
 
 #include <QJsonObject>
 
-Subject::Subject(QString const &id, const QString &name, const QString &shortName, int frequency, QColor color):
-	id(id), name(name), shortName(shortName), frequency(frequency), color(color)
+Subject::Subject(QString const &id, const QString &name, const QString &shortName, int frequency):
+    id(id), name(name), shortName(shortName), frequency(frequency)
 {
 
 }
@@ -12,8 +12,7 @@ Subject::Subject(const QJsonObject& json):
 	id(json["id"].toString()),
 	name(json["name"].toString()),
 	shortName(json["shortName"].toString()),
-	frequency(json["frequency"].toInt()),
-	color(json["color"].toString())
+    frequency(json["frequency"].toInt())
 {
 }
 
@@ -35,11 +34,6 @@ QString const &Subject::getShortName() const
 int Subject::getFrequency() const
 {
 	return frequency;
-}
-
-QColor const &Subject::getColor() const
-{
-	return color;
 }
 
 size_t std::hash<Subject>::operator()(const Subject& subject) const

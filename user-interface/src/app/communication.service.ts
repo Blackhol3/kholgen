@@ -27,8 +27,6 @@ type Communication = {
 	slots: {
 		compute: (state: unknown) => Promise<void>,
 		stopComputation: () => Promise<void>,
-		exportAsCsv: () => Promise<string>,
-		exportAsExcel: () => Promise<string>,
 	},
 
 	signals: {
@@ -120,38 +118,6 @@ export class CommunicationService {
 	stopComputation() {
 		this.checkIfOpen();
 		void this.communication.stopComputation();
-	}
-	
-	async exportAsCsv(): Promise<Blob> {
-		this.checkIfOpen();
-		const csv = await this.communication.exportAsCsv();
-		
-		const blob = new Blob(
-			[csv],
-			{type: 'text/csv'},
-		);
-		
-		return blob;
-	}
-	
-	async exportAsExcel(): Promise<Blob> {
-		this.checkIfOpen();
-		const base64ByteArray = await this.communication.exportAsExcel();
-		
-		/** @link https://stackoverflow.com/questions/16245768/creating-a-blob-from-a-base64-string-in-javascript/2057033#2057033 */
-		const byteCharacters = atob(base64ByteArray);
-		const byteNumbers = new Array(byteCharacters.length);
-		for (let i = 0; i < byteCharacters.length; ++i) {
-			byteNumbers[i] = byteCharacters.charCodeAt(i);
-		}
-		const byteArray = new Uint8Array(byteNumbers);
-		
-		const blob = new Blob(
-			[byteArray],
-			{type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'},
-		);
-		
-		return blob;
 	}
 	
 	protected checkIfOpen(): asserts this is {communication: ChannelObject<Communication>} {

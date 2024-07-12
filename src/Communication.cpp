@@ -3,14 +3,12 @@
 #include <QFutureWatcher>
 #include <QJsonArray>
 #include <QtConcurrent>
-#include "CsvExporter.h"
-#include "ExcelExporter.h"
 #include "Objective/ObjectiveComputation.h"
 #include "Solver.h"
 #include "State.h"
 
-Communication::Communication(State &state, Solver &solver, CsvExporter &csvExporter, ExcelExporter &excelExporter, QObject *parent):
-	QObject(parent), state(&state), solver(&solver), csvExporter(&csvExporter), excelExporter(&excelExporter)
+Communication::Communication(State &state, Solver &solver, QObject *parent):
+    QObject(parent), state(&state), solver(&solver)
 {
 }
 
@@ -49,14 +47,4 @@ void Communication::compute(QJsonObject const &jsonState)
 void Communication::stopComputation()
 {
 	solver->stopComputation();
-}
-
-QString Communication::exportAsCsv() const
-{
-	return QString::fromStdString(csvExporter->save(colles));
-}
-
-QByteArray Communication::exportAsExcel() const
-{
-	return QByteArray::fromStdString(excelExporter->save(colles)).toBase64();
 }

@@ -20,12 +20,6 @@ add_executable(${PROJECT_NAME}
     Colle.h
     Communication.cpp
     Communication.h
-    CsvExporter.cpp
-    CsvExporter.h
-    ExcelExporter.cpp
-    ExcelExporter.h
-    Exporter.cpp
-    Exporter.h
     Group.cpp
     Group.h
     Slot.cpp
@@ -65,7 +59,7 @@ add_executable(${PROJECT_NAME}
     ${TS_FILES}
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt::Concurrent Qt::Core Qt::Gui Qt::WebChannel Qt::WebSockets)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt::Concurrent Qt::Core Qt::WebChannel Qt::WebSockets)
 qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 
 include(FetchContent)
@@ -78,13 +72,8 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/google/or-tools.git
     GIT_TAG        ed8db9097cdbaa06b40384d3a86164744a606043 # v9.7
 )
-FetchContent_Declare(
-    xlnt
-    GIT_REPOSITORY https://github.com/tfussell/xlnt.git
-    GIT_TAG        d88c901faa539f9272a81ba0bab72def70ca18d7 # master
-)
-FetchContent_MakeAvailable(or-tools xlnt)
-target_link_libraries(${PROJECT_NAME} PRIVATE ortools::ortools xlnt)
+FetchContent_MakeAvailable(or-tools)
+target_link_libraries(${PROJECT_NAME} PRIVATE ortools::ortools)
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)

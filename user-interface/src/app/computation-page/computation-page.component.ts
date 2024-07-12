@@ -14,6 +14,7 @@ import * as FileSaver from 'file-saver-es';
 import { CommunicationService } from '../communication.service';
 import { StoreService } from '../store.service';
 
+import { SpreadsheetExporterService } from '../spreadsheet-exporter.service';
 import { Trio } from '../trio';
 import { ColloscopeComponent } from '../colloscope/colloscope.component';
 
@@ -49,7 +50,7 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 	storeSubscription: Subscription | undefined;
 	@ViewChild(MatTable) objectivesTable: MatTable<unknown> | undefined;
 	
-	constructor(private communication: CommunicationService, public store: StoreService) {	}
+	constructor(private communication: CommunicationService, private spreadsheetExporter: SpreadsheetExporterService, public store: StoreService) {	}
 	
 	ngOnInit() {
 		this.storeSubscription = this.store.changeObservable.subscribe(() => this.objectivesTable!.renderRows());
@@ -91,10 +92,10 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 	}
 	
 	async saveAsCsv() {
-		FileSaver.saveAs(await this.communication.exportAsCsv(), 'Colloscope.csv');
+		FileSaver.saveAs(await this.spreadsheetExporter.asCsv(this.store.state), 'Colloscope.csv');
 	}
 	
 	async saveAsExcel() {
-		FileSaver.saveAs(await this.communication.exportAsExcel(), 'Colloscope.xlsx');
+		FileSaver.saveAs(await this.spreadsheetExporter.asExcel(this.store.state), 'Colloscope.xlsx');
 	}
 }

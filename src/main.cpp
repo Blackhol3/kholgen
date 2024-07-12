@@ -5,8 +5,6 @@
 #include <QWebSocketServer>
 #include "misc.h"
 #include "Communication.h"
-#include "CsvExporter.h"
-#include "ExcelExporter.h"
 #include "Solver.h"
 #include "State.h"
 #include "WebSocketTransport.h"
@@ -64,10 +62,7 @@ int main(int argc, char *argv[])
 	State state(objectives);
 	Solver solver(state);
 
-	CsvExporter csvExporter(state);
-	ExcelExporter excelExporter(state);
-
-	Communication communication(state, solver, csvExporter, excelExporter);
+    Communication communication(state, solver);
 	channel.registerObject("communication", &communication);
 
 	return a.exec();

@@ -4,8 +4,6 @@
 #include <vector>
 #include "Colle.h"
 
-class CsvExporter;
-class ExcelExporter;
 class Objective;
 class ObjectiveComputation;
 class Solver;
@@ -16,14 +14,12 @@ class Communication : public QObject
 	Q_OBJECT
 
 	public:
-		Communication(State &state, Solver &solver, CsvExporter &csvExporter, ExcelExporter &excelExporter, QObject *parent = nullptr);
+        Communication(State &state, Solver &solver, QObject *parent = nullptr);
 		void sendSolution(std::vector<ObjectiveComputation> const &objectiveComputations) const;
 
 	public slots:
 		void compute(QJsonObject const &jsonState);
 		void stopComputation();
-		QString exportAsCsv() const;
-		QByteArray exportAsExcel() const;
 
 	signals:
 		void solutionFound(const QJsonArray &colles, const QJsonArray &objectiveComputations) const;
@@ -31,9 +27,7 @@ class Communication : public QObject
 
 	protected:
 		State* state;
-		Solver* solver;
-		CsvExporter* csvExporter;
-		ExcelExporter* excelExporter;
+        Solver* solver;
 
 		std::vector<Colle> colles;
 };

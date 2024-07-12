@@ -26,6 +26,11 @@ export class Timeslot {
 	isEqual(timeslot: Timeslot): boolean {
 		return this.day === timeslot.day && this.hour === timeslot.hour;
 	}
+
+	compare(timeslot: Timeslot): number {
+		const compareDay = this.day - timeslot.day;
+		return compareDay === 0 ? (this.hour - timeslot.hour) : compareDay;
+	}
 	
 	toReadableString(): string {
 		return `${dayNames[this.day]} à ${this.hour}h`;
@@ -33,6 +38,10 @@ export class Timeslot {
 	
 	toString(): string {
 		return `${dayNames[this.day]} ${this.hour}`;
+	}
+
+	toShortString(): string {
+		return `${dayShortNames[this.day]}${this.hour}`;
 	}
 	
 	static fromString(string: string): Timeslot {
