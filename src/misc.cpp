@@ -25,3 +25,17 @@ unsigned int divideCeil(unsigned int a, unsigned int b)
 {
 	return a/b + (a % b != 0);
 }
+
+void preventSleepMode(bool shouldPreventSleepMode)
+{
+	if (shouldPreventSleepMode) {
+		#ifdef Q_OS_WIN
+			SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+		#endif
+	}
+	else {
+		#ifdef Q_OS_WIN
+			SetThreadExecutionState(ES_CONTINUOUS);
+		#endif
+	}
+}

@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
 
     Communication communication(state, solver);
 	channel.registerObject("communication", &communication);
+	preventSleepMode(true);
 
 	return a.exec();
 }
