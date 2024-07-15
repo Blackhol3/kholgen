@@ -42,7 +42,7 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	form = this.formBuilder.group({
 		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string, string>) => notUniqueValidator(control, 'name', this.group, this.store.state.groups)]],
 		trioIds: [new Set() as ReadonlySet<number>, Validators.required],
-		availableTimeslots: [[] as readonly Timeslot[], Validators.required],
+		availableTimeslots: [[] as readonly Timeslot[]],
 		nextGroupId: ['' as (string | null)],
 		duration: [0 as (number | null)],
 	}, {validators: control => this.nextGroupRequiredValidator(control)});
@@ -67,7 +67,7 @@ export class GroupFormComponent implements OnInit, OnChanges {
 			availableTimeslots: this.group.availableTimeslots,
 			nextGroupId: this.group.nextGroupId,
 			duration: this.group.duration,
-		});
+		}, {emitEvent: false});
 	}
 	
 	formChange() {

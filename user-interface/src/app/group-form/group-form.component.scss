@@ -1,12 +1,6 @@
 form {
 	display: flex;
 	flex-direction: column;
-	
-	& > mat-label {
-		padding-left: 0.75em;
-		font-size: 0.8em;
-		color: rgba(0, 0, 0, 0.62);
-	}
 }
 
 app-weekly-timetable {

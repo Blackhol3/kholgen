@@ -3,8 +3,24 @@
 $palette: mat.m2-define-palette(mat.$m2-indigo-palette);
 
 :host {
-	display: block;
+	display: flex;
+	flex-direction: column;
 	aspect-ratio: 3/2;
+	margin-bottom: 1.34375em;
+}
+
+.ng-invalid:host mat-label {
+	color: var(--mat-stepper-header-error-state-label-text-color);
+}
+
+.ng-invalid:host table {
+	box-shadow: var(--mat-stepper-header-error-state-label-text-color) 0px 3px 3px -2px;
+}
+
+mat-label {
+	padding-left: 0.75em;
+	font-size: 0.8em;
+	color: rgba(0, 0, 0, 0.62);
 }
 
 table {

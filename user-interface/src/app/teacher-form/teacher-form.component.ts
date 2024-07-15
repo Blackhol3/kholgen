@@ -60,7 +60,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 			subjectId: this.teacher.subjectId,
 			availableTimeslots: this.teacher.availableTimeslots,
 			weeklyAvailabilityFrequency: this.teacher.weeklyAvailabilityFrequency,
-		});
+		}, {emitEvent: false});
 	}
 	
 	formChange() {

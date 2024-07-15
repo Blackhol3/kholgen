@@ -1,6 +1,7 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, Input } from '@angular/core';
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTableModule } from '@angular/material/table';
 
 import { dayNames, firstHour, lastHour, Day, Timeslot } from '../timeslot';
@@ -16,9 +17,14 @@ import { dayNames, firstHour, lastHour, Day, Timeslot } from '../timeslot';
 		useExisting: WeeklyTimetableComponent,
 	}],
 	standalone: true,
-	imports: [MatTableModule],
+	imports: [
+		MatFormFieldModule,
+		MatTableModule,
+	],
 })
 export class WeeklyTimetableComponent implements ControlValueAccessor {
+	@Input() label?: string;
+
 	timeslots: Timeslot[] = [];
 	editable = true;
 	protected currentEdit: 'select' | 'unselect' | null = null;

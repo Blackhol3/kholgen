@@ -51,7 +51,7 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 			shortName: this.subject.shortName,
 			frequency: this.subject.frequency,
 			color: this.subject.color,
-		});
+		}, {emitEvent: false});
 	}
 	
 	formChange() {

@@ -58,7 +58,7 @@ export class OptionsPageComponent implements OnInit, OnDestroy {
 			lunchTimeStart: this.store.state.lunchTimeRange[0],
 			lunchTimeEnd: this.store.state.lunchTimeRange[1],
 			objectives: this.store.state.objectives,
-		});
+		}, {emitEvent: false});
 	}
 	
 	formChange() {
