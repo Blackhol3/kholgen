@@ -3,10 +3,12 @@ import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } 
 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select'; 
 
 import { Subscription } from 'rxjs';
+import { castDraft } from 'immer';
 
-import { type Entries } from '../misc';
+import { type Entries, equalIterables } from '../misc';
 import { Objective } from '../objective';
 import { firstHour, lastHour } from '../timeslot';
 import { StoreService } from '../store.service';
@@ -25,14 +27,16 @@ import { ObjectivesComponent } from '../objectives/objectives.component';
 
 		MatFormFieldModule,
 		MatInputModule,
+		MatSelectModule,
 
 		ObjectivesComponent,
 	],
 })
 export class OptionsPageComponent implements OnInit, OnDestroy {
 	form = this.formBuilder.group({
-		lunchTimeStart: [firstHour, [Validators.required, Validators.min(firstHour), Validators.max(lastHour + 1), Validators.pattern('^-?[0-9]*$')]],
-		lunchTimeEnd: [lastHour + 1, [Validators.required, Validators.min(firstHour), Validators.max(lastHour + 1), Validators.pattern('^-?[0-9]*$')]],
+		lunchTimeStart: [firstHour,    [Validators.required, Validators.min(firstHour), Validators.max(lastHour + 1), Validators.pattern(/^-?[0-9]*$/)]],
+		lunchTimeEnd:   [lastHour + 1, [Validators.required, Validators.min(firstHour), Validators.max(lastHour + 1), Validators.pattern(/^-?[0-9]*$/)]],
+		forbiddenSubjectIdsCombination: [[] as readonly string[], [Validators.minLength(2)]],
 		objectives: [[] as readonly Objective[], Validators.required],
 	});
 	storeSubscription: Subscription | undefined;
@@ -57,6 +61,7 @@ export class OptionsPageComponent implements OnInit, OnDestroy {
 		this.form.setValue({
 			lunchTimeStart: this.store.state.lunchTimeRange[0],
 			lunchTimeEnd: this.store.state.lunchTimeRange[1],
+			forbiddenSubjectIdsCombination: [...this.store.state.forbiddenSubjectIdsCombination],
 			objectives: this.store.state.objectives,
 		}, {emitEvent: false});
 	}
@@ -69,13 +74,16 @@ export class OptionsPageComponent implements OnInit, OnDestroy {
 			}
 			
 			if (key === 'objectives' && this.store.state.objectives !== control.value) {
-				this.undoStack.do(state => { state.objectives = control.value as Objective[]; });
+				this.undoStack.do(state => { state.objectives = castDraft(control.value); });
 			}
 			else if (key === 'lunchTimeStart' && this.store.state.lunchTimeRange[0] !== control.value) {
 				this.undoStack.do(state => { state.lunchTimeRange[0] = control.value; });
 			}
 			else if (key === 'lunchTimeEnd' && this.store.state.lunchTimeRange[1] !== control.value) {
 				this.undoStack.do(state => { state.lunchTimeRange[1] = control.value; });
+			}
+			else if (key === 'forbiddenSubjectIdsCombination' && !equalIterables(this.store.state.forbiddenSubjectIdsCombination, control.value)) {
+				this.undoStack.do(state => { state.forbiddenSubjectIdsCombination = new Set(control.value); });
 			}
 		}
 	}

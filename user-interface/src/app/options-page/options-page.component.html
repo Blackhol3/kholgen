@@ -19,6 +19,16 @@
 		@if (form.controls.lunchTimeStart.hasError('max') || form.controls.lunchTimeEnd.hasError('min')) { <mat-error>L'horaire de début doit être inférieur à celui de fin.</mat-error> }
 	</p>
 	
+	<mat-form-field>
+		<mat-label>Combinaison interdite de matières</mat-label>
+		<mat-select formControlName="forbiddenSubjectIdsCombination" placeholder="Matière supplémentaire…" multiple>
+			@for (subject of this.store.state.subjects; track subject.id) {
+				<mat-option [value]="subject.id">{{subject.name}}</mat-option>
+			}
+		</mat-select>
+		@if (form.controls.forbiddenSubjectIdsCombination.hasError('minlength')) { <mat-error>Au moins deux matières doivent être sélectionnées.</mat-error> }
+	</mat-form-field>
+	  
 	<p>Les contraintes <strong>en haut</strong> sont les plus <strong>importantes</strong> et seront imposées en premier.</p>
 	<app-objectives formControlName="objectives" />
 </form>

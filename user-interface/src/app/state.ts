@@ -5,7 +5,6 @@ import { Group } from './group';
 import { Objective } from './objective';
 import { Subject } from './subject';
 import { Teacher } from './teacher';
-import { firstHour, lastHour } from './timeslot';
 import { Trio } from './trio';
 import { Week } from './week';
 
@@ -37,6 +36,8 @@ const defaultObjectives = [
 	),
 ] as const;
 
+const defaultLunchTimeRange = [11, 14] as const;
+
 export class State {
 	[immerable] = true;
 	
@@ -48,7 +49,8 @@ export class State {
 		readonly trios: readonly Trio[] = [],
 		readonly weeks: readonly Week[] = [],
 		readonly objectives: readonly Objective[] = defaultObjectives.slice(),
-		readonly lunchTimeRange: readonly [number, number] = [firstHour, lastHour + 1],
+		readonly lunchTimeRange: readonly [number, number] = defaultLunchTimeRange,
+		readonly forbiddenSubjectIdsCombination: ReadonlySet<string> = new Set(),
 	) {}
 	
 	findId<S extends this | Draft<this>, P extends 'groups' | 'subjects' | 'teachers' | 'trios' | 'weeks'>(this: S, property: P, id: S[P][number]['id']): S[P][number] | undefined {
@@ -67,6 +69,11 @@ export class State {
 			subjects: this.subjects.map(subject => subject.toHumanJsonObject()),
 			teachers: this.teachers.map(teacher => teacher.toHumanJsonObject(this)),
 			objectives: this.objectives.map(objective => objective.toHumanJsonObject()),
+			lunchTimeRange: this.lunchTimeRange,
+			forbiddenSubjectsCombination:
+				this.forbiddenSubjectIdsCombination.size === 0
+					? undefined
+					: [...this.forbiddenSubjectIdsCombination].map(subjectId => this.findId('subjects', subjectId)!.name),
 		};
 	}
 	
@@ -79,6 +86,7 @@ export class State {
 			numberOfWeeks: this.weeks.length,
 			objectives: this.objectives.map(objective => objective.name),
 			lunchTimeRange: this.lunchTimeRange,
+			forbiddenSubjectIdsCombination: [...this.forbiddenSubjectIdsCombination],
 		};
 	}
 	
@@ -102,8 +110,14 @@ export class State {
 			objectives.push(defaultObjectives.find(defaultObjective => defaultObjective.name === objective)!);
 		}
 		
-		const lunchTimeRange = [11, 14] as const;
+		const lunchTimeRange = jsonObject.lunchTimeRange ?? defaultLunchTimeRange;
+
+		const forbiddenSubjectIdsCombination = new Set(
+			jsonObject.forbiddenSubjectsCombination === undefined ? [] : jsonObject.forbiddenSubjectsCombination.map(
+				subjectName => subjects.find(subject => subject.name === subjectName)!.id
+			)
+		);
 		
-		return new State([], groups, subjects, teachers, [], weeks, objectives, lunchTimeRange);
+		return new State([], groups, subjects, teachers, [], weeks, objectives, lunchTimeRange, forbiddenSubjectIdsCombination);
 	}
 }

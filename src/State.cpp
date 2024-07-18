@@ -3,7 +3,6 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <algorithm>
-#include <ranges>
 #include "Objective/Objective.h"
 
 State::State(std::vector<Objective const *> const &objectives): objectives(objectives)
@@ -53,6 +52,13 @@ void State::import(QJsonObject const &json)
 		++index;
 	}
 
+    forbiddenSubjectsCombination.clear();
+    for (auto const &jsonSubject: json["forbiddenSubjectIdsCombination"].toArray()) {
+        forbiddenSubjectsCombination.push_back(
+            &*std::find_if(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject.getId() == jsonSubject.toString(); })
+        );
+    }
+
 	auto const &jsonLunchTimeRange = json["lunchTimeRange"].toArray();
 	lunchTimeRange = {jsonLunchTimeRange[0].toInt(), jsonLunchTimeRange[1].toInt()};
 }
@@ -85,6 +91,11 @@ const std::vector<Week>& State::getWeeks() const
 const std::vector<const Objective*>& State::getObjectives() const
 {
 	return objectives;
+}
+
+const std::vector<const Subject*>& State::getForbiddenSubjectsCombination() const
+{
+    return forbiddenSubjectsCombination;
 }
 
 const std::pair<int, int>& State::getLunchTimeRange() const

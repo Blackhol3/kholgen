@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <numeric>
 #include <ranges>
-#include <unordered_set>
+#include <unordered_map>
 #include "Objective/Objective.h"
 #include "Objective/ObjectiveComputation.h"
 #include "Colle.h"
@@ -242,6 +242,7 @@ int Solver::getCycleDuration() const
 }
 
 /** @todo There is surely a more clever way to do all this */
+/** @todo Throw an error if there is no acceptable subjects combination */
 vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() const
 {
 	// Create all possible combinations
@@ -259,15 +260,28 @@ vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() 
 		}
 	}
 
+    // Remove the forbidden combinations
+    int cycleDuration = getCycleDuration();
+    if (!state->getForbiddenSubjectsCombination().empty()) {
+        std::erase_if(possibleCombinations, [&](auto const &combination) {
+            return std::ranges::any_of(state->getWeeks() | std::views::take(cycleDuration), [&](auto const &week) {
+                return std::ranges::all_of(state->getForbiddenSubjectsCombination(), [&](auto const &subject) {
+                    auto const &startingWeek = combination.at(*subject);
+                    int distance = week.getId() - startingWeek.getId();
+                    return distance >= 0 && distance % subject->getFrequency() == 0;
+                });
+            });
+        });
+    }
+
 	// Calculate the maximal numbers of simultaneous subjects in a week for each combination
 	vector<int> maxSubjectsInCombination;
-	int cycleDuration = getCycleDuration();
 	for (auto const &combination: possibleCombinations) {
 		int maxSubjects = 0;
-		for (auto week = state->getWeeks().begin(); week != std::next(state->getWeeks().begin(), cycleDuration); ++week) {
+        for (auto const &week: state->getWeeks() | std::views::take(cycleDuration)) {
 			int nbSubjects = 0;
 			for (auto const &[subject, startingWeek]: combination) {
-				int distance = week->getId() - startingWeek.getId();
+                int distance = week.getId() - startingWeek.getId();
 				if (distance >= 0 && distance % subject.getFrequency() == 0) {
 					++nbSubjects;
 				}
@@ -281,7 +295,7 @@ vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() 
 
 	// Keep only the combinations with the minimal maximal
 	int minMaxSubjectsInCombination = *std::min_element(maxSubjectsInCombination.cbegin(), maxSubjectsInCombination.cend());
-	vector<std::unordered_map<Subject, Week>> bestCombinations;
+    decltype(possibleCombinations) bestCombinations;
 	for (vector<int>::size_type i = 0; i < possibleCombinations.size(); ++i) {
 		if (maxSubjectsInCombination[i] == minMaxSubjectsInCombination) {
 			bestCombinations.push_back(possibleCombinations[i]);
