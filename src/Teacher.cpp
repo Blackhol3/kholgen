@@ -13,7 +13,7 @@ Teacher::Teacher(QString const &id, QString const &name, Subject const &subject,
 Teacher::Teacher(QJsonObject const &json, std::vector<Subject> const &subjects): Teacher(
 	json["id"].toString(),
 	json["name"].toString(),
-	*std::find_if(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject.getId() == json["subjectId"].toString(); }),
+    *std::ranges::find_if(subjects, [&](auto const &subject) { return subject.getId() == json["subjectId"].toString(); }),
 	Timeslot::getSet(json["availableTimeslots"].toArray()),
 	json["weeklyAvailabilityFrequency"].toInt()
 )

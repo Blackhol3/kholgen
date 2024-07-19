@@ -45,7 +45,7 @@ void State::import(QJsonObject const &json)
 		auto const &name = jsonObjective.toString();
 		std::iter_swap(
 			objectives.begin() + index,
-			std::find_if(objectives.begin(), objectives.end(), [&](auto const &objective) {
+            std::ranges::find_if(objectives, [&](auto const &objective) {
 				return objective->getName() == name;
 			})
 		);
@@ -55,7 +55,7 @@ void State::import(QJsonObject const &json)
     forbiddenSubjectsCombination.clear();
     for (auto const &jsonSubject: json["forbiddenSubjectIdsCombination"].toArray()) {
         forbiddenSubjectsCombination.push_back(
-            &*std::find_if(subjects.cbegin(), subjects.cend(), [&](auto const &subject) { return subject.getId() == jsonSubject.toString(); })
+            &*std::ranges::find_if(subjects, [&](auto const &subject) { return subject.getId() == jsonSubject.toString(); })
         );
     }
 
@@ -121,9 +121,9 @@ std::set<Timeslot> State::getAvailableTimeslots(Teacher const &teacher, Trio con
 	auto const &availableTimeslotsTeacher = teacher.getAvailableTimeslots();
 	auto const &availableTimeslotsTrio = trio.getAvailableTimeslotsInWeek(week);
 
-	std::set_intersection(
-		availableTimeslotsTeacher.cbegin(), availableTimeslotsTeacher.cend(),
-		availableTimeslotsTrio.cbegin(), availableTimeslotsTrio.cend(),
+    std::ranges::set_intersection(
+        availableTimeslotsTeacher,
+        availableTimeslotsTrio,
 		std::inserter(availableTimeslots, availableTimeslots.end())
 	);
 

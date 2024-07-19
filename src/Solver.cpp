@@ -252,13 +252,19 @@ vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() 
 		possibleCombinations.clear();
 
 		for (auto const &combination: lastPossibleCombinations) {
-			for (auto week = state->getWeeks().begin(); week != std::next(state->getWeeks().begin(), subject.getFrequency()); ++week) {
+            for (auto const &week: state->getWeeks() | std::views::take(subject.getFrequency())) {
 				auto newCombination = combination;
-				newCombination.emplace(subject, *week);
+                newCombination.emplace(subject, week);
 				possibleCombinations.push_back(newCombination);
 			}
 		}
 	}
+
+    auto const &isSubjectInWeek = [&](auto const combination, auto const &subject, auto const &week) {
+        auto const &startingWeek = combination.at(subject);
+        int distance = week.getId() - startingWeek.getId();
+        return distance >= 0 && distance % subject.getFrequency() == 0;
+    };
 
     // Remove the forbidden combinations
     int cycleDuration = getCycleDuration();
@@ -266,9 +272,7 @@ vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() 
         std::erase_if(possibleCombinations, [&](auto const &combination) {
             return std::ranges::any_of(state->getWeeks() | std::views::take(cycleDuration), [&](auto const &week) {
                 return std::ranges::all_of(state->getForbiddenSubjectsCombination(), [&](auto const &subject) {
-                    auto const &startingWeek = combination.at(*subject);
-                    int distance = week.getId() - startingWeek.getId();
-                    return distance >= 0 && distance % subject->getFrequency() == 0;
+                    return isSubjectInWeek(combination, *subject, week);
                 });
             });
         });
@@ -279,13 +283,9 @@ vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() 
 	for (auto const &combination: possibleCombinations) {
 		int maxSubjects = 0;
         for (auto const &week: state->getWeeks() | std::views::take(cycleDuration)) {
-			int nbSubjects = 0;
-			for (auto const &[subject, startingWeek]: combination) {
-                int distance = week.getId() - startingWeek.getId();
-				if (distance >= 0 && distance % subject.getFrequency() == 0) {
-					++nbSubjects;
-				}
-			}
+            int nbSubjects = std::ranges::count_if(state->getSubjects(), [&](auto const &subject) {
+                return isSubjectInWeek(combination, subject, week);
+            });
 
 			maxSubjects = std::max(maxSubjects, nbSubjects);
 		}
@@ -294,7 +294,7 @@ vector<std::unordered_map<Subject, Week>> Solver::getBestSubjectsCombinations() 
 	}
 
 	// Keep only the combinations with the minimal maximal
-	int minMaxSubjectsInCombination = *std::min_element(maxSubjectsInCombination.cbegin(), maxSubjectsInCombination.cend());
+    int minMaxSubjectsInCombination = *std::ranges::min_element(maxSubjectsInCombination);
     decltype(possibleCombinations) bestCombinations;
 	for (vector<int>::size_type i = 0; i < possibleCombinations.size(); ++i) {
 		if (maxSubjectsInCombination[i] == minMaxSubjectsInCombination) {
