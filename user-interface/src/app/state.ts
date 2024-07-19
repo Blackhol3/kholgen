@@ -63,6 +63,22 @@ export class State {
 		return undefined;
 	}
 
+	removeSubject(this: Draft<this>, subjectToRemove: Subject) {
+		const nbInitialTeachers = this.teachers.length;
+		const nbForbiddenSubjectsCombination = this.forbiddenSubjectIdsCombination.size;
+
+		this.teachers = this.teachers.filter(teacher => teacher.subjectId !== subjectToRemove.id);
+		this.subjects = this.subjects.filter(subject => subject.id !== subjectToRemove.id);
+		if (this.forbiddenSubjectIdsCombination.has(subjectToRemove.id)) {
+			this.forbiddenSubjectIdsCombination = new Set();
+		}
+
+		return {
+			hadAssociatedTeachers: nbInitialTeachers !== this.teachers.length,
+			wasInForbiddenCombination: nbForbiddenSubjectsCombination !== this.forbiddenSubjectIdsCombination.size,
+		}
+	}
+
 	toHumanJsonObject() {
 		return {
 			groups: this.groups.map(group => group.toHumanJsonObject(this)),

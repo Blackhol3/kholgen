@@ -11,7 +11,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { firstValueFrom, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
 import { Subject } from '../subject';
@@ -121,29 +121,26 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	deleteSubject() {
 		const subject = this.store.state.findId('subjects', this.selectedSubjectIds[0])!;
 		const index = this.store.state.subjects.indexOf(subject);
-		let hasAssociatedTeachers = false;
 		
+		let hadAssociatedTeachers = false;
+		let wasInForbiddenCombination = false;
+
 		this.undoStack.do(state => {
-			for (let i = this.store.state.teachers.length - 1; i >= 0; --i) {
-				if (this.store.state.teachers[i].subjectId === subject.id) {
-					state.teachers.splice(i, 1);
-					hasAssociatedTeachers = true;
-				}
-			}
-			state.subjects.splice(index, 1);
+			({hadAssociatedTeachers, wasInForbiddenCombination} = state.removeSubject(subject));
 		});
 		
 		this.selectedSubjectIds = this.store.state.subjects.length > 0 ? [this.store.state.subjects[Math.max(0, index - 1)].id] : [];
 		
-		if (hasAssociatedTeachers) {
-			const observable = this.snackBar.open(
-				`Un ou plusieurs enseignant·es de « ${subject.name} » ont également été supprimé·es.`,
+		if (hadAssociatedTeachers || wasInForbiddenCombination) {
+			this.snackBar.open(
+				hadAssociatedTeachers ?
+					`Un ou plusieurs enseignant·es de « ${subject.name} »${wasInForbiddenCombination ? ', ainsi que la combinaison interdite de matières dans laquelle elle se trouvait,' : ''} ont également été supprimé·es.` :
+					`La combinaison interdite de matières, dans laquelle se trouvait « ${subject.name} », a été supprimée.`
+				,
 				'Annuler',
-				{duration: 3000}
-			).afterDismissed();
-			
-			void firstValueFrom(observable).then(event => {
-				if (event?.dismissedByAction) {
+				{duration: 5000}
+			).afterDismissed().subscribe(event => {
+				if (event.dismissedByAction) {
 					this.undoStack.undo();
 				}
 			});
