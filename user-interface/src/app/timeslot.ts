@@ -7,11 +7,14 @@ export const enum Day {
 export const firstHour = 8;
 export const lastHour = 18;
 
-export const dayNames: readonly string[] = [
+export const nbDaysInWeek = 5;
+type DayNames<T extends readonly string[] = []> = T['length'] extends typeof nbDaysInWeek ? T : DayNames<readonly [string, ...T]>;
+
+export const dayNames: DayNames = [
 	'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'
 ];
 
-export const dayShortNames: readonly string[] = [
+export const dayShortNames: DayNames = [
 	'l', 'm', 'w', 'j', 'v'
 ];
 

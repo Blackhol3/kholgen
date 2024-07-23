@@ -1,5 +1,6 @@
 import { immerable, type Draft } from 'immer';
 
+import { Calendar } from './calendar';
 import { Colle } from './colle';
 import { Group } from './group';
 import { Objective } from './objective';
@@ -47,10 +48,11 @@ export class State {
 		readonly subjects: readonly Subject[] = [],
 		readonly teachers: readonly Teacher[] = [],
 		readonly trios: readonly Trio[] = [],
-		readonly weeks: readonly Week[] = [],
 		readonly objectives: readonly Objective[] = defaultObjectives.slice(),
 		readonly lunchTimeRange: readonly [number, number] = defaultLunchTimeRange,
 		readonly forbiddenSubjectIdsCombination: ReadonlySet<string> = new Set(),
+		readonly calendar = new Calendar(),
+		readonly weeks: readonly Week[] = (new Calendar()).createWeeks([]),
 	) {}
 	
 	findId<S extends this | Draft<this>, P extends 'groups' | 'subjects' | 'teachers' | 'trios' | 'weeks'>(this: S, property: P, id: S[P][number]['id']): S[P][number] | undefined {
@@ -116,11 +118,6 @@ export class State {
 		const subjects = jsonObject.subjects.map(subject => Subject.fromJsonObject(subject));
 		const teachers = jsonObject.teachers.map(teacher => Teacher.fromJsonObject(teacher, subjects)!);
 		
-		const weeks = [];
-		for (let i = 0; i < 20; ++i) {
-			weeks.push(new Week(i));
-		}
-		
 		const objectives = [];
 		for (const objective of jsonObject.objectives) {
 			objectives.push(defaultObjectives.find(defaultObjective => defaultObjective.name === objective)!);
@@ -134,6 +131,6 @@ export class State {
 			)
 		);
 		
-		return new State([], groups, subjects, teachers, [], weeks, objectives, lunchTimeRange, forbiddenSubjectIdsCombination);
+		return new State([], groups, subjects, teachers, [], objectives, lunchTimeRange, forbiddenSubjectIdsCombination);
 	}
 }

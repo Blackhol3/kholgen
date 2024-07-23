@@ -1,0 +1,27 @@
+<form [formGroup]="form">
+	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+		<mat-label>Académie</mat-label>
+		<mat-select formControlName="academie">
+			@for (academie of academies; track academie) {
+				<mat-option [value]="academie">{{academie}}</mat-option>
+			}
+		</mat-select>
+	</mat-form-field>
+
+	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+		<mat-label>Début et fin des colles</mat-label>
+		<mat-date-range-input [dateFilter]="dateFilter" [rangePicker]="picker" [min]="firstValidDate">
+			<input matStartDate formControlName="start" placeholder="Début">
+			<input matEndDate formControlName="end" placeholder="Fin">
+		</mat-date-range-input>
+		<mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+		<mat-date-range-picker #picker></mat-date-range-picker>
+	</mat-form-field>
+
+	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+		<mat-label>Numéro de la première semaine de colle</mat-label>
+		<input matInput type="number" formControlName="firstWeekNumber" min="0">
+		@if (form.controls.firstWeekNumber.hasError('pattern')) { <mat-error>Le numéro doit être un entier.</mat-error> }
+		@if (form.controls.firstWeekNumber.hasError('min')) { <mat-error>Le numéro doit être positif.</mat-error> }
+	</mat-form-field>
+</form>
