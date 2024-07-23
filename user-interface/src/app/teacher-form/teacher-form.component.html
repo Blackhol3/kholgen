@@ -1,11 +1,11 @@
 <form [formGroup]="form">
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Nom</mat-label>
 		<input matInput type="text" formControlName="name">
 		@if (form.controls.name.hasError('notUnique')) { <mat-error>Un·e autre enseignant·e de cette matière porte déjà ce nom.</mat-error> }
 	</mat-form-field>
 	
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Matière</mat-label>
 		<mat-select formControlName="subjectId">
 			@for (subject of store.state.subjects; track subject.id) {
@@ -16,7 +16,7 @@
 	
 	<app-weekly-timetable formControlName="availableTimeslots" label="Disponibilités" />
 	
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Disponibilité hebdomadaire <small>(disponible toutes les … semaines)</small></mat-label>
 		<input matInput type="number" formControlName="weeklyAvailabilityFrequency" min="1">
 		@if (form.controls.weeklyAvailabilityFrequency.hasError('pattern')) { <mat-error>La fréquence de disponibilité doit être un entier.</mat-error> }

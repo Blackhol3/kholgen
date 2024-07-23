@@ -1,5 +1,5 @@
 <form [formGroup]="form">
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Nom</mat-label>
 		<input matInput type="text" formControlName="name">
 		@if (form.controls.name.hasError('notUnique')) { <mat-error>Un autre groupe porte déjà ce nom.</mat-error> }
@@ -9,7 +9,7 @@
 	
 	<app-weekly-timetable formControlName="availableTimeslots" label="Disponibilités" />
 	
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Groupe suivant</mat-label>
 		<mat-select formControlName="nextGroupId">
 			<mat-option [value]="null" [style.fontStyle]="'italic'">[Aucun]</mat-option>
@@ -21,7 +21,7 @@
 		</mat-select>
 	</mat-form-field>
 	
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Nombre de semaines avant le passage au groupe suivant</mat-label>
 		<input matInput type="number" formControlName="duration" min="1">
 		@if (form.controls.duration.hasError('pattern')) { <mat-error>Le nombre de semaines doit être un entier.</mat-error> }

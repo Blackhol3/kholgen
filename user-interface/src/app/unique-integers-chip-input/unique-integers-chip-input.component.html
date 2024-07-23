@@ -1,4 +1,4 @@
-<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+<mat-form-field appearance="fill" hideRequiredMarker>
 	@if (label !== undefined) { <mat-label>{{label}}</mat-label> }
 	<mat-chip-grid #chipList>
 		@for (integer of integers; track $index) {

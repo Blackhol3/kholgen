@@ -1,24 +1,24 @@
 <form [formGroup]="form">
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Nom</mat-label>
 		<input matInput type="text" formControlName="name">
 		@if (form.controls.name.hasError('notUnique')) { <mat-error>Une autre matière porte déjà ce nom.</mat-error> }
 	</mat-form-field>
 	
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Abréviation</mat-label>
 		<input matInput type="text" formControlName="shortName">
 		@if (form.controls.shortName.hasError('notUnique')) { <mat-error>Une autre matière utilise déjà cette abréviation.</mat-error> }
 	</mat-form-field>
 	
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Fréquence</mat-label>
 		<input matInput type="number" formControlName="frequency" min="1">
 		@if (form.controls.frequency.hasError('pattern')) { <mat-error>La fréquence doit être un entier.</mat-error> }
 		@if (form.controls.frequency.hasError('min')) { <mat-error>La fréquence doit être supérieure ou égale à 1.</mat-error> }
 	</mat-form-field>
 	
-	<mat-form-field appearance="fill" [hideRequiredMarker]="true">
+	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Couleur</mat-label>
 		<input matInput type="color" formControlName="color">
 	</mat-form-field>

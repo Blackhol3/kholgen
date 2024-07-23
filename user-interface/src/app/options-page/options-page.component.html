@@ -1,13 +1,13 @@
 <form [formGroup]="form">
 	<p>
 		Les étudiants peuvent déjeuner de
-		<mat-form-field appearance="outline" class="inline" [hideRequiredMarker]="true" floatLabel="always">
+		<mat-form-field appearance="outline" class="inline" hideRequiredMarker floatLabel="always">
 			<mat-label>Début</mat-label>
 			<input matInput type="number" class="suffixed" formControlName="lunchTimeStart" [min]="firstHour" [max]="form.controls.lunchTimeEnd.value - 1">
 			<span matTextSuffix>&nbsp;h</span>
 		</mat-form-field>
 		à
-		<mat-form-field appearance="outline" class="inline" [hideRequiredMarker]="true" floatLabel="always">
+		<mat-form-field appearance="outline" class="inline" hideRequiredMarker floatLabel="always">
 			<mat-label>Fin</mat-label>
 			<input matInput type="number" class="suffixed" formControlName="lunchTimeEnd" [min]="form.controls.lunchTimeStart.value + 1" [max]="lastHour + 1">
 			<span matTextSuffix>&nbsp;h</span>
