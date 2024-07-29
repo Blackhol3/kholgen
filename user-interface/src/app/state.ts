@@ -7,7 +7,6 @@ import { Objective } from './objective';
 import { Subject } from './subject';
 import { Teacher } from './teacher';
 import { Trio } from './trio';
-import { Week } from './week';
 
 const defaultObjectives = [
 	new Objective(
@@ -52,10 +51,9 @@ export class State {
 		readonly lunchTimeRange: readonly [number, number] = defaultLunchTimeRange,
 		readonly forbiddenSubjectIdsCombination: ReadonlySet<string> = new Set(),
 		readonly calendar = new Calendar(),
-		readonly weeks: readonly Week[] = (new Calendar()).createWeeks([]),
 	) {}
 	
-	findId<S extends this | Draft<this>, P extends 'groups' | 'subjects' | 'teachers' | 'trios' | 'weeks'>(this: S, property: P, id: S[P][number]['id']): S[P][number] | undefined {
+	findId<S extends this | Draft<this>, P extends 'groups' | 'subjects' | 'teachers' | 'trios'>(this: S, property: P, id: S[P][number]['id']): S[P][number] | undefined {
 		for (const element of this[property]) {
 			if (element.id === id) {
 				return element;
@@ -101,7 +99,7 @@ export class State {
 			subjects: this.subjects,
 			teachers: this.teachers,
 			trios: this.trios,
-			numberOfWeeks: this.weeks.length,
+			numberOfWeeks: this.calendar.weeks.length,
 			objectives: this.objectives.map(objective => objective.name),
 			lunchTimeRange: this.lunchTimeRange,
 			forbiddenSubjectIdsCombination: [...this.forbiddenSubjectIdsCombination],

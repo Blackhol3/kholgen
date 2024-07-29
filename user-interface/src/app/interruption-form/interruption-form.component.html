@@ -1,0 +1,15 @@
+<form [formGroup]="form">
+	<mat-form-field appearance="fill" hideRequiredMarker>
+		<mat-label>Nom</mat-label>
+		<input matInput type="text" formControlName="name">
+		@if (form.controls.name.hasError('notUnique')) { <mat-error>Une autre période d'interruption porte déjà ce nom.</mat-error> }
+	</mat-form-field>
+	
+	<app-interval-input
+		formControlName="interval"
+		[dateFilter]="dateFilter"
+		label="Début et fin de l'interruption"
+		startPlaceholder="Début"
+		endPlaceholder="Fin"
+	/>
+</form>

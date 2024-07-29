@@ -132,7 +132,7 @@ export class CommunicationService {
 				colle.teacherId,
 				new Timeslot(colle.timeslot.day, colle.timeslot.hour),
 				state.trios[colle.trioId].id,
-				state.weeks[colle.weekId].id,
+				state.calendar.weeks[colle.weekId].id,
 			));
 		});
 	}

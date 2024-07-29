@@ -23,6 +23,8 @@ enum StudentsSectionColumn {
 	providedIn: 'root'
 })
 export class SpreadsheetExporterService {
+	protected state!: State;
+
 	protected createWorkbook() {
 		const workbook = new Workbook();
 		workbook.creator = 'KhôlGen';
@@ -31,19 +33,19 @@ export class SpreadsheetExporterService {
 		return workbook;
 	}
 
-	protected setTeachersSection(state: State, worksheet: Worksheet, firstRow = 1) {
+	protected setTeachersSection(worksheet: Worksheet, firstRow = 1) {
 		const weekRow = firstRow;
 		const firstColleRow = weekRow + 1;
 		const bottomBorderedRows = [weekRow];
 
-		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + state.weeks.length - 1);
+		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + this.state.calendar.weeks.length - 1);
 
 		let row = firstColleRow;
-		for (const subject of state.subjects) {
+		for (const subject of this.state.subjects) {
 			const subjectStartingRow = row;
-			const teachersOfSubject = state.teachers.filter(teacher => teacher.subjectId === subject.id);
+			const teachersOfSubject = this.state.teachers.filter(teacher => teacher.subjectId === subject.id);
 			const teachersIdsOfSubject = teachersOfSubject.map(teacher => teacher.id);
-			const collesWithSubject = state.colles.filter(colle => teachersIdsOfSubject.includes(colle.teacherId));
+			const collesWithSubject = this.state.colles.filter(colle => teachersIdsOfSubject.includes(colle.teacherId));
 
 			for (const teacher of teachersOfSubject) {
 				const teacherStartingRow = row;
@@ -80,14 +82,14 @@ export class SpreadsheetExporterService {
 			bottomBorderedRows.push(row - 1);
 		}
 
-		worksheet.getColumn(TeachersSectionColumn.Subject).width = state.subjects.map(x => x.name.length).sort((a, b) => b - a)[0];
+		worksheet.getColumn(TeachersSectionColumn.Subject).width = this.state.subjects.map(x => x.name.length).sort((a, b) => b - a)[0];
 		worksheet.getColumn(TeachersSectionColumn.TeacherCode).width = 5.5;
-		worksheet.getColumn(TeachersSectionColumn.TeacherName).width = state.teachers.map(x => x.name.length).sort((a, b) => b - a)[0];
+		worksheet.getColumn(TeachersSectionColumn.TeacherName).width = this.state.teachers.map(x => x.name.length).sort((a, b) => b - a)[0];
 		worksheet.getColumn(TeachersSectionColumn.Timeslot).width = dayNames.map(x => x.length).sort((a, b) => b - a)[0] + 5;
 
-		this.setWeeksHeader(state, worksheet, TeachersSectionColumn.FirstColle, weekRow, 3.5);
+		this.setWeeksHeader(worksheet, TeachersSectionColumn.FirstColle, weekRow, 3.5);
 
-		for (let columnIndex: number = TeachersSectionColumn.Subject; columnIndex < TeachersSectionColumn.FirstColle + state.weeks.length; ++columnIndex) {
+		for (let columnIndex: number = TeachersSectionColumn.Subject; columnIndex < TeachersSectionColumn.FirstColle + this.state.calendar.weeks.length; ++columnIndex) {
 			for (const row of bottomBorderedRows) {
 				const cell = worksheet.getCell(row, columnIndex);
 				cell.style.border = { bottom: { style: 'medium' } };
@@ -95,25 +97,25 @@ export class SpreadsheetExporterService {
 		}
 	}
 
-	protected setStudentsSection(state: State, worksheet: Worksheet, firstRow = 1) {
+	protected setStudentsSection(worksheet: Worksheet, firstRow = 1) {
 		const weekRow = firstRow;
 		const firstColleRow = weekRow + 1;
-		const maximalNumberOfCollesByWeek = this.getMaximalNumberOfCollesByWeek(state);
+		const maximalNumberOfCollesByWeek = this.getMaximalNumberOfCollesByWeek();
 
-		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + state.weeks.length - 1);
+		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + this.state.calendar.weeks.length - 1);
 
 		let row = firstColleRow;
-		for (const trio of state.trios.toSorted((a, b) => a.id - b.id)) {
+		for (const trio of this.state.trios.toSorted((a, b) => a.id - b.id)) {
 			const trioStartingRow = row;
-			const collesOfTrio = state.colles.filter(colle => colle.trioId === trio.id);
+			const collesOfTrio = this.state.colles.filter(colle => colle.trioId === trio.id);
 
-			for (const week of state.weeks) {
+			for (const week of this.state.calendar.weeks) {
 				const collesOfTrioInWeek = collesOfTrio.filter(colle => colle.weekId === week.id);
 
 				for (const [j, colle] of collesOfTrioInWeek.entries()) {
-					const teacher = state.findId('teachers', colle.teacherId)!;
-					const teachersOfSubject = state.teachers.filter(x => x.subjectId === teacher.subjectId);
-					const subject = state.findId('subjects', teacher.subjectId)!;
+					const teacher = this.state.findId('teachers', colle.teacherId)!;
+					const teachersOfSubject = this.state.teachers.filter(x => x.subjectId === teacher.subjectId);
+					const subject = this.state.findId('subjects', teacher.subjectId)!;
 					
 					const cell = worksheet.getCell(trioStartingRow + j, StudentsSectionColumn.FirstColle + week.id);
 					cell.value = `${subject.shortName}${teachersOfSubject.indexOf(teacher) + 1} ${colle.timeslot.toShortString()}`;
@@ -128,9 +130,9 @@ export class SpreadsheetExporterService {
 			worksheet.getCell(trioStartingRow, StudentsSectionColumn.Trio).value = `G${trio.id + 1}`;
 		}
 
-		this.setWeeksHeader(state, worksheet, StudentsSectionColumn.FirstColle, weekRow, 7);
+		this.setWeeksHeader(worksheet, StudentsSectionColumn.FirstColle, weekRow, 7);
 
-		for (let columnIndex: number = StudentsSectionColumn.Trio; columnIndex < StudentsSectionColumn.FirstColle + state.weeks.length; ++columnIndex) {
+		for (let columnIndex: number = StudentsSectionColumn.Trio; columnIndex < StudentsSectionColumn.FirstColle + this.state.calendar.weeks.length; ++columnIndex) {
 			for (let row = weekRow; row <= worksheet.rowCount; row += maximalNumberOfCollesByWeek) {
 				const cell = worksheet.getCell(row, columnIndex);
 				cell.style.border = { bottom: { style: 'medium' } };
@@ -146,14 +148,13 @@ export class SpreadsheetExporterService {
 		}
 	}
 
-	protected setWeeksHeader(state: State, worksheet: Worksheet, firstColumn: number, row: number, columnWidth?: number) {
-		for (const week of state.weeks) {
+	protected setWeeksHeader(worksheet: Worksheet, firstColumn: number, row: number, columnWidth?: number) {
+		for (const week of this.state.calendar.weeks) {
 			const column = firstColumn + week.id;
 			if (columnWidth !== undefined) {
 				worksheet.getColumn(column).width = columnWidth;
 			}
-
-			/** @todo Permettre de modifier le numéro de la première semaine */
+			
 			const cell = worksheet.getCell(row, column);
 			cell.value = `S${week.id + 1}`
 			cell.style.font = { size: 10, italic: true };
@@ -161,9 +162,9 @@ export class SpreadsheetExporterService {
 		}
 	}
 
-	protected getMaximalNumberOfCollesByWeek(state: State) {
+	protected getMaximalNumberOfCollesByWeek() {
 		let maximalNumberOfCollesByWeek = 0;
-		for (const collesOfTrio of Map.groupBy(state.colles, colle => colle.trioId).values()) {
+		for (const collesOfTrio of Map.groupBy(this.state.colles, colle => colle.trioId).values()) {
 			for (const collesOfTrioInWeek of Map.groupBy(collesOfTrio, colle => colle.weekId).values()) {
 				maximalNumberOfCollesByWeek = Math.max(
 					maximalNumberOfCollesByWeek,
@@ -176,10 +177,11 @@ export class SpreadsheetExporterService {
 	}
 
 	async asExcel(state: State) {
+		this.state = state;
 		const workbook = this.createWorkbook();
 
-		this.setTeachersSection(state, workbook.addWorksheet('Professeurs'));
-		this.setStudentsSection(state, workbook.addWorksheet('Étudiants'));
+		this.setTeachersSection(workbook.addWorksheet('Professeurs'));
+		this.setStudentsSection(workbook.addWorksheet('Étudiants'));
 
 		return new Blob(
 			[await workbook.xlsx.writeBuffer()],
@@ -188,11 +190,12 @@ export class SpreadsheetExporterService {
 	}
 
 	async asCsv(state: State) {
+		this.state = state;
 		const workbook = this.createWorkbook();
 		const worksheet = workbook.addWorksheet();
 
-		this.setTeachersSection(state, worksheet);
-		this.setStudentsSection(state, worksheet, worksheet.rowCount + 3);
+		this.setTeachersSection(worksheet);
+		this.setStudentsSection(worksheet, worksheet.rowCount + 3);
 		worksheet.unMergeCells(1, 1, worksheet.rowCount, worksheet.columnCount);
 
 		return new Blob(

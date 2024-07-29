@@ -1,0 +1,9 @@
+<mat-form-field appearance="fill" hideRequiredMarker>
+	@if (label !== undefined) { <mat-label>{{label}}</mat-label> }
+	<mat-date-range-input [dateFilter]="dateFilter" [rangePicker]="picker" [min]="firstValidDate" [disabled]="disabled">
+		<input matStartDate [(ngModel)]="start" name="start" (ngModelChange)="valueChanges()" [placeholder]="startPlaceholder ?? ''" required>
+		<input matEndDate [(ngModel)]="end" name="end" (ngModelChange)="valueChanges()" [placeholder]="endPlaceholder ?? ''" required>
+	</mat-date-range-input>
+	<mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+	<mat-date-range-picker #picker></mat-date-range-picker>
+</mat-form-field>

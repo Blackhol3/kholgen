@@ -8,6 +8,6 @@ describe('Subject', () => {
 
 		expect(subject1).toBeTruthy();
 		expect(subject2).toBeTruthy();
-		expect(subject1.id !== subject2.id).toBeTrue();
+		expect(subject1.id).not.toBe(subject2.id);
 	});
 });

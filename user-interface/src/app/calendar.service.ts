@@ -93,12 +93,12 @@ export class CalendarService {
 		return academies;
 	}
 
-	async getHolidays(academie: string) {
+	async getSchoolHolidays(academie: string) {
 		if (!(await this.getAcademies()).includes(academie)) {
 			throw new Error(`« ${academie} » n'est pas une académie reconnue.`);
 		}
 
-		const stringHolidays = getFromLocalStorage<string[]>(`holidays.${academie}`);
+		const stringHolidays = getFromLocalStorage<string[]>(`schoolHolidays.${academie}`);
 		if (stringHolidays !== null) {
 			return stringHolidays.map(x => Interval.fromISO(x));
 		}
@@ -110,19 +110,36 @@ export class CalendarService {
 			order_by: 'start_date',
 		});
 		const schoolUrl = new URL(`${schoolHolidayAPI}?${params.toString()}`);
-		const schoolData = await fetchData(schoolUrl) as {results: {start_date: string, end_date: string}[]};
-		const holidays = schoolData.results.map(x => Interval.fromISO(`${x.start_date}/${x.end_date}`));
-		
-		const publicUrl = new URL(`${publicHolidayAPI}/${academieToZone(academie)}.json`);
+		const schoolData = await fetchData(schoolUrl) as {results: Record<'start_date' | 'end_date', string>[]};
+		const holidays = schoolData.results.map(x => Interval.fromDateTimes(
+			DateTime.fromISO(x.start_date),
+			DateTime.fromISO(x.end_date).minus({milliseconds: 1}),
+		));
+
+		setToLocalStorage(`schoolHolidays.${academie}`, holidays.map(x => x.toISODate()));
+		return holidays;
+	}
+
+	async getPublicHolidays(academie: string) {
+		if (!(await this.getAcademies()).includes(academie)) {
+			throw new Error(`« ${academie} » n'est pas une académie reconnue.`);
+		}
+
+		const zone = academieToZone(academie);
+		const stringHolidays = getFromLocalStorage<string[]>(`publicHolidays.${zone}`);
+		if (stringHolidays !== null) {
+			return stringHolidays.map(x => DateTime.fromISO(x));
+		}
+
+		const firstValidDate = getFirstValidDate();
+		const publicUrl = new URL(`${publicHolidayAPI}/${zone}.json`);
 		const publicData = Object.keys(await fetchData(publicUrl) as Record<string, string>);
-		publicData
+		const holidays = publicData
 			.map(x => DateTime.fromISO(x))
 			.filter(x => x >= firstValidDate)
-			.map(x => Interval.after(x, {day: 1}))
-			.forEach(x => holidays.push(x))
 		;
 
-		setToLocalStorage(`holidays.${academie}`, holidays.map(x => x.toISO()));
+		setToLocalStorage(`publicHolidays.${zone}`, holidays.map(x => x.toISODate()));
 		return holidays;
 	}
 }

@@ -8,6 +8,6 @@ describe('Teacher', () => {
 
 		expect(teacher1).toBeTruthy();
 		expect(teacher2).toBeTruthy();
-		expect(teacher1.id !== teacher2.id).toBeTrue();
+		expect(teacher1.id).not.toBe(teacher2.id);
 	});
 });

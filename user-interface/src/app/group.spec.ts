@@ -8,6 +8,6 @@ describe('Group', () => {
 
 		expect(group1).toBeTruthy();
 		expect(group2).toBeTruthy();
-		expect(group1.id !== group2.id).toBeTrue();
+		expect(group1.id).not.toBe(group2.id);
 	});
 });

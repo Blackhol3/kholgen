@@ -1,6 +1,7 @@
-import { immerable } from 'immer';
+import { immerable, type Draft } from 'immer';
 import { DateTime, Interval } from 'luxon';
 
+import { type Interruption } from './interruption';
 import { nbDaysInWeek } from './timeslot';
 import { Week } from './week';
 
@@ -12,24 +13,41 @@ export class Calendar {
 	[immerable] = true;
 
 	constructor(
-		readonly academie = '',
-		readonly start = getFirstValidDate(),
-		readonly end = DateTime.now().plus({week: 10}).endOf('week').minus({days: 7 - nbDaysInWeek}),
+		readonly academie: string | null = null,
+		readonly interval = Interval.fromDateTimes(
+			getFirstValidDate(),
+			DateTime.now().plus({week: 10}).endOf('week').minus({days: 7 - nbDaysInWeek}),
+		),
 		readonly firstWeekNumber = 1,
+		readonly interruptions: readonly Interruption[] = [],
+		readonly schoolHolidays: readonly Interval[] = [],
+		readonly publicHolidays: readonly DateTime[] = [],
 	) {}
 
-	createWeeks(holidays: Interval[]) {
+	get weeks(): readonly Week[] {
 		return Interval
-			.fromDateTimes(this.start.startOf('week'), this.end.endOf('week'))
+			.fromDateTimes(this.interval.start.startOf('week'), this.interval.end.endOf('week'))
 			.splitBy({week: 1})
-			.map(week => Interval.after(week.start!, {days: nbDaysInWeek}))
 			.filter(week => week
 				.splitBy({day: 1})
-				.map(day => day.start!)
-				.some(day => day >= this.start && day <= this.end && !holidays.some(interval => interval.contains(day)))
+				.map(day => day.start)
+				.some(day => this.interval.contains(day) && this.isWorkingDay(day))
 			)
-			.map((week, index) => new Week(this.firstWeekNumber + index, week.start!))
+			.map((week, index) => new Week(this.firstWeekNumber + index, week.start))
 		;
+	}
+
+	findInterruptionId<S extends this | Draft<this>>(this: S, id: S['interruptions'][number]['id']): S['interruptions'][number] | undefined {
+		return this.interruptions.find(x => x.id === id);
+	}
+
+	isWorkingDay(date: DateTime, ignoredInterruptionId: string | null = null) {
+		return (
+			date.weekday <= nbDaysInWeek
+			&& !this.interruptions.some(x => x.interval.contains(date) && x.id !== ignoredInterruptionId)
+			&& !this.schoolHolidays.some(x => x.contains(date))
+			&& !this.publicHolidays.some(x => x.hasSame(date, 'day'))
+		);
 	}
 }
 
