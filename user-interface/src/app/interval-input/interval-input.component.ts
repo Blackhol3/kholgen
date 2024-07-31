@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectorRef, ChangeDetectionStrategy, Component, Input, effect, model } from '@angular/core';
 import { type ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { MatDatepickerModule, type MatDateRangeInput } from '@angular/material/datepicker';
@@ -36,25 +36,32 @@ export class IntervalInputComponent implements ControlValueAccessor {
 	@Input() startPlaceholder?: string;
 	@Input() endPlaceholder?: string;
 
-	start: DateTime | null = null;
-	end: DateTime | null = null;
-	
+	start = model<DateTime | null>(null);
+	end = model<DateTime | null>(null);
+	modelToViewUpdate = false;
+
 	firstValidDate = getFirstValidDate();
 	disabled = false;
 
-	constructor(private changeDetectorRef: ChangeDetectorRef) {}
+	constructor(private changeDetectorRef: ChangeDetectorRef) {
+		effect(() => this.valueChanges(this.start(), this.end()));
+	}
 
 	protected onChange = (_: Interval) => {};
 
-	valueChanges() {
-		if (this.start !== null && this.end !== null && this.start < this.end) {
-			this.onChange(Interval.fromDateTimes(this.start.startOf('day'), this.end.endOf('day')));
+	valueChanges(start: DateTime | null, end: DateTime | null) {
+		if (this.modelToViewUpdate) {
+			this.modelToViewUpdate = false;
+		}
+		else if (start !== null && end !== null && start < end) {
+			this.onChange(Interval.fromDateTimes(start.startOf('day'), end.endOf('day')));
 		}
 	}
 	
 	writeValue(interval: Interval) {
-		this.start = interval.start;
-		this.end = interval.end;
+		this.modelToViewUpdate = true;
+		this.start.set(interval.start);
+		this.end.set(interval.end);
 		this.changeDetectorRef.markForCheck();
 	}
 	

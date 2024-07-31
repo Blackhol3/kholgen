@@ -45,30 +45,51 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 		expect(newRange.end).toBeNull();
 	});
 
-	it('when only a starting date is selected and a date after it but before the next interruption is hovered', () => {
-		const range = new DateRange<DateTime>(today.minus({days: 5}), null);
-		const interruptionStart = today.plus({days: 5});
-		store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}))];
+	describe('when only a starting date is selected and a date after it is hovered', () => {
+		let range: DateRange<DateTime>;
+		beforeEach(() => {
+			range = new DateRange<DateTime>(today.minus({days: 5}), null);
+		});
 
-		const preview = service.createPreview(today, range);
-		expect(preview.start?.hasSame(range.start!, 'day')).toBeTrue();
-		expect(preview.end?.hasSame(today, 'day')).toBeTrue();
+		it('but before the next interruption', () => {
+			const interruptionStart = today.plus({days: 5});
+			store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}))];
 
-		const newRange = service.selectionFinished(today, range);
-		expect(newRange).toEqual(preview);
-	});
+			const preview = service.createPreview(today, range);
+			expect(preview.start?.hasSame(range.start!, 'day')).toBeTrue();
+			expect(preview.end?.hasSame(today, 'day')).toBeTrue();
 
-	it('when only a starting date is selected and a date after it and after the next interruption is hovered', () => {
-		const range = new DateRange<DateTime>(today.minus({days: 5}), null);
-		const interruptionStart = today.minus({days: 2});
-		store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}))];
+			const newRange = service.selectionFinished(today, range);
+			expect(newRange).toEqual(preview);
+		});
 
-		const preview = service.createPreview(today, range);
-		expect(preview.start?.hasSame(range.start!, 'day')).toBeTrue();
-		expect(preview.end?.hasSame(interruptionStart.minus({day: 1}), 'day')).toBeTrue();
+		describe('and after the next interruption', () => {
+			let interruptionStart: DateTime;
+			beforeEach(() => {
+				interruptionStart = today.minus({days: 2});
+				store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}))];
+			});
+			
+			it('nothing being ignored', () => {
+				const preview = service.createPreview(today, range);
+				expect(preview.start?.hasSame(range.start!, 'day')).toBeTrue();
+				expect(preview.end?.hasSame(interruptionStart.minus({day: 1}), 'day')).toBeTrue();
+	
+				const newRange = service.selectionFinished(today, range);
+				expect(newRange).toEqual(preview);
+			});
 
-		const newRange = service.selectionFinished(today, range);
-		expect(newRange).toEqual(preview);
+			it('the interruption being ignored', () => {
+				service.ignoredInterruptions = store.state.calendar.interruptions;
+
+				const preview = service.createPreview(today, range);
+				expect(preview.start?.hasSame(range.start!, 'day')).toBeTrue();
+				expect(preview.end?.hasSame(today, 'day')).toBeTrue();
+
+				const newRange = service.selectionFinished(today, range);
+				expect(newRange).toEqual(preview);
+			});
+		});
 	});
 
 	it('should works when a range is selected', () => {

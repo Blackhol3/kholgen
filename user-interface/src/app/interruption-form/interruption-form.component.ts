@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, Input, type OnInit, type OnChanges } from '@angular/core';
 import { type AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MAT_DATE_RANGE_SELECTION_STRATEGY } from '@angular/material/datepicker';
@@ -16,7 +16,6 @@ import { UndoStackService } from '../undo-stack.service';
 
 import { IntervalInputComponent } from '../interval-input/interval-input.component';
 
-/** @todo Can't select a new start date alone when a range is already selected */
 @Component({
 	selector: 'app-interruption-form',
 	templateUrl: './interruption-form.component.html',
@@ -45,7 +44,12 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 		interval: [Interval.fromDateTimes(DateTime.now(), DateTime.now()), [Validators.required]],
 	});
 	
-	constructor(private store: StoreService, private undoStack: UndoStackService, private formBuilder: NonNullableFormBuilder) {
+	constructor(
+		private store: StoreService,
+		private undoStack: UndoStackService,
+		private formBuilder: NonNullableFormBuilder,
+		@Inject(MAT_DATE_RANGE_SELECTION_STRATEGY) private selectionStrategy: ToNextInterruptionSelectionStrategyService
+	) {
 		this.form.valueChanges.subscribe(() => this.formChange());
 	}
 
@@ -58,6 +62,7 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 	}
 	
 	updateForm() {
+		this.selectionStrategy.ignoredInterruptions = [this.interruption];
 		this.form.setValue({
 			name: this.interruption.name,
 			interval: this.interruption.interval,

@@ -3,14 +3,16 @@ import { DateRange, type MatDateRangeSelectionStrategy } from '@angular/material
 
 import { DateTime } from 'luxon';
 
+import { type Interruption } from './interruption';
 import { StoreService } from './store.service';
 
-/** @todo Don't take into acocunt the currently modified interruption in `toNextInterruption` */
 /** @todo Implement `createDrag` */
 @Injectable({
 	providedIn: 'root',
 })
 export class ToNextInterruptionSelectionStrategyService implements MatDateRangeSelectionStrategy<DateTime> {
+	ignoredInterruptions: Interruption[] = [];
+
 	constructor(private store: StoreService) {}
 
 	createPreview(date: DateTime | null, currentRange: DateRange<DateTime>) {
@@ -35,6 +37,7 @@ export class ToNextInterruptionSelectionStrategyService implements MatDateRangeS
 
 	protected toNextInterruption(date: DateTime, currentStart: DateTime) {
 		const startingDates = this.store.state.calendar.interruptions
+			.filter(x => !this.ignoredInterruptions.includes(x))
 			.map(x => x.interval.start.minus({day: 1}))
 			.filter(x => x >= currentStart)
 		;
