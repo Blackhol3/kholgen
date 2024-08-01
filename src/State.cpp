@@ -36,8 +36,8 @@ void State::import(QJsonObject const &json)
 	}
 
 	weeks.clear();
-	for (int i = 0; i < json["numberOfWeeks"].toInt(); ++i) {
-		weeks.push_back(Week(i));
+	for (auto const &jsonWeek: json["weeks"].toArray()) {
+		weeks.push_back(Week(jsonWeek.toObject()));
 	}
 
 	int index = 0;

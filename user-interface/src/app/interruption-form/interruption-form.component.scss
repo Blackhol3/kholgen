@@ -2,3 +2,13 @@ form {
 	display: flex;
 	flex-direction: column;
 }
+
+:host ::ng-deep mat-checkbox .mdc-form-field {
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+
+	label {
+		margin-left: 16px;
+	}
+}

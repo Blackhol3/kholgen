@@ -108,17 +108,24 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 					state.calendar.academie = control.value;
 					state.calendar.schoolHolidays = schoolHolidays;
 					state.calendar.publicHolidays = publicHolidays;
+					state.calendar.weeks = state.calendar.createWeeks();
 				});
 
 				this.changeDetectorRef.markForCheck();
 			}
 
 			if (key === 'interval' && !this.store.state.calendar.interval.equals(control.value)) {
-				this.undoStack.do(state => { state.calendar.interval = control.value; });
+				this.undoStack.do(state => {
+					state.calendar.interval = control.value;
+					state.calendar.weeks = state.calendar.createWeeks();
+				});
 			}
 
 			if (key === 'firstWeekNumber' && this.store.state.calendar.firstWeekNumber !== control.value) {
-				this.undoStack.do(state => { state.calendar.firstWeekNumber = control.value; });
+				this.undoStack.do(state => {
+					state.calendar.firstWeekNumber = control.value;
+					state.calendar.weeks = state.calendar.createWeeks();
+				});
 			}
 		}
 	}
@@ -134,7 +141,10 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 		}
 
 		const interruption = new Interruption(name, Interval.after(this.store.state.calendar.interval.start, {day: 1}));
-		this.undoStack.do(state => { state.calendar.interruptions.push(castDraft(interruption)) });
+		this.undoStack.do(state => {
+			state.calendar.interruptions.push(castDraft(interruption));
+			state.calendar.weeks = state.calendar.createWeeks();
+		});
 		this.selectedInterruptionIds = [interruption.id];
 	}
 	
@@ -142,7 +152,10 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 		const interruption = this.store.state.calendar.findInterruptionId(this.selectedInterruptionIds[0])!;
 		const index = this.store.state.calendar.interruptions.indexOf(interruption);
 		
-		this.undoStack.do(state => { state.calendar.interruptions.splice(index, 1) });
+		this.undoStack.do(state => {
+			state.calendar.interruptions.splice(index, 1);
+			state.calendar.weeks = state.calendar.createWeeks();
+		});
 		this.selectedInterruptionIds = this.store.state.calendar.interruptions.length > 0 ? [this.store.state.calendar.interruptions[Math.max(0, index - 1)].id] : [];
 	}
 
@@ -158,7 +171,10 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 		
 		const jsonInterruption = JSON.parse(jsonString) as ReturnType<Interruption['toHumanJsonObject']>;
 		const interruption = Interruption.fromJsonObject(jsonInterruption);
-		this.undoStack.do(state => { state.calendar.interruptions.push(interruption) });
+		this.undoStack.do(state => {
+			state.calendar.interruptions.push(interruption);
+			state.calendar.weeks = state.calendar.createWeeks();
+		});
 		this.selectedInterruptionIds = [interruption.id];
 	}
 }

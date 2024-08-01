@@ -9,6 +9,8 @@ export class Interruption {
 	constructor(
 		readonly name: string,
 		readonly interval: Interval,
+		readonly weeksNumbering: boolean = false,
+		readonly groupsRotation: boolean = false,
 	) {
 		this.id = nanoid();
 	}
@@ -17,6 +19,8 @@ export class Interruption {
 		return {
 			name: this.name,
 			interval: this.interval.toISODate(),
+			weeksNumbering: this.weeksNumbering,
+			groupsRotation: this.groupsRotation,
 		}
 	}
 	
@@ -24,6 +28,8 @@ export class Interruption {
 		return new Interruption(
 			json.name,
 			Interval.fromISO(json.interval),
+			json.weeksNumbering,
+			json.groupsRotation,
 		);
 	}
 }

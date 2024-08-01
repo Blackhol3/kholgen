@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, Inject, Input, type OnInit, type OnChanges } from '@angular/core';
 import { type AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
+import { MatCheckboxModule } from '@angular/material/checkbox'; 
 import { MAT_DATE_RANGE_SELECTION_STRATEGY } from '@angular/material/datepicker';
-import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 import { DateTime, Interval } from 'luxon';
 
@@ -30,6 +31,7 @@ import { IntervalInputComponent } from '../interval-input/interval-input.compone
 		FormsModule,
 		ReactiveFormsModule,
 		
+		MatCheckboxModule,
 		MatFormFieldModule,
 		MatInputModule,
 
@@ -42,6 +44,8 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 	form = this.formBuilder.group({
 		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string, string>) => notUniqueValidator(control, 'name', this.interruption, this.store.state.calendar.interruptions)]],
 		interval: [Interval.fromDateTimes(DateTime.now(), DateTime.now()), [Validators.required]],
+		weeksNumbering: [false],
+		groupsRotation: [false],
 	});
 	
 	constructor(
@@ -66,6 +70,8 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 		this.form.setValue({
 			name: this.interruption.name,
 			interval: this.interruption.interval,
+			weeksNumbering: this.interruption.weeksNumbering,
+			groupsRotation: this.interruption.groupsRotation,
 		}, {emitEvent: false});
 	}
 	
@@ -77,11 +83,12 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 			}
 
 			if (
-				(key === 'name' && this.interruption.name !== control.value) ||
-				(key === 'interval' && !this.interruption.interval.equals(control.value))
+				(key === 'interval' && !this.interruption.interval.equals(control.value)) ||
+				(key !== 'interval' && this.interruption.name !== control.value)
 			) {
 				this.undoStack.do(state => {
 					(state.calendar.findInterruptionId(this.interruption.id)![key] as unknown) = control.value;
+					state.calendar.weeks = state.calendar.createWeeks();
 				});
 			}
 		}

@@ -99,7 +99,7 @@ export class State {
 			subjects: this.subjects,
 			teachers: this.teachers,
 			trios: this.trios,
-			numberOfWeeks: this.calendar.weeks.length,
+			weeks: this.calendar.getWorkingWeeks().map(week => week.toSolverJsonObject()),
 			objectives: this.objectives.map(objective => objective.name),
 			lunchTimeRange: this.lunchTimeRange,
 			forbiddenSubjectIdsCombination: [...this.forbiddenSubjectIdsCombination],

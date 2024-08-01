@@ -37,7 +37,7 @@ export class ColloscopeComponent {
 			for (const teacher of this.store.state.teachers.filter(t => t.subjectId === subject.id)) {
 				for (const timeslot of teacher.availableTimeslots) {
 					const triosByWeek = [];
-					for (const week of this.store.state.calendar.weeks) {
+					for (const week of this.store.state.calendar.getWorkingWeeks()) {
 						triosByWeek.push(this.getTrio(teacher, timeslot, week));
 					}
 					
@@ -53,7 +53,7 @@ export class ColloscopeComponent {
 			}
 		}
 		
-		this.tableWeeksHeaderRowDef = this.store.state.calendar.weeks.map(week => 'week-' + week.id);
+		this.tableWeeksHeaderRowDef = this.store.state.calendar.getWorkingWeeks().map(week => 'week-' + week.id);
 		
 		this.tableSubjectRowspan = this.getRowspanArray('subject');
 		this.tableTeacherRowspan = this.getRowspanArray('teacher');
