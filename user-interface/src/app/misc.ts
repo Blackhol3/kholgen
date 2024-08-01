@@ -51,6 +51,10 @@ export function equalIterables(x: Iterable<unknown>, y: Iterable<unknown>): bool
 }
 
 /** @link https://stackoverflow.com/questions/60141960/typescript-key-value-relation-preserving-object-entries-type/60142095#60142095 */
-export type Entries<T> = {
+type Entries<T> = {
 	[K in keyof T]: [K, T[K]]
 }[keyof T][];
+
+export function entries<T extends Record<string, unknown>>(object: T) {
+	return Object.entries(object) as Entries<T>;
+}

@@ -8,7 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Subscription } from 'rxjs';
 import { castDraft } from 'immer';
 
-import { type Entries, equalIterables } from '../misc';
+import { entries, equalIterables } from '../misc';
 import { Objective } from '../objective';
 import { firstHour, lastHour } from '../timeslot';
 import { StoreService } from '../store.service';
@@ -67,7 +67,7 @@ export class OptionsPageComponent implements OnInit, OnDestroy {
 	}
 	
 	formChange() {
-		for (const [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
+		for (const [key, control] of entries(this.form.controls)) {
 			if (!control.valid) {
 				control.markAsTouched();
 				continue;

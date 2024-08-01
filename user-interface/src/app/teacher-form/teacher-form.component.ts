@@ -6,7 +6,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
-import { type Entries, setErrors, trimValidator } from '../misc';
+import { entries, setErrors, trimValidator } from '../misc';
 import { Teacher } from '../teacher';
 import { Timeslot } from '../timeslot';
 import { StoreService } from '../store.service';
@@ -64,7 +64,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 	}
 	
 	formChange() {
-		for (const [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
+		for (const [key, control] of entries(this.form.controls)) {
 			if (control.valid && this.teacher[key] !== control.value) {
 				this.undoStack.do(
 					state => {

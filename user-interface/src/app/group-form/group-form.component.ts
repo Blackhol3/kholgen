@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
-import { type Entries, equalIterables, notUniqueValidator, setErrors, trimValidator } from '../misc';
+import { entries, equalIterables, notUniqueValidator, setErrors, trimValidator } from '../misc';
 import { Group } from '../group';
 import { Timeslot } from '../timeslot';
 import { StoreService } from '../store.service';
@@ -71,7 +71,7 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	}
 	
 	formChange() {
-		for (const [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
+		for (const [key, control] of entries(this.form.controls)) {
 			if (control.valid && this.controlValueUpdated(key)) {
 				this.undoStack.do(
 					state => {

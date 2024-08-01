@@ -4,7 +4,7 @@ import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModu
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
-import { type Entries, notUniqueValidator, trimValidator } from '../misc';
+import { entries, notUniqueValidator, trimValidator } from '../misc';
 import { Subject } from '../subject';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
@@ -55,7 +55,7 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 	}
 	
 	formChange() {
-		for (const [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
+		for (const [key, control] of entries(this.form.controls)) {
 			if (control.valid && this.subject[key] !== control.value) {
 				this.undoStack.do(state => {
 					(state.findId('subjects', this.subject.id)![key] as unknown) = control.value;

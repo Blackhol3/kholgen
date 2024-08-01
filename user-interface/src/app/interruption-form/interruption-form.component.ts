@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 
 import { DateTime, Interval } from 'luxon';
 
-import { type Entries, notUniqueValidator, trimValidator } from '../misc';
+import { entries, notUniqueValidator, trimValidator } from '../misc';
 import { Interruption } from '../interruption';
 
 import { StoreService } from '../store.service';
@@ -70,7 +70,7 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 	}
 	
 	formChange() {
-		for (const [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
+		for (const [key, control] of entries(this.form.controls)) {
 			if (!control.valid) {
 				control.markAsTouched();
 				continue;

@@ -16,7 +16,7 @@ import { DateTime, Interval } from 'luxon';
 
 import { listAnimation, slideAnimation } from '../animations';
 import { Interruption } from '../interruption';
-import { type Entries } from '../misc';
+import { entries } from '../misc';
 
 import { CalendarService } from '../calendar.service';
 import { StoreService } from '../store.service';
@@ -94,7 +94,7 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 	}
 	
 	async formChange() {
-		for (const [key, control] of Object.entries(this.form.controls) as Entries<typeof this.form.controls>) {
+		for (const [key, control] of entries(this.form.controls)) {
 			if (!control.valid) {
 				control.markAsTouched();
 				continue;
