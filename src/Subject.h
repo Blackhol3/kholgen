@@ -8,7 +8,7 @@ class QJsonObject;
 class Subject
 {
 	public:
-        Subject(QString const &id, QString const &name, QString const &shortName, int frequency);
+		Subject(QString const &id, QString const &name, QString const &shortName, int frequency);
 		explicit Subject(QJsonObject const &json);
 
 		QString const &getId() const;

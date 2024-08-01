@@ -45,19 +45,19 @@ void State::import(QJsonObject const &json)
 		auto const &name = jsonObjective.toString();
 		std::iter_swap(
 			objectives.begin() + index,
-            std::ranges::find_if(objectives, [&](auto const &objective) {
+			std::ranges::find_if(objectives, [&](auto const &objective) {
 				return objective->getName() == name;
 			})
 		);
 		++index;
 	}
 
-    forbiddenSubjectsCombination.clear();
-    for (auto const &jsonSubject: json["forbiddenSubjectIdsCombination"].toArray()) {
-        forbiddenSubjectsCombination.push_back(
-            &*std::ranges::find_if(subjects, [&](auto const &subject) { return subject.getId() == jsonSubject.toString(); })
-        );
-    }
+	forbiddenSubjectsCombination.clear();
+	for (auto const &jsonSubject: json["forbiddenSubjectIdsCombination"].toArray()) {
+		forbiddenSubjectsCombination.push_back(
+			&*std::ranges::find_if(subjects, [&](auto const &subject) { return subject.getId() == jsonSubject.toString(); })
+		);
+	}
 
 	auto const &jsonLunchTimeRange = json["lunchTimeRange"].toArray();
 	lunchTimeRange = {jsonLunchTimeRange[0].toInt(), jsonLunchTimeRange[1].toInt()};
@@ -95,7 +95,7 @@ const std::vector<const Objective*>& State::getObjectives() const
 
 const std::vector<const Subject*>& State::getForbiddenSubjectsCombination() const
 {
-    return forbiddenSubjectsCombination;
+	return forbiddenSubjectsCombination;
 }
 
 const std::pair<int, int>& State::getLunchTimeRange() const
@@ -121,9 +121,9 @@ std::set<Timeslot> State::getAvailableTimeslots(Teacher const &teacher, Trio con
 	auto const &availableTimeslotsTeacher = teacher.getAvailableTimeslots();
 	auto const &availableTimeslotsTrio = trio.getAvailableTimeslotsInWeek(week);
 
-    std::ranges::set_intersection(
-        availableTimeslotsTeacher,
-        availableTimeslotsTrio,
+	std::ranges::set_intersection(
+		availableTimeslotsTeacher,
+		availableTimeslotsTrio,
 		std::inserter(availableTimeslots, availableTimeslots.end())
 	);
 

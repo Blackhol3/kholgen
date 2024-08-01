@@ -14,7 +14,7 @@ class Communication : public QObject
 	Q_OBJECT
 
 	public:
-        Communication(State &state, Solver &solver, QObject *parent = nullptr);
+		Communication(State &state, Solver &solver, QObject *parent = nullptr);
 		void sendSolution(std::vector<ObjectiveComputation> const &objectiveComputations) const;
 
 	public slots:
@@ -27,7 +27,7 @@ class Communication : public QObject
 
 	protected:
 		State* state;
-        Solver* solver;
+		Solver* solver;
 
 		std::vector<Colle> colles;
 };

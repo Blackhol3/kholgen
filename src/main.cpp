@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 	State state(objectives);
 	Solver solver(state);
 
-    Communication communication(state, solver);
+	Communication communication(state, solver);
 	channel.registerObject("communication", &communication);
 	preventSleepMode(true);
 

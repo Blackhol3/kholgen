@@ -15,7 +15,7 @@ Trio::Trio(const QJsonObject& json, const std::vector<Group>& groups): Trio(
 )
 {
 	for (auto const &jsonInitialGroupId: json["initialGroupIds"].toArray()) {
-        auto const &group = &*std::ranges::find_if(groups, [&](auto const &group) { return group.getId() == jsonInitialGroupId.toString(); });
+		auto const &group = &*std::ranges::find_if(groups, [&](auto const &group) { return group.getId() == jsonInitialGroupId.toString(); });
 		initialGroups.insert(group);
 	}
 }

@@ -30,7 +30,7 @@ void Group::setNextGroup(const QJsonObject& json, const std::vector<Group>& grou
 	if (!jsonNextGroupId.isUndefined() && !jsonNextGroupId.isNull()) {
 		setNextGroup(
 			json["duration"].toInt(),
-            *std::ranges::find_if(groups, [&](auto const &group) { return group.getId() == jsonNextGroupId.toString(); })
+			*std::ranges::find_if(groups, [&](auto const &group) { return group.getId() == jsonNextGroupId.toString(); })
 		);
 	}
 }

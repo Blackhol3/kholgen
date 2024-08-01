@@ -26,7 +26,7 @@ class State
 		const std::vector<Trio>& getTrios() const;
 		const std::vector<Week>& getWeeks() const;
 		const std::vector<const Objective*>& getObjectives() const;
-        const std::vector<const Subject*>& getForbiddenSubjectsCombination() const;
+		const std::vector<const Subject*>& getForbiddenSubjectsCombination() const;
 		const std::pair<int, int>& getLunchTimeRange() const;
 
 		std::vector<Teacher> getTeachersOfSubject(Subject const &subject) const;
@@ -41,7 +41,7 @@ class State
 		std::vector<Trio> trios;
 		std::vector<Week> weeks;
 		std::vector<Objective const *> objectives;
-        std::vector<Subject const *> forbiddenSubjectsCombination;
+		std::vector<Subject const *> forbiddenSubjectsCombination;
 		std::pair<int, int> lunchTimeRange;
 };
 
