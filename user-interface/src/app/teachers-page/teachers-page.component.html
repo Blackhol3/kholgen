@@ -12,7 +12,7 @@
 						@if (teacher.subjectId === subject.id) {
 							<mat-list-option
 								cdkDrag [cdkDragData]="teacher"
-								[appCopyData]="teacher.toHumanJsonObject(store.state)" appCopyType="teacher"
+								[appCopyData]="teacher.toHumanJson(store.state)" appCopyType="teacher"
 								[value]="teacher.id"
 							>
 								{{teacher.name}}

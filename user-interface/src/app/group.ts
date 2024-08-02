@@ -1,10 +1,11 @@
 import { immerable, produce } from 'immer';
 import { nanoid } from 'nanoid/non-secure';
 
+import type { HumanJson, HumanJsonable } from './json';
 import { State } from './state';
 import { Timeslot } from './timeslot';
 
-export class Group {
+export class Group implements HumanJsonable {
 	[immerable] = true;
 	readonly id: string;
 	readonly duration: number | null = null;
@@ -25,7 +26,7 @@ export class Group {
 		});
 	}
 	
-	setNextGroupFromJsonObject(json: ReturnType<Group['toHumanJsonObject']>, groups: readonly Group[]): Group {
+	setNextGroupFromHumanJson(json: HumanJson<Group>, groups: readonly Group[]): Group {
 		const nextGroup = groups.find(group => group.name === json.nextGroup);
 		if (json.duration !== undefined && nextGroup !== undefined) {
 			return this.setNextGroup(json.duration!, nextGroup);
@@ -34,7 +35,7 @@ export class Group {
 		return this;
 	}
 	
-	toHumanJsonObject(state: State) {
+	toHumanJson(state: State) {
 		return Object.assign(
 			{
 				name: this.name,
@@ -48,7 +49,7 @@ export class Group {
 		);
 	}
 	
-	static fromJsonObject(json: ReturnType<Group['toHumanJsonObject']>) {
+	static fromHumanJson(json: HumanJson<Group>) {
 		return new Group(
 			json.name,
 			json.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),

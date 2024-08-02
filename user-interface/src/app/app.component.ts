@@ -9,8 +9,9 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
 import * as FileSaver from 'file-saver-es';
-import { type Draft } from 'immer';
+import { castDraft } from 'immer';
 
+import { type HumanJson, toHumanString } from './json';
 import { State } from './state';
 import { StoreService } from './store.service';
 import { UndoStackService } from './undo-stack.service';
@@ -68,7 +69,7 @@ export class AppComponent {
 		files[0]
 			.text()
 			.then(JSON.parse)
-			.then((jsonObject: ReturnType<State['toHumanJsonObject']>) => this.undoStack.do(() => State.fromJsonObject(jsonObject) as unknown as Draft<State>))
+			.then((jsonObject: HumanJson<State>) => this.undoStack.do(() => castDraft(State.fromHumanJson(jsonObject))))
 			.catch(exception => {
 				/** @todo Display an error dialog **/
 				if (exception instanceof SyntaxError) {
@@ -85,7 +86,7 @@ export class AppComponent {
 	exportFile() {
 		FileSaver.saveAs(
 			new Blob(
-				[JSON.stringify(this.store.state.toHumanJsonObject(), undefined, "\t")],
+				[toHumanString(this.store.state, "\t")],
 				{type: 'application/json'},
 			),
 			'Colloscope.json',

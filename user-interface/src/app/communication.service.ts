@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+
 import { type ChannelObject, QWebChannel } from 'qwebchannel';
 import { Observable, Subject } from 'rxjs';
 
-import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
 import { Colle } from './colle';
+import { toSolverJson } from './json';
 import { Timeslot } from './timeslot';
 import { StoreService } from './store.service';
+
+import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
 
 type JsonColle = {
 	teacherId: string,
@@ -110,7 +113,7 @@ export class CommunicationService {
 			this.computeSubject?.complete();
 			this.computeSubject = undefined;
 		});
-		void this.communication.compute(store.state.toSolverJsonObject());
+		void this.communication.compute(toSolverJson(store.state));
 		
 		return this.computeSubject.asObservable();
 	}

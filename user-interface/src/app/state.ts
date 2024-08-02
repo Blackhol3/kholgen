@@ -8,6 +8,8 @@ import { Subject } from './subject';
 import { Teacher } from './teacher';
 import { Trio } from './trio';
 
+import type { HumanJson, HumanJsonable, SolverJsonable } from './json';
+
 const defaultObjectives = [
 	new Objective(
 		'No consecutive colles',
@@ -38,7 +40,7 @@ const defaultObjectives = [
 
 const defaultLunchTimeRange = [11, 14] as const;
 
-export class State {
+export class State implements HumanJsonable, SolverJsonable {
 	[immerable] = true;
 	
 	constructor(
@@ -79,56 +81,59 @@ export class State {
 		}
 	}
 
-	toHumanJsonObject() {
+	toHumanJson() {
 		return {
-			groups: this.groups.map(group => group.toHumanJsonObject(this)),
-			subjects: this.subjects.map(subject => subject.toHumanJsonObject()),
-			teachers: this.teachers.map(teacher => teacher.toHumanJsonObject(this)),
-			objectives: this.objectives.map(objective => objective.toHumanJsonObject()),
+			groups: this.groups,
+			subjects: this.subjects,
+			teachers: this.teachers,
+			objectives: this.objectives,
 			lunchTimeRange: this.lunchTimeRange,
 			forbiddenSubjectsCombination:
 				this.forbiddenSubjectIdsCombination.size === 0
 					? undefined
 					: [...this.forbiddenSubjectIdsCombination].map(subjectId => this.findId('subjects', subjectId)!.name),
+			calendar: this.calendar,
 		};
 	}
 	
-	toSolverJsonObject() {
+	toSolverJson() {
 		return {
 			groups: this.groups,
 			subjects: this.subjects,
 			teachers: this.teachers,
 			trios: this.trios,
-			weeks: this.calendar.getWorkingWeeks().map(week => week.toSolverJsonObject()),
-			objectives: this.objectives.map(objective => objective.name),
+			weeks: this.calendar.getWorkingWeeks(),
+			objectives: this.objectives,
 			lunchTimeRange: this.lunchTimeRange,
 			forbiddenSubjectIdsCombination: [...this.forbiddenSubjectIdsCombination],
 		};
 	}
 	
 	/** @todo Throw better error messages **/
-	static fromJsonObject(jsonObject: ReturnType<State['toHumanJsonObject']>) {
-		const groups = jsonObject.groups.map(group => Group.fromJsonObject(group));
+	static fromHumanJson(json: HumanJson<State>) {
+		const groups = json.groups.map(group => Group.fromHumanJson(group));
 		for (let idGroup = 0; idGroup < groups.length; ++idGroup) {
-			groups[idGroup] = groups[idGroup].setNextGroupFromJsonObject(jsonObject.groups[idGroup], groups);
+			groups[idGroup] = groups[idGroup].setNextGroupFromHumanJson(json.groups[idGroup], groups);
 		}
 		
-		const subjects = jsonObject.subjects.map(subject => Subject.fromJsonObject(subject));
-		const teachers = jsonObject.teachers.map(teacher => Teacher.fromJsonObject(teacher, subjects)!);
+		const subjects = json.subjects.map(subject => Subject.fromHumanJson(subject));
+		const teachers = json.teachers.map(teacher => Teacher.fromHumanJson(teacher, subjects)!);
 		
 		const objectives = [];
-		for (const objective of jsonObject.objectives) {
+		for (const objective of json.objectives) {
 			objectives.push(defaultObjectives.find(defaultObjective => defaultObjective.name === objective)!);
 		}
 		
-		const lunchTimeRange = jsonObject.lunchTimeRange ?? defaultLunchTimeRange;
+		const lunchTimeRange = json.lunchTimeRange ?? defaultLunchTimeRange;
 
 		const forbiddenSubjectIdsCombination = new Set(
-			jsonObject.forbiddenSubjectsCombination === undefined ? [] : jsonObject.forbiddenSubjectsCombination.map(
+			json.forbiddenSubjectsCombination === undefined ? [] : json.forbiddenSubjectsCombination.map(
 				subjectName => subjects.find(subject => subject.name === subjectName)!.id
 			)
 		);
+
+		const calendar = Calendar.fromHumanJson(json.calendar);
 		
-		return new State([], groups, subjects, teachers, [], objectives, lunchTimeRange, forbiddenSubjectIdsCombination);
+		return new State([], groups, subjects, teachers, [], objectives, lunchTimeRange, forbiddenSubjectIdsCombination, calendar);
 	}
 }

@@ -1,9 +1,11 @@
 import { immerable } from 'immer';
 import { type DateTime } from 'luxon';
 
+import { type SolverJsonable } from './json';
+
 export type WorkingWeek = Week & {number: number};
 
-export class Week {
+export class Week implements SolverJsonable {
 	[immerable] = true;
 	
 	constructor(
@@ -16,7 +18,7 @@ export class Week {
 		return this.number !== null;
 	}
 
-	toSolverJsonObject() {
+	toSolverJson() {
 		return {
 			id: this.id,
 			number: this.number,

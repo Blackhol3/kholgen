@@ -12,6 +12,7 @@ import { Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
 import { Group } from '../group';
+import { type HumanJson } from '../json';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
 import { CopyDataDirective } from '../copy-data.directive';
@@ -109,12 +110,12 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 			return;
 		}
 		
-		const jsonGroup = JSON.parse(jsonString) as ReturnType<Group['toHumanJsonObject']>;
+		const jsonGroup = JSON.parse(jsonString) as HumanJson<Group>;
 		while (this.store.state.groups.some(subject => subject.name === jsonGroup.name)) {
 			jsonGroup.name += ' (copie)';
 		}
 		
-		const group = Group.fromJsonObject(jsonGroup).setNextGroupFromJsonObject(jsonGroup, this.store.state.groups);
+		const group = Group.fromHumanJson(jsonGroup).setNextGroupFromHumanJson(jsonGroup, this.store.state.groups);
 		this.undoStack.do(state => { state.groups.push(castDraft(group)); });
 		this.selectedGroupIds = [group.id];
 	}

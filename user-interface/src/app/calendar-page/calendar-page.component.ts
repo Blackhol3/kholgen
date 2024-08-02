@@ -16,6 +16,7 @@ import { DateTime, Interval } from 'luxon';
 
 import { listAnimation, slideAnimation } from '../animations';
 import { Interruption } from '../interruption';
+import { type HumanJson } from '../json';
 import { entries } from '../misc';
 
 import { CalendarService } from '../calendar.service';
@@ -169,8 +170,8 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 			return;
 		}
 		
-		const jsonInterruption = JSON.parse(jsonString) as ReturnType<Interruption['toHumanJsonObject']>;
-		const interruption = Interruption.fromJsonObject(jsonInterruption);
+		const jsonInterruption = JSON.parse(jsonString) as HumanJson<Interruption>;
+		const interruption = Interruption.fromHumanJson(jsonInterruption);
 		this.undoStack.do(state => {
 			state.calendar.interruptions.push(interruption);
 			state.calendar.weeks = state.calendar.createWeeks();

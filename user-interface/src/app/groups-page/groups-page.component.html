@@ -14,7 +14,7 @@
 			(paste)="onPaste($event)"
 		>
 			@for (group of store.state.groups; track group.id) {
-				<mat-list-option cdkDrag [value]="group.id" [appCopyData]="group.toHumanJsonObject(store.state)" appCopyType="group">
+				<mat-list-option cdkDrag [value]="group.id" [appCopyData]="group.toHumanJson(store.state)" appCopyType="group">
 					{{group.name}}
 				</mat-list-option>
 			}

@@ -43,7 +43,7 @@
 			@for (interruption of getSortedInterruptions(); track interruption.id) {
 				<mat-list-option
 					cdkDrag [value]="interruption.id"
-					[appCopyData]="interruption.toHumanJsonObject()" appCopyType="subject"
+					[appCopyData]="interruption.toHumanJson()" appCopyType="subject"
 				>
 					{{interruption.name}}
 					@if (!interruption.interval.overlaps(store.state.calendar.interval)) {

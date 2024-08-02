@@ -10,6 +10,7 @@ import { castDraft } from 'immer';
 import { Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
+import { type HumanJson } from '../json';
 import { Subject } from '../subject';
 import { Teacher } from '../teacher';
 import { UndoStackService } from '../undo-stack.service';
@@ -120,7 +121,7 @@ export class TeachersPageComponent implements OnInit, OnDestroy {
 			return;
 		}
 		
-		const jsonTeacher = JSON.parse(jsonString) as ReturnType<Teacher['toHumanJsonObject']>;
+		const jsonTeacher = JSON.parse(jsonString) as HumanJson<Teacher>;
 		while (this.store.state.teachers.some(teacher => teacher.name === jsonTeacher.name)) {
 			jsonTeacher.name += ' (copie)';
 		}
@@ -129,7 +130,7 @@ export class TeachersPageComponent implements OnInit, OnDestroy {
 			jsonTeacher.subject = this.store.state.findId('subjects', this.store.state.findId('teachers', this.selectedTeacherIds[0])!.subjectId)!.name;
 		}
 		
-		const teacher = Teacher.fromJsonObject(jsonTeacher, this.store.state.subjects);
+		const teacher = Teacher.fromHumanJson(jsonTeacher, this.store.state.subjects);
 		if (teacher !== undefined) {
 			this.undoStack.do(state => { state.teachers.push(castDraft(teacher)) });
 			this.selectedTeacherIds = [teacher.id];

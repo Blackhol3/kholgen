@@ -14,7 +14,7 @@
 			@for (subject of store.state.subjects; track subject.id) {
 				<mat-list-option
 					cdkDrag [value]="subject.id"
-					[appCopyData]="subject.toHumanJsonObject()" appCopyType="subject"
+					[appCopyData]="subject.toHumanJson()" appCopyType="subject"
 					[style.color]="subject.color"
 				>
 					{{subject.name}}

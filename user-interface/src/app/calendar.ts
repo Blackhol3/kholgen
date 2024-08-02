@@ -1,7 +1,8 @@
 import { immerable, type Draft } from 'immer';
 import { DateTime, Interval } from 'luxon';
 
-import { type Interruption } from './interruption';
+import { Interruption } from './interruption';
+import type { HumanJson, HumanJsonable } from './json';
 import { nbDaysInWeek } from './timeslot';
 import { Week, type WorkingWeek } from './week';
 
@@ -9,7 +10,7 @@ export function getFirstValidDate() {
 	return DateTime.now().plus({week: 1}).startOf('week');
 }
 
-export class Calendar {
+export class Calendar implements HumanJsonable {
 	[immerable] = true;
 
 	readonly weeks: Week[];
@@ -82,12 +83,31 @@ export class Calendar {
 		);
 	}
 
+	toHumanJson() {
+		return {
+			academie: this.academie === null ? undefined : this.academie,
+			interval: this.interval.toISODate(),
+			firstWeekNumber: this.firstWeekNumber === 1 ? undefined : this.firstWeekNumber,
+			interruptions: this.interruptions.length === 0 ? undefined : this.interruptions,
+		}
+	}
+
 	protected isWorkingWeekInterval(weekInterval: Interval, ignoredInterruptionId: string | null = null) {
 		return weekInterval
 			.splitBy({day: 1})
 			.map(day => day.start)
 			.some(day => this.interval.contains(day) && this.isWorkingDay(day, ignoredInterruptionId))
 		;
+	}
+
+	static fromHumanJson(json: HumanJson<Calendar>) {
+		const interval = Interval.fromISO(json.interval);
+		return new Calendar(
+			json.academie,
+			Interval.fromDateTimes(interval.start, interval.end.endOf('day')),
+			json.firstWeekNumber,
+			json.interruptions?.map(jsonInterruption => Interruption.fromHumanJson(jsonInterruption)),
+		);
 	}
 }
 

@@ -1,7 +1,9 @@
 import { immerable } from 'immer';
 import { nanoid } from 'nanoid/non-secure';
 
-export class Subject {
+import type { HumanJson, HumanJsonable } from './json';
+
+export class Subject implements HumanJsonable {
 	[immerable] = true;
 	readonly id: string;
 	
@@ -14,7 +16,7 @@ export class Subject {
 		this.id = nanoid();
 	}
 	
-	toHumanJsonObject() {
+	toHumanJson() {
 		return {
 			name: this.name,
 			shortName: this.shortName,
@@ -23,7 +25,7 @@ export class Subject {
 		};
 	}
 	
-	static fromJsonObject(json: ReturnType<Subject['toHumanJsonObject']>) {
+	static fromHumanJson(json: HumanJson<Subject>) {
 		return new Subject(
 			json.name,
 			json.shortName,

@@ -2,7 +2,9 @@ import { immerable } from 'immer';
 import { Interval } from 'luxon';
 import { nanoid } from 'nanoid/non-secure';
 
-export class Interruption {
+import type { HumanJson, HumanJsonable } from './json';
+
+export class Interruption implements HumanJsonable {
 	[immerable] = true;
 	readonly id: string;
 	
@@ -15,7 +17,7 @@ export class Interruption {
 		this.id = nanoid();
 	}
 
-	toHumanJsonObject() {
+	toHumanJson() {
 		return {
 			name: this.name,
 			interval: this.interval.toISODate(),
@@ -24,10 +26,11 @@ export class Interruption {
 		}
 	}
 	
-	static fromJsonObject(json: ReturnType<Interruption['toHumanJsonObject']>) {
+	static fromHumanJson(json: HumanJson<Interruption>) {
+		const interval = Interval.fromISO(json.interval);
 		return new Interruption(
 			json.name,
-			Interval.fromISO(json.interval),
+			Interval.fromDateTimes(interval.start, interval.end.endOf('day')),
 			json.weeksNumbering,
 			json.groupsRotation,
 		);

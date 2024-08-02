@@ -1,11 +1,12 @@
 import { immerable } from 'immer';
 import { nanoid } from 'nanoid/non-secure';
 
+import type { HumanJson, HumanJsonable } from './json';
 import { State } from './state';
 import { Subject } from './subject';
 import { Timeslot } from './timeslot';
 
-export class Teacher {
+export class Teacher implements HumanJsonable {
 	[immerable] = true;
 	readonly id: string;
 	
@@ -18,7 +19,7 @@ export class Teacher {
 		this.id = nanoid();
 	}
 	
-	toHumanJsonObject(state: State) {
+	toHumanJson(state: State) {
 		return {
 			name: this.name,
 			subject: state.findId('subjects', this.subjectId)!.name,
@@ -27,7 +28,7 @@ export class Teacher {
 		};
 	}
 	
-	static fromJsonObject(json: ReturnType<Teacher['toHumanJsonObject']>, subjects: readonly Subject[]) {
+	static fromHumanJson(json: HumanJson<Teacher>, subjects: readonly Subject[]) {
 		const subject = subjects.find(subject => subject.name === json.subject);
 		return subject === undefined ? undefined : new Teacher(
 			json.name,

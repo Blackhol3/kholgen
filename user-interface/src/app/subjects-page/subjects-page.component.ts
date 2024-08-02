@@ -14,6 +14,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 
 import { listAnimation, slideAnimation } from '../animations';
+import { type HumanJson } from '../json';
 import { Subject } from '../subject';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
@@ -175,13 +176,13 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 			return;
 		}
 		
-		const jsonSubject = JSON.parse(jsonString) as ReturnType<Subject['toHumanJsonObject']>;
+		const jsonSubject = JSON.parse(jsonString) as HumanJson<Subject>;
 		while (this.store.state.subjects.some(subject => subject.name === jsonSubject.name || subject.shortName === jsonSubject.shortName)) {
 			jsonSubject.name += ' (copie)';
 			jsonSubject.shortName += ' (copie)';
 		}
 		
-		const subject = Subject.fromJsonObject(jsonSubject);
+		const subject = Subject.fromHumanJson(jsonSubject);
 		this.undoStack.do(state => { state.subjects.push(subject) });
 		this.selectedSubjectIds = [subject.id];
 	}

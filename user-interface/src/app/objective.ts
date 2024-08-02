@@ -1,6 +1,8 @@
 import { immerable } from 'immer';
 
-export class Objective {
+import type { HumanJsonable, SolverJsonable } from './json';
+
+export class Objective implements HumanJsonable, SolverJsonable {
 	[immerable] = true;
 	
 	protected value: number | undefined;
@@ -19,7 +21,11 @@ export class Objective {
 		return this.value === undefined ? '–' : this.valueToText(this.value);
 	}
 	
-	toHumanJsonObject() {
+	toHumanJson() {
+		return this.name;
+	}
+
+	toSolverJson(): unknown {
 		return this.name;
 	}
 }
