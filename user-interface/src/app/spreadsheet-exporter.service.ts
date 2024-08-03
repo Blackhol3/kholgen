@@ -37,9 +37,19 @@ export class SpreadsheetExporterService {
 	}
 
 	protected setTeachersSection(worksheet: Worksheet, firstRow = 1) {
-		const weekRow = firstRow;
+		const dateRow = firstRow;
+		const weekRow = dateRow + 1;
 		const firstColleRow = weekRow + 1;
 		const bottomBorderedRows = [weekRow];
+
+		worksheet.pageSetup = {
+			paperSize: 9,
+			orientation: 'landscape',
+			horizontalCentered: true,
+
+			printTitlesRow: `${dateRow}:${weekRow}`,
+			printTitlesColumn: `${worksheet.getColumn(TeachersSectionColumn.Subject).letter}:${worksheet.getColumn(TeachersSectionColumn.Timeslot).letter}`,
+		};
 
 		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + this.workingWeeks.length - 1);
 
@@ -95,22 +105,34 @@ export class SpreadsheetExporterService {
 		worksheet.getColumn(TeachersSectionColumn.TeacherName).width = this.state.teachers.map(x => x.name.length).sort((a, b) => b - a)[0];
 		worksheet.getColumn(TeachersSectionColumn.Timeslot).width = dayNames.map(x => x.length).sort((a, b) => b - a)[0] + 5;
 
+		this.setDatesHeader(worksheet, TeachersSectionColumn.FirstColle, dateRow, 90);
 		this.setWeeksHeader(worksheet, TeachersSectionColumn.FirstColle, weekRow, 3.5);
+		this.setHolidaysBorder(worksheet, TeachersSectionColumn.FirstColle, dateRow);
 
 		for (let columnIndex: number = TeachersSectionColumn.Subject; columnIndex < TeachersSectionColumn.FirstColle + this.workingWeeks.length; ++columnIndex) {
 			for (const row of bottomBorderedRows) {
 				const cell = worksheet.getCell(row, columnIndex);
-				cell.style.border = { bottom: { style: 'medium' } };
+				cell.style.border = { ...cell.style.border, bottom: { style: 'medium' } };
 			}
 		}
 	}
 
 	protected setStudentsSection(worksheet: Worksheet, firstRow = 1) {
-		const weekRow = firstRow;
+		const dateRow = firstRow;
+		const weekRow = dateRow + 1;
 		const firstColleRow = weekRow + 1;
 		const maximalNumberOfCollesByWeek = this.getMaximalNumberOfCollesByWeek();
 
-		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + this.workingWeeks.length - 1);
+		worksheet.pageSetup = {
+			paperSize: 9,
+			orientation: 'landscape',
+			horizontalCentered: true,
+
+			printTitlesRow: `${dateRow}:${weekRow}`,
+			printTitlesColumn: `${worksheet.getColumn(StudentsSectionColumn.Trio).letter}:${worksheet.getColumn(StudentsSectionColumn.Trio).letter}`,
+		};
+
+		this.setStandardColumnStyle(worksheet, StudentsSectionColumn.Trio, StudentsSectionColumn.FirstColle + this.workingWeeks.length - 1);
 
 		let row = firstColleRow;
 		for (const trio of this.state.trios.toSorted((a, b) => a.id - b.id)) {
@@ -144,12 +166,14 @@ export class SpreadsheetExporterService {
 			worksheet.getCell(trioStartingRow, StudentsSectionColumn.Trio).value = `G${trio.id + 1}`;
 		}
 
+		this.setDatesHeader(worksheet, StudentsSectionColumn.FirstColle, dateRow);
 		this.setWeeksHeader(worksheet, StudentsSectionColumn.FirstColle, weekRow, 7);
+		this.setHolidaysBorder(worksheet, StudentsSectionColumn.FirstColle, dateRow);
 
 		for (let columnIndex: number = StudentsSectionColumn.Trio; columnIndex < StudentsSectionColumn.FirstColle + this.workingWeeks.length; ++columnIndex) {
 			for (let row = weekRow; row <= worksheet.rowCount; row += maximalNumberOfCollesByWeek) {
 				const cell = worksheet.getCell(row, columnIndex);
-				cell.style.border = { bottom: { style: 'medium' } };
+				cell.style.border = { ...cell.style.border, bottom: { style: 'medium' } };
 			}
 		}
 	}
@@ -159,6 +183,16 @@ export class SpreadsheetExporterService {
 			const column = worksheet.getColumn(columnIndex);
 			column.style.alignment = { horizontal: 'center', vertical: 'middle'};
 			column.style.font = { size: 10 };
+		}
+	}
+
+	protected setDatesHeader(worksheet: Worksheet, firstColumn: number, row: number, textRotation: number = 0) {
+		for (const [i, week] of this.workingWeeks.entries()) {
+			const column = firstColumn + i;
+			const cell = worksheet.getCell(row, column);
+			cell.value = week.start.setZone('utc', {keepLocalTime: true}).toJSDate();
+			cell.numFmt = `[$-C]d mmm`;
+			cell.alignment = {...cell.alignment, textRotation: textRotation};
 		}
 	}
 
@@ -173,6 +207,26 @@ export class SpreadsheetExporterService {
 			cell.value = `S${week.number}`
 			cell.style.font = { size: 10, italic: true };
 			cell.style.fill = { type: 'pattern', pattern: 'solid', fgColor: {argb: 'FFF2F2F2'} };
+		}
+	}
+
+	protected setHolidaysBorder(worksheet: Worksheet, firstColumn: number, firstRow: number) {
+		const leftBorderedColumns = [];
+		for (const [i, week] of this.workingWeeks.entries()) {
+			if (i === 0 || week.start.diff(this.workingWeeks[i - 1].start).as('weeks') > 1) {
+				leftBorderedColumns.push(firstColumn + i);
+			}
+		}
+
+		const borderStyle = { style: 'medium' } as const;
+		for (let row = firstRow; row <= worksheet.rowCount; ++row) {
+			for (const column of leftBorderedColumns) {
+				const cell = worksheet.getCell(row, column);
+				cell.style.border = { left: borderStyle };
+			}
+
+			const cell = worksheet.getCell(row, firstColumn + this.workingWeeks.length - 1);
+			cell.style.border = { right: borderStyle };
 		}
 	}
 
@@ -226,7 +280,7 @@ export class SpreadsheetExporterService {
 		worksheet.unMergeCells(1, 1, worksheet.rowCount, worksheet.columnCount);
 
 		return new Blob(
-			['sep=,\n', await workbook.csv.writeBuffer()],
+			['sep=,\n', await workbook.csv.writeBuffer({dateFormat: 'DD/MM/YYYY'})],
 			{type: 'text/csv'},
 		);
 	}
