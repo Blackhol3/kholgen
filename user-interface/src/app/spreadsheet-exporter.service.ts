@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 
 import Color from 'color';
-import { Workbook, type Worksheet } from 'exceljs';
+import { type Cell, Workbook, type Worksheet } from 'exceljs';
 
+import { type Colle } from './colle';
 import { type State } from './state';
 import { dayNames } from './timeslot';
+import { type WorkingWeek } from './week';
 
 enum TeachersSectionColumn {
 	Subject = 1,
@@ -24,6 +26,7 @@ enum StudentsSectionColumn {
 })
 export class SpreadsheetExporterService {
 	protected state!: State;
+	protected workingWeeks!: WorkingWeek[];
 
 	protected createWorkbook() {
 		const workbook = new Workbook();
@@ -38,7 +41,7 @@ export class SpreadsheetExporterService {
 		const firstColleRow = weekRow + 1;
 		const bottomBorderedRows = [weekRow];
 
-		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + this.state.calendar.getWorkingWeeks().length - 1);
+		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + this.workingWeeks.length - 1);
 
 		let row = firstColleRow;
 		for (const subject of this.state.subjects) {
@@ -56,8 +59,12 @@ export class SpreadsheetExporterService {
 					worksheet.getCell(row, TeachersSectionColumn.Timeslot).value = collesWithTeacherAtTimeslot[0].timeslot.toReadableString();
 
 					for (const colle of collesWithTeacherAtTimeslot) {
-						const weekColumnIndex = this.state.calendar.getWorkingWeeks().findIndex(week => week.id === colle.weekId);
-						worksheet.getCell(row, TeachersSectionColumn.FirstColle + weekColumnIndex).value = colle.trioId + 1;
+						const week = this.workingWeeks.find(week => week.id === colle.weekId)!;
+						const weekColumnIndex = this.workingWeeks.indexOf(week);
+
+						const cell = worksheet.getCell(row, TeachersSectionColumn.FirstColle + weekColumnIndex);
+						cell.value = colle.trioId + 1;
+						this.fillIfNotWorkingDayCell(cell, colle);
 					}
 
 					++row;
@@ -90,7 +97,7 @@ export class SpreadsheetExporterService {
 
 		this.setWeeksHeader(worksheet, TeachersSectionColumn.FirstColle, weekRow, 3.5);
 
-		for (let columnIndex: number = TeachersSectionColumn.Subject; columnIndex < TeachersSectionColumn.FirstColle + this.state.calendar.getWorkingWeeks().length; ++columnIndex) {
+		for (let columnIndex: number = TeachersSectionColumn.Subject; columnIndex < TeachersSectionColumn.FirstColle + this.workingWeeks.length; ++columnIndex) {
 			for (const row of bottomBorderedRows) {
 				const cell = worksheet.getCell(row, columnIndex);
 				cell.style.border = { bottom: { style: 'medium' } };
@@ -103,14 +110,14 @@ export class SpreadsheetExporterService {
 		const firstColleRow = weekRow + 1;
 		const maximalNumberOfCollesByWeek = this.getMaximalNumberOfCollesByWeek();
 
-		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + this.state.calendar.getWorkingWeeks().length - 1);
+		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + this.workingWeeks.length - 1);
 
 		let row = firstColleRow;
 		for (const trio of this.state.trios.toSorted((a, b) => a.id - b.id)) {
 			const trioStartingRow = row;
 			const collesOfTrio = this.state.colles.filter(colle => colle.trioId === trio.id);
 
-			for (const [i, week] of this.state.calendar.getWorkingWeeks().entries()) {
+			for (const [i, week] of this.workingWeeks.entries()) {
 				const collesOfTrioInWeek = collesOfTrio.filter(colle => colle.weekId === week.id);
 
 				for (const [j, colle] of collesOfTrioInWeek.entries()) {
@@ -120,8 +127,14 @@ export class SpreadsheetExporterService {
 					
 					const cell = worksheet.getCell(trioStartingRow + j, StudentsSectionColumn.FirstColle + i);
 					cell.value = `${subject.shortName}${teachersOfSubject.indexOf(teacher) + 1} ${colle.timeslot.toShortString()}`;
-					cell.style.font = { size: 10, color: {argb: Color(subject.color).isDark() ? 'FFFFFFFF' : 'FF000000'} };
-					cell.style.fill = { type: 'pattern', pattern: 'solid', fgColor: {argb: `FF${subject.color.slice(1)}`} };
+
+					if (colle.isDuringWorkingDay(this.state)) {
+						cell.style.font = { size: 10, color: {argb: Color(subject.color).isDark() ? 'FFFFFFFF' : 'FF000000'} };
+						cell.style.fill = { type: 'pattern', pattern: 'solid', fgColor: {argb: `FF${subject.color.slice(1)}`} };
+					}
+					else {
+						this.fillIfNotWorkingDayCell(cell, colle);
+					}
 				}
 			}
 
@@ -133,7 +146,7 @@ export class SpreadsheetExporterService {
 
 		this.setWeeksHeader(worksheet, StudentsSectionColumn.FirstColle, weekRow, 7);
 
-		for (let columnIndex: number = StudentsSectionColumn.Trio; columnIndex < StudentsSectionColumn.FirstColle + this.state.calendar.getWorkingWeeks().length; ++columnIndex) {
+		for (let columnIndex: number = StudentsSectionColumn.Trio; columnIndex < StudentsSectionColumn.FirstColle + this.workingWeeks.length; ++columnIndex) {
 			for (let row = weekRow; row <= worksheet.rowCount; row += maximalNumberOfCollesByWeek) {
 				const cell = worksheet.getCell(row, columnIndex);
 				cell.style.border = { bottom: { style: 'medium' } };
@@ -150,7 +163,7 @@ export class SpreadsheetExporterService {
 	}
 
 	protected setWeeksHeader(worksheet: Worksheet, firstColumn: number, row: number, columnWidth?: number) {
-		for (const [i, week] of this.state.calendar.getWorkingWeeks().entries()) {
+		for (const [i, week] of this.workingWeeks.entries()) {
 			const column = firstColumn + i;
 			if (columnWidth !== undefined) {
 				worksheet.getColumn(column).width = columnWidth;
@@ -160,6 +173,15 @@ export class SpreadsheetExporterService {
 			cell.value = `S${week.number}`
 			cell.style.font = { size: 10, italic: true };
 			cell.style.fill = { type: 'pattern', pattern: 'solid', fgColor: {argb: 'FFF2F2F2'} };
+		}
+	}
+
+	protected fillIfNotWorkingDayCell(cell: Cell, colle: Colle) {
+		if (!colle.isDuringWorkingDay(this.state)) {
+			const teacher = this.state.findId('teachers', colle.teacherId)!;
+			const subject = this.state.findId('subjects', teacher.subjectId)!;
+
+			cell.style.fill = { type: 'pattern', pattern: Color(subject.color).isDark() ? 'lightUp' : 'darkUp', fgColor: {argb: `FF${subject.color.slice(1)}`} };
 		}
 	}
 
@@ -179,6 +201,8 @@ export class SpreadsheetExporterService {
 
 	async asExcel(state: State) {
 		this.state = state;
+		this.workingWeeks = this.state.calendar.getWorkingWeeks();
+
 		const workbook = this.createWorkbook();
 
 		this.setTeachersSection(workbook.addWorksheet('Professeurs'));
@@ -192,6 +216,8 @@ export class SpreadsheetExporterService {
 
 	async asCsv(state: State) {
 		this.state = state;
+		this.workingWeeks = this.state.calendar.getWorkingWeeks();
+
 		const workbook = this.createWorkbook();
 		const worksheet = workbook.addWorksheet();
 
