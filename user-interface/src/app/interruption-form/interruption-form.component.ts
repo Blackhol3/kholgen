@@ -12,7 +12,7 @@ import { entries, notUniqueValidator, trimValidator } from '../misc';
 import { Interruption } from '../interruption';
 
 import { StoreService } from '../store.service';
-import { ToNextInterruptionSelectionStrategyService } from '../to-next-interruption-selection-strategy.service'
+import { BetweenInterruptionsSelectionStrategyService } from '../between-interruptions-selection-strategy.service'
 import { UndoStackService } from '../undo-stack.service';
 
 import { IntervalInputComponent } from '../interval-input/interval-input.component';
@@ -23,7 +23,7 @@ import { IntervalInputComponent } from '../interval-input/interval-input.compone
 	styleUrls: ['./interruption-form.component.scss'],
 	providers: [{
 		provide: MAT_DATE_RANGE_SELECTION_STRATEGY,
-		useClass: ToNextInterruptionSelectionStrategyService,
+		useClass: BetweenInterruptionsSelectionStrategyService,
 	}],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	standalone: true,
@@ -52,7 +52,7 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 		private store: StoreService,
 		private undoStack: UndoStackService,
 		private formBuilder: NonNullableFormBuilder,
-		@Inject(MAT_DATE_RANGE_SELECTION_STRATEGY) private selectionStrategy: ToNextInterruptionSelectionStrategyService
+		@Inject(MAT_DATE_RANGE_SELECTION_STRATEGY) private selectionStrategy: BetweenInterruptionsSelectionStrategyService
 	) {
 		this.form.valueChanges.subscribe(() => this.formChange());
 	}
