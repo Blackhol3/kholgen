@@ -10,6 +10,7 @@
 			[@listAnimation]="store.state.subjects.length"
 			cdkDropList (cdkDropListDropped)="onDrop($event)"
 			(paste)="onPaste($event)"
+			(keydown)="onKeydown($event)"
 		>
 			@for (subject of store.state.subjects; track subject.id) {
 				<mat-list-option

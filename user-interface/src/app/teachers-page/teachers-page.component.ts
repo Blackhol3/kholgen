@@ -136,4 +136,11 @@ export class TeachersPageComponent implements OnInit, OnDestroy {
 			this.selectedTeacherIds = [teacher.id];
 		}
 	}
+
+	protected onKeydown($event: KeyboardEvent) {
+		if ($event.key === 'Delete') {
+			this.deleteTeacher();
+			$event.preventDefault();
+		}
+	}
 }

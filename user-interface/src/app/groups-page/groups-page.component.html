@@ -12,6 +12,7 @@
 			[@listAnimation]="store.state.groups.length"
 			cdkDropList (cdkDropListDropped)="onDrop($event)"
 			(paste)="onPaste($event)"
+			(keydown)="onKeydown($event)"
 		>
 			@for (group of store.state.groups; track group.id) {
 				<mat-list-option cdkDrag [value]="group.id" [appCopyData]="group.toHumanJson(store.state)" appCopyType="group">

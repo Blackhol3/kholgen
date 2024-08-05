@@ -178,4 +178,11 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 		});
 		this.selectedInterruptionIds = [interruption.id];
 	}
+
+	protected onKeydown($event: KeyboardEvent) {
+		if ($event.key === 'Delete') {
+			this.deleteInterruption();
+			$event.preventDefault();
+		}
+	}
 }

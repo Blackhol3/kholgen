@@ -39,6 +39,7 @@
 			[multiple]="false" [(ngModel)]="selectedInterruptionIds"
 			[@listAnimation]="store.state.calendar.interruptions.length"
 			(paste)="onPaste($event)"
+			(keydown)="onKeydown($event)"
 		>
 			@for (interruption of getSortedInterruptions(); track interruption.id) {
 				<mat-list-option

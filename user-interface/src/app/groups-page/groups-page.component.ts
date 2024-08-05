@@ -119,4 +119,11 @@ export class GroupsPageComponent implements OnInit, OnDestroy {
 		this.undoStack.do(state => { state.groups.push(castDraft(group)); });
 		this.selectedGroupIds = [group.id];
 	}
+
+	protected onKeydown($event: KeyboardEvent) {
+		if ($event.key === 'Delete') {
+			this.deleteGroup();
+			$event.preventDefault();
+		}
+	}
 }

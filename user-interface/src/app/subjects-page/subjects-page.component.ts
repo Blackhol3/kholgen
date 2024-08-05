@@ -186,4 +186,11 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 		this.undoStack.do(state => { state.subjects.push(subject) });
 		this.selectedSubjectIds = [subject.id];
 	}
+
+	protected onKeydown($event: KeyboardEvent) {
+		if ($event.key === 'Delete') {
+			this.deleteSubject();
+			$event.preventDefault();
+		}
+	}
 }
