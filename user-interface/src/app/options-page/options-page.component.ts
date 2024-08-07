@@ -1,4 +1,4 @@
-import { Component, type OnInit, type OnDestroy } from '@angular/core';
+import { Component, type OnInit, type OnDestroy, inject } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -33,6 +33,10 @@ import { ObjectivesComponent } from '../objectives/objectives.component';
 	],
 })
 export class OptionsPageComponent implements OnInit, OnDestroy {
+	readonly store = inject(StoreService);
+	protected readonly formBuilder = inject(NonNullableFormBuilder);
+	protected readonly undoStack = inject(UndoStackService);
+
 	form = this.formBuilder.group({
 		lunchTimeStart: [firstHour,    [Validators.required, Validators.min(firstHour), Validators.max(lastHour + 1), Validators.pattern(/^-?[0-9]*$/)]],
 		lunchTimeEnd:   [lastHour + 1, [Validators.required, Validators.min(firstHour), Validators.max(lastHour + 1), Validators.pattern(/^-?[0-9]*$/)]],
@@ -44,7 +48,7 @@ export class OptionsPageComponent implements OnInit, OnDestroy {
 	firstHour = firstHour;
 	lastHour = lastHour;
 	
-	constructor(public store: StoreService, private undoStack: UndoStackService, private formBuilder: NonNullableFormBuilder) {
+	constructor() {
 		this.form.valueChanges.subscribe(() => this.formChange());
 	}
 	

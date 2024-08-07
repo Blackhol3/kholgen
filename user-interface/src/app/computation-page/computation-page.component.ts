@@ -1,5 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, type OnInit, type OnDestroy, ViewChild } from '@angular/core';
+import { Component, type OnInit, type OnDestroy, ViewChild, inject } from '@angular/core';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -46,11 +46,13 @@ import { ColloscopeComponent } from '../colloscope/colloscope.component';
 	],
 })
 export class ComputationPageComponent implements OnInit, OnDestroy {
+	readonly store = inject(StoreService);
+	protected readonly communication = inject(CommunicationService);
+	protected readonly spreadsheetExporter = inject(SpreadsheetExporterService);
+
 	isRunning = false;
 	storeSubscription: Subscription | undefined;
 	@ViewChild(MatTable) objectivesTable: MatTable<unknown> | undefined;
-	
-	constructor(private communication: CommunicationService, private spreadsheetExporter: SpreadsheetExporterService, public store: StoreService) {	}
 	
 	ngOnInit() {
 		this.storeSubscription = this.store.changeObservable.subscribe(() => this.objectivesTable!.renderRows());

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges, inject } from '@angular/core';
 import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, type ValidationErrors, Validators } from '@angular/forms';
 
 import { MatOptionModule } from '@angular/material/core';
@@ -33,6 +33,10 @@ import { WeeklyTimetableComponent } from '../weekly-timetable/weekly-timetable.c
 	],
 })
 export class TeacherFormComponent implements OnInit, OnChanges {
+	readonly store = inject(StoreService);
+	protected readonly formBuilder = inject(NonNullableFormBuilder);
+	protected readonly undoStack = inject(UndoStackService);
+
 	@Input({required: true}) teacher!: Teacher;
 	
 	form = this.formBuilder.group({
@@ -42,7 +46,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 		weeklyAvailabilityFrequency: [1, [Validators.required, Validators.min(1), Validators.pattern('^-?[0-9]*$')]],
 	}, {validators: control => this.notUniqueValidator(control)});
 	
-	constructor(public store: StoreService, private undoStack: UndoStackService, private formBuilder: NonNullableFormBuilder ) {
+	constructor() {
 		this.form.valueChanges.subscribe(() => this.formChange());
 	}
 

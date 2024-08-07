@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, ChangeDetectionStrategy, Component, type OnInit, type OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, ChangeDetectionStrategy, Component, type OnInit, type OnDestroy, inject } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -56,6 +56,12 @@ import { IntervalInputComponent } from '../interval-input/interval-input.compone
 	],
 })
 export class CalendarPageComponent implements OnInit, OnDestroy {
+	readonly store = inject(StoreService);
+	protected readonly calendarService = inject(CalendarService);
+	protected readonly changeDetectorRef = inject(ChangeDetectorRef);
+	protected readonly formBuilder = inject(NonNullableFormBuilder);
+	protected readonly undoStack = inject(UndoStackService);
+	
 	form = this.formBuilder.group({
 		academie: [null as string | null, [Validators.required]],
 		interval: [Interval.fromDateTimes(DateTime.now(), DateTime.now()), [Validators.required]],
@@ -66,13 +72,7 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 
 	academies: string[] | undefined;
 
-	constructor(
-		public store: StoreService,
-		private undoStack: UndoStackService,
-		private formBuilder: NonNullableFormBuilder,
-		private calendarService: CalendarService,
-		private changeDetectorRef: ChangeDetectorRef,
-	) {
+	constructor() {
 		this.form.valueChanges.subscribe(() => void this.formChange());
 	}
 	

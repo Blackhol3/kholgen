@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges, inject } from '@angular/core';
 import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatInputModule } from '@angular/material/input';
@@ -24,6 +24,10 @@ import { UndoStackService } from '../undo-stack.service';
 	],
 })
 export class SubjectFormComponent implements OnInit, OnChanges {
+	protected readonly formBuilder = inject(NonNullableFormBuilder);
+	protected readonly store = inject(StoreService);
+	protected readonly undoStack = inject(UndoStackService);
+
 	@Input({required: true}) subject!: Subject;
 	
 	form = this.formBuilder.group({
@@ -33,7 +37,7 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 		color: ['', Validators.required],
 	});
 	
-	constructor(private store: StoreService, private undoStack: UndoStackService, private formBuilder: NonNullableFormBuilder ) {
+	constructor() {
 		this.form.valueChanges.subscribe(() => this.formChange());
 	}
 

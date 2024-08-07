@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { type Patch } from 'immer';
 
 import { StoreService } from './store.service';
@@ -45,11 +45,11 @@ class GroupCommand implements Command {
 	protected commands: Command[] = [];
 	
 	undo() {
-		return ([] as Patch[]).concat(...this.commands.slice().reverse().map(command => command.undo()));
+		return this.commands.toReversed().map(command => command.undo()).flat();
 	}
 	
 	redo() {
-		return ([] as Patch[]).concat(...this.commands.map(command => command.redo()));
+		return this.commands.map(command => command.redo()).flat();
 	}
 	
 	merge(command: Command): [Command, GroupCommand] {
@@ -81,13 +81,12 @@ function last(collection: Command[]|GroupCommand): Command | undefined {
 	providedIn: 'root'
 })
 export class UndoStackService {
+	protected readonly store = inject(StoreService);
+
 	protected undoStack: Command[] = [];
 	protected redoStack: Command[] = [];
 	protected groupLevel = 0;
-	
-	constructor(protected store: StoreService) {
-	}
-	
+
 	clear(): void {
 		this.undoStack = [];
 		this.redoStack = [];

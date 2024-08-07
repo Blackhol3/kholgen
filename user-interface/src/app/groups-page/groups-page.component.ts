@@ -1,4 +1,4 @@
-import { Component, type OnInit, type OnDestroy } from '@angular/core';
+import { Component, type OnInit, type OnDestroy, inject } from '@angular/core';
 import { type CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag } from '@angular/cdk/drag-drop';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { FormsModule } from '@angular/forms';
@@ -53,11 +53,12 @@ import { GroupsGraphComponent } from '../groups-graph/groups-graph.component';
 	],
 })
 export class GroupsPageComponent implements OnInit, OnDestroy {
+	readonly store = inject(StoreService);
+	protected readonly undoStack = inject(UndoStackService);
+
 	selectedGroupIds: string[] = [];
 	storeSubscription: Subscription | undefined;
-	
-	constructor(public store: StoreService, private undoStack: UndoStackService) { }
-	
+
 	ngOnInit() {
 		this.storeSubscription = this.store.changeObservable.subscribe(() => this.updateSelectedGroup());
 	}

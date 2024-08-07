@@ -8,8 +8,6 @@ export class CopyDataDirective {
 	@Input('appCopyData') data: unknown;
 	@Input('appCopyType') type: string | undefined;
 	
-	constructor() { }
-	
 	@HostListener('copy', ['$event'])
 	@HostListener('cut', ['$event'])
 	protected copy($event: ClipboardEvent) {

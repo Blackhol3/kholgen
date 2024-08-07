@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { DateRange, type MatDateRangeSelectionStrategy } from '@angular/material/datepicker';
 
 import { DateTime } from 'luxon';
@@ -10,9 +10,9 @@ import { StoreService } from './store.service';
 	providedIn: 'root',
 })
 export class BetweenInterruptionsSelectionStrategyService implements MatDateRangeSelectionStrategy<DateTime> {
-	ignoredInterruptions: Interruption[] = [];
+	protected readonly store = inject(StoreService);
 
-	constructor(private store: StoreService) {}
+	ignoredInterruptions: Interruption[] = [];
 
 	createPreview(date: DateTime | null, currentRange: DateRange<DateTime>) {
 		if (this.isRangeIncomplete(date, currentRange)) {

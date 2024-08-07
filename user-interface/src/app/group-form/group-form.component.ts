@@ -1,5 +1,5 @@
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
-import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges, inject } from '@angular/core';
 import { AbstractControl, FormsModule, ReactiveFormsModule, NonNullableFormBuilder, type ValidationErrors, Validators } from '@angular/forms';
 
 import { type MatChipInputEvent } from '@angular/material/chips';
@@ -37,6 +37,10 @@ import { UniqueIntegersChipInputComponent } from '../unique-integers-chip-input/
 	],
 })
 export class GroupFormComponent implements OnInit, OnChanges {
+	readonly store = inject(StoreService);
+	protected readonly formBuilder = inject(NonNullableFormBuilder);
+	protected readonly undoStack = inject(UndoStackService);
+
 	@Input({required: true}) group!: Group;
 	
 	form = this.formBuilder.group({
@@ -48,7 +52,7 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	}, {validators: control => this.nextGroupRequiredValidator(control)});
 	readonly separatorKeysCodes = [COMMA, ENTER, SPACE] as const;
 	
-	constructor(public store: StoreService, private undoStack: UndoStackService, private formBuilder: NonNullableFormBuilder ) {
+	constructor() {
 		this.form.valueChanges.subscribe(() => this.formChange());
 	}
 

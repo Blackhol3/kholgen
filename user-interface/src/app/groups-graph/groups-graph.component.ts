@@ -17,8 +17,6 @@ export class GroupsGraphComponent {
 	readonly radius = 35;
 	readonly individualRadius = 10;
 	
-	constructor() { }
-	
 	getTransform(index: number) {
 		const angle = this.getAngle(index, 'deg');
 		const transform = [

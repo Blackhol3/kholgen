@@ -28,7 +28,7 @@
 	</ng-container>
 	
 	<ng-container matColumnDef="weeks">
-		<th mat-header-cell *matHeaderCellDef [attr.colspan]="store.state.calendar.weeks.length">Semaine</th>
+		<th mat-header-cell *matHeaderCellDef [attr.colspan]="store.state.calendar.getWorkingWeeks().length">Semaine</th>
 	</ng-container>
 	
 	@for (week of store.state.calendar.getWorkingWeeks(); track week.id) {

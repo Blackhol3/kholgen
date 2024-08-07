@@ -1,5 +1,5 @@
 import { animate, query, style, transition, trigger } from '@angular/animations';
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -51,9 +51,10 @@ import { UndoStackService } from './undo-stack.service';
 	],
 })
 export class AppComponent {
+	readonly undoStack = inject(UndoStackService);
+	protected readonly store = inject(StoreService);
+
 	@ViewChild('importFileInput') importFileInput!: ElementRef<HTMLInputElement>;
-	
-	constructor(private store: StoreService, public undoStack: UndoStackService) { }
 	
 	startImportFile() {
 		this.importFileInput.nativeElement.click();

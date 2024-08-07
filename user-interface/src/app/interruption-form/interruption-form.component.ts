@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject, Input, type OnInit, type OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges, inject } from '@angular/core';
 import { type AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatCheckboxModule } from '@angular/material/checkbox'; 
@@ -39,6 +39,11 @@ import { IntervalInputComponent } from '../interval-input/interval-input.compone
 	],
 })
 export class InterruptionFormComponent implements OnInit, OnChanges {
+	readonly store = inject(StoreService);
+	protected readonly formBuilder = inject(NonNullableFormBuilder);
+	protected readonly selectionStrategy = inject<BetweenInterruptionsSelectionStrategyService>(MAT_DATE_RANGE_SELECTION_STRATEGY);
+	protected readonly undoStack = inject(UndoStackService);
+
 	@Input({required: true}) interruption!: Interruption;
 	
 	form = this.formBuilder.group({
@@ -48,12 +53,7 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 		groupsRotation: [false],
 	});
 	
-	constructor(
-		private store: StoreService,
-		private undoStack: UndoStackService,
-		private formBuilder: NonNullableFormBuilder,
-		@Inject(MAT_DATE_RANGE_SELECTION_STRATEGY) private selectionStrategy: BetweenInterruptionsSelectionStrategyService
-	) {
+	constructor() {
 		this.form.valueChanges.subscribe(() => this.formChange());
 	}
 

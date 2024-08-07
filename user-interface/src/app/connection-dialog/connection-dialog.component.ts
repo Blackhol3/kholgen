@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -10,7 +10,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 	imports: [MatDialogModule, MatProgressSpinnerModule],
 })
 export class ConnectionDialogComponent {
-	constructor(dialogRef: MatDialogRef<ConnectionDialogComponent>) {
-		dialogRef.disableClose = true;
+	protected readonly dialogRef = inject(MatDialogRef<this, boolean>);
+
+	constructor() {
+		this.dialogRef.disableClose = true;
 	}
 }

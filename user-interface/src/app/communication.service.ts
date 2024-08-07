@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 
 import { type ChannelObject, QWebChannel } from 'qwebchannel';
@@ -42,11 +42,11 @@ type Communication = {
 	providedIn: 'root'
 })
 export class CommunicationService {
+	protected readonly dialog = inject(MatDialog);
+
 	protected websocket: WebSocket | undefined;
 	protected communication: ChannelObject<Communication> | undefined;
 	protected computeSubject: Subject<void> | undefined;
-	
-	constructor(private dialog: MatDialog) { }
 	
 	connect(): Promise<void> {
 		return new Promise(resolve => {

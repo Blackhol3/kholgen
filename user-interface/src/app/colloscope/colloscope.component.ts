@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 
 import { type Subject } from '../subject';
@@ -24,12 +24,12 @@ type TableRow = {
 	imports: [MatTableModule],
 })
 export class ColloscopeComponent {
+	readonly store = inject(StoreService);
+
 	tableData: TableRow[] = [];
 	tableWeeksHeaderRowDef: string[] = [];
 	tableSubjectRowspan: number[] = [];
 	tableTeacherRowspan: number[] = [];
-	
-	constructor(public store: StoreService) { }
 	
 	getTableData() {
 		this.tableData = [];

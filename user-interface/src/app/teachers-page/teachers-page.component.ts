@@ -1,4 +1,4 @@
-import { Component, type OnInit, type OnDestroy } from '@angular/core';
+import { Component, type OnInit, type OnDestroy, inject } from '@angular/core';
 import { CdkDrag, type CdkDragDrop, CdkDropList, CdkDropListGroup, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 
@@ -43,11 +43,12 @@ import { TeacherFormComponent } from '../teacher-form/teacher-form.component';
 	],
 })
 export class TeachersPageComponent implements OnInit, OnDestroy {
+	readonly store = inject(StoreService);
+	protected readonly undoStack = inject(UndoStackService);
+
 	selectedTeacherIds: string[] = [];
 	storeSubscription: Subscription | undefined;
 	
-	constructor(public store: StoreService, private undoStack: UndoStackService) { }
-
 	ngOnInit() {
 		this.storeSubscription = this.store.changeObservable.subscribe(() => this.updateSelectedTeacher());
 	}

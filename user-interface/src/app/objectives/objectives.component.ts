@@ -28,8 +28,6 @@ export class ObjectivesComponent implements ControlValueAccessor {
 	
 	protected onChange = (_: Objective[]) => {};
 	
-	constructor() { }
-	
 	onDrop($event: CdkDragDrop<unknown[]>) {
 		if ($event.previousIndex !== $event.currentIndex) {
 			moveItemInArray(this.objectives, $event.previousIndex, $event.currentIndex);

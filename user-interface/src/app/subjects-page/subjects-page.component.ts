@@ -1,4 +1,4 @@
-import { Component, type OnInit, type OnDestroy } from '@angular/core';
+import { Component, type OnInit, type OnDestroy, inject } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
 import { type CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
@@ -87,13 +87,15 @@ const standardClasses: {[className: string]: StandardClass}[] = [
 	],
 })
 export class SubjectsPageComponent implements OnInit, OnDestroy {
+	readonly store = inject(StoreService);
+	protected readonly snackBar = inject(MatSnackBar);
+	protected readonly undoStack = inject(UndoStackService);
+
 	selectedSubjectIds: string[] = [];
 	storeSubscription: Subscription | undefined;
 	
 	selectedStandardClass: StandardClass | undefined;
 	readonly standardClasses = standardClasses;
-	
-	constructor(public store: StoreService, private snackBar: MatSnackBar, private undoStack: UndoStackService) { }
 	
 	ngOnInit() {
 		this.storeSubscription = this.store.changeObservable.subscribe(() => this.updateSelectedSubject());

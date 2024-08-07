@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, ChangeDetectionStrategy, Component, Input, effect, model } from '@angular/core';
+import { ChangeDetectorRef, ChangeDetectionStrategy, Component, Input, effect, inject, model } from '@angular/core';
 import { type ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { MatDatepickerModule, type MatDateRangeInput } from '@angular/material/datepicker';
@@ -30,6 +30,8 @@ import { getFirstValidDate } from '../calendar';
 	],
 })
 export class IntervalInputComponent implements ControlValueAccessor {
+	protected readonly changeDetectorRef = inject(ChangeDetectorRef);
+
 	@Input() dateFilter: MatDateRangeInput<DateTime>['dateFilter'] = () => true;
 
 	@Input() label?: string;
@@ -43,7 +45,7 @@ export class IntervalInputComponent implements ControlValueAccessor {
 	firstValidDate = getFirstValidDate();
 	disabled = false;
 
-	constructor(private changeDetectorRef: ChangeDetectorRef) {
+	constructor() {
 		effect(() => this.valueChanges(this.start(), this.end()));
 	}
 
