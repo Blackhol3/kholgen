@@ -58,8 +58,8 @@ export class CommunicationService {
 			let dialogTimeout: number | undefined;
 			if (this.dialog.getDialogById('connection') === undefined) {
 				dialogTimeout = window.setTimeout(
-					() => this.dialog.open(ConnectionDialogComponent, { id: 'connection' }),
-					500
+					() => this.dialog.open(ConnectionDialogComponent, { data: {type: 'connection'} }),
+					300
 				);
 			}
 			const closeDialog = () => {

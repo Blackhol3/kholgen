@@ -3,6 +3,7 @@ import { Component, ElementRef, HostListener, ViewChild, inject } from '@angular
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -15,6 +16,8 @@ import { type HumanJson, toHumanString } from './json';
 import { State } from './state';
 import { StoreService } from './store.service';
 import { UndoStackService } from './undo-stack.service';
+
+import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
 
 @Component({
 	selector: 'app-root',
@@ -52,6 +55,7 @@ import { UndoStackService } from './undo-stack.service';
 })
 export class AppComponent {
 	readonly undoStack = inject(UndoStackService);
+	protected readonly dialog = inject(MatDialog);
 	protected readonly store = inject(StoreService);
 
 	@ViewChild('importFileInput') importFileInput!: ElementRef<HTMLInputElement>;
@@ -61,26 +65,24 @@ export class AppComponent {
 	}
 	
 	/** @todo Add file drag and drop */
-	importFile() {
+	async importFile() {
 		const files = this.importFileInput.nativeElement.files;
 		if (files === null || files[0] === undefined) {
 			return;
 		}
 		
-		files[0]
-			.text()
-			.then(JSON.parse)
-			.then((jsonObject: HumanJson<State>) => this.undoStack.do(() => castDraft(State.fromHumanJson(jsonObject))))
-			.catch(exception => {
-				/** @todo Display an error dialog **/
-				if (exception instanceof SyntaxError) {
-					console.error(exception.message);
-				}
-				else {
-					throw exception;
-				}
-			})
-		;
+		try {
+			const json = JSON.parse(await files[0].text()) as HumanJson<State>;
+			this.undoStack.do(() => castDraft(State.fromHumanJson(json)))
+		}
+		catch (exception) {
+			if (exception instanceof SyntaxError) {
+				this.dialog.open(ConnectionDialogComponent, {data: {type: 'error', message: exception.message}});
+			}
+			else {
+				throw exception;
+			}
+		}
 	}
 	
 	/** @todo Add a warning that this does not save the results, only the configuration */
