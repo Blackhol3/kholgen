@@ -1,10 +1,21 @@
-import { castDraft } from 'immer';
 import { DateTime } from 'luxon';
 
 import { Colle } from './colle';
 import { Day, Timeslot } from './timeslot';
 import { State } from './state';
 import { Week } from './week';
+
+function specificDay(day: DateTime) {
+	return {
+		asymmetricMatch: (actual: unknown) => {
+			if (!(actual instanceof DateTime)) {
+				return false;
+			}
+
+			return actual.hasSame(day, 'day');
+		}
+	};
+}
 
 describe('Colle', () => {
 	it('should create an instance', () => {
@@ -17,15 +28,14 @@ describe('Colle', () => {
 
 		const today = DateTime.now().startOf('week');
 		const state = new State();
-		castDraft(state).calendar.weeks = [new Week(1337, 42, today)];
-		castDraft(state).calendar.publicHolidays = [today.plus({day: 1})];
+		const spy = spyOn(state.calendar, 'isWorkingDay');
+		spyOn(state.calendar, 'getWeeks').and.returnValue([new Week(1337, 9, today)]);
 
-		const spy = spyOn(state.calendar, 'isWorkingDay').and.callThrough();
-		expect(colle1.isDuringWorkingDay(state)).toBeFalse();
-		expect(state.calendar.isWorkingDay).toHaveBeenCalledTimes(1);
+		colle1.isDuringWorkingDay(state);
+		expect(state.calendar.isWorkingDay).toHaveBeenCalledOnceWith(specificDay(today.plus({day: 1})));
 
 		spy.calls.reset();
-		expect(colle2.isDuringWorkingDay(state)).toBeTrue();
-		expect(state.calendar.isWorkingDay).toHaveBeenCalledTimes(1);
+		colle2.isDuringWorkingDay(state);
+		expect(state.calendar.isWorkingDay).toHaveBeenCalledOnceWith(specificDay(today.plus({day: 4})));
 	});
 });

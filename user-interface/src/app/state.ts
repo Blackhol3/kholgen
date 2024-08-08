@@ -9,6 +9,7 @@ import { Teacher } from './teacher';
 import { Trio } from './trio';
 
 import type { HumanJson, HumanJsonable, SolverJsonable } from './json';
+import type { CalendarService } from './calendar.service';
 
 const defaultObjectives = [
 	new Objective(
@@ -109,7 +110,7 @@ export class State implements HumanJsonable, SolverJsonable {
 		};
 	}
 	
-	static fromHumanJson(json: HumanJson<State>) {
+	static async fromHumanJson(json: HumanJson<State>, calendarService: CalendarService) {
 		const groups = json.groups.map(group => Group.fromHumanJson(group));
 		for (let idGroup = 0; idGroup < groups.length; ++idGroup) {
 			groups[idGroup] = groups[idGroup].setNextGroupFromHumanJson(json.groups[idGroup], groups);
@@ -145,7 +146,7 @@ export class State implements HumanJsonable, SolverJsonable {
 			})
 		);
 
-		const calendar = Calendar.fromHumanJson(json.calendar);
+		const calendar = await Calendar.fromHumanJson(json.calendar, calendarService);
 		
 		return new State([], groups, subjects, teachers, [], objectives, lunchTimeRange, forbiddenSubjectIdsCombination, calendar);
 	}

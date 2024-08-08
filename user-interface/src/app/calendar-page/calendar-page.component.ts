@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, ChangeDetectionStrategy, Component, type OnInit, type OnDestroy, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, type OnInit, type OnDestroy, inject } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -58,7 +58,6 @@ import { IntervalInputComponent } from '../interval-input/interval-input.compone
 export class CalendarPageComponent implements OnInit, OnDestroy {
 	readonly store = inject(StoreService);
 	protected readonly calendarService = inject(CalendarService);
-	protected readonly changeDetectorRef = inject(ChangeDetectorRef);
 	protected readonly formBuilder = inject(NonNullableFormBuilder);
 	protected readonly undoStack = inject(UndoStackService);
 	
@@ -102,31 +101,18 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 			}
 
 			if (key === 'academie' && this.store.state.calendar.academie !== control.value) {
-				const schoolHolidays = control.value === null ? [] : await this.calendarService.getSchoolHolidays(control.value);
-				const publicHolidays = control.value === null ? [] : await this.calendarService.getPublicHolidays(control.value);
-
-				this.undoStack.do(state => {
-					state.calendar.academie = control.value;
-					state.calendar.schoolHolidays = schoolHolidays;
-					state.calendar.publicHolidays = publicHolidays;
-					state.calendar.weeks = state.calendar.createWeeks();
-				});
-
-				this.changeDetectorRef.markForCheck();
+				this.undoStack.do(state => { state.calendar.academie = control.value; });
+				await this.store.state.calendar.updateWeeksAndHolidays(this.calendarService);
 			}
 
 			if (key === 'interval' && !this.store.state.calendar.interval.equals(control.value)) {
-				this.undoStack.do(state => {
-					state.calendar.interval = control.value;
-					state.calendar.weeks = state.calendar.createWeeks();
-				});
+				this.undoStack.do(state => { state.calendar.interval = control.value; });
+				this.store.state.calendar.updateWeeks();
 			}
 
 			if (key === 'firstWeekNumber' && this.store.state.calendar.firstWeekNumber !== control.value) {
-				this.undoStack.do(state => {
-					state.calendar.firstWeekNumber = control.value;
-					state.calendar.weeks = state.calendar.createWeeks();
-				});
+				this.undoStack.do(state => { state.calendar.firstWeekNumber = control.value; });
+				this.store.state.calendar.updateWeeks();
 			}
 		}
 	}
@@ -142,10 +128,8 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 		}
 
 		const interruption = new Interruption(name, Interval.after(this.store.state.calendar.interval.start, {day: 1}));
-		this.undoStack.do(state => {
-			state.calendar.interruptions.push(castDraft(interruption));
-			state.calendar.weeks = state.calendar.createWeeks();
-		});
+		this.undoStack.do(state => { state.calendar.interruptions.push(castDraft(interruption)); });
+		this.store.state.calendar.updateWeeks();
 		this.selectedInterruptionIds = [interruption.id];
 	}
 	
@@ -153,10 +137,8 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 		const interruption = this.store.state.calendar.findInterruptionId(this.selectedInterruptionIds[0])!;
 		const index = this.store.state.calendar.interruptions.indexOf(interruption);
 		
-		this.undoStack.do(state => {
-			state.calendar.interruptions.splice(index, 1);
-			state.calendar.weeks = state.calendar.createWeeks();
-		});
+		this.undoStack.do(state => { state.calendar.interruptions.splice(index, 1); });
+		this.store.state.calendar.updateWeeks();
 		this.selectedInterruptionIds = this.store.state.calendar.interruptions.length > 0 ? [this.store.state.calendar.interruptions[Math.max(0, index - 1)].id] : [];
 	}
 
@@ -172,10 +154,8 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 		
 		const jsonInterruption = JSON.parse(jsonString) as HumanJson<Interruption>;
 		const interruption = Interruption.fromHumanJson(jsonInterruption);
-		this.undoStack.do(state => {
-			state.calendar.interruptions.push(interruption);
-			state.calendar.weeks = state.calendar.createWeeks();
-		});
+		this.undoStack.do(state => { state.calendar.interruptions.push(interruption); });
+		this.store.state.calendar.updateWeeks();
 		this.selectedInterruptionIds = [interruption.id];
 	}
 

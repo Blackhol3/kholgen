@@ -12,6 +12,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import * as FileSaver from 'file-saver-es';
 import { castDraft } from 'immer';
 
+import { CalendarService } from './calendar.service';
 import { toHumanString } from './json';
 import { State } from './state';
 import { validateHumanJson } from './state.schema';
@@ -56,6 +57,7 @@ import { DialogComponent } from './dialog/dialog.component';
 })
 export class AppComponent {
 	readonly undoStack = inject(UndoStackService);
+	protected readonly calendarService = inject(CalendarService);
 	protected readonly dialog = inject(MatDialog);
 	protected readonly store = inject(StoreService);
 
@@ -78,7 +80,9 @@ export class AppComponent {
 				const error = validateHumanJson.errors![0];
 				throw new SyntaxError(`'${error.instancePath}' ${error.message}.`);
 			}
-			this.undoStack.do(() => castDraft(State.fromHumanJson(json)));
+			
+			const newState = await State.fromHumanJson(json, this.calendarService);
+			this.undoStack.do(() => castDraft(newState));
 		}
 		catch (exception) {
 			if (exception instanceof SyntaxError) {

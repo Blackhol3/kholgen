@@ -88,7 +88,7 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 			) {
 				this.undoStack.do(state => {
 					(state.calendar.findInterruptionId(this.interruption.id)![key] as unknown) = control.value;
-					state.calendar.weeks = state.calendar.createWeeks();
+					state.calendar.updateWeeks();
 				});
 			}
 		}

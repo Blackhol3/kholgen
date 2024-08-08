@@ -14,7 +14,7 @@ export class Colle {
 	) {}
 
 	isDuringWorkingDay(state: State) {
-		const week = state.calendar.weeks.find(week => week.id === this.weekId)!;
+		const week = state.calendar.getWeeks().find(week => week.id === this.weekId)!;
 		const day = week.start.plus({days: this.timeslot.day});
 		
 		return state.calendar.isWorkingDay(day);

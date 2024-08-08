@@ -7,14 +7,22 @@ import { intervalFromISO } from './misc';
 import { nbDaysInWeek } from './timeslot';
 import { Week, type WorkingWeek } from './week';
 
+import { type CalendarService } from './calendar.service';
+
 export function getFirstValidDate() {
 	return DateTime.now().plus({week: 1}).startOf('week');
+}
+
+class CalendarCache {
+	weeks: readonly Week[] = [];
+	schoolHolidays: readonly Interval[] = [];
+	publicHolidays: readonly DateTime[] = [];
 }
 
 export class Calendar implements HumanJsonable {
 	[immerable] = true;
 
-	readonly weeks: Week[];
+	protected readonly cache = new CalendarCache();
 
 	constructor(
 		readonly academie: string | null = null,
@@ -24,13 +32,15 @@ export class Calendar implements HumanJsonable {
 		),
 		readonly firstWeekNumber = 1,
 		readonly interruptions: readonly Interruption[] = [],
-		readonly schoolHolidays: readonly Interval[] = [],
-		readonly publicHolidays: readonly DateTime[] = [],
-	) {
-		this.weeks = this.createWeeks();
+	) {}
+	
+	async updateWeeksAndHolidays(calendarService: CalendarService) {
+		this.cache.schoolHolidays = this.academie === null ? [] : await calendarService.getSchoolHolidays(this.academie);
+		this.cache.publicHolidays = this.academie === null ? [] : await calendarService.getPublicHolidays(this.academie);
+		this.updateWeeks();
 	}
 
-	createWeeks() {
+	updateWeeks() {
 		const weeks: Week[] = [];
 		let currentWeekId = 0;
 		let currentWeekNumber = this.firstWeekNumber;
@@ -64,11 +74,15 @@ export class Calendar implements HumanJsonable {
 			}
 		}
 
-		return weeks;
+		this.cache.weeks = weeks;
+	}
+
+	getWeeks() {
+		return this.cache.weeks;
 	}
 
 	getWorkingWeeks() {
-		return this.weeks.filter(week => week.isWorking()) as WorkingWeek[];
+		return this.cache.weeks.filter(week => week.isWorking()) as WorkingWeek[];
 	}
 
 	findInterruptionId<S extends this | Draft<this>>(this: S, id: S['interruptions'][number]['id']): S['interruptions'][number] | undefined {
@@ -79,8 +93,8 @@ export class Calendar implements HumanJsonable {
 		return (
 			date.weekday <= nbDaysInWeek
 			&& !this.interruptions.some(x => x.interval.contains(date) && x.id !== ignoredInterruptionId)
-			&& !this.schoolHolidays.some(x => x.contains(date))
-			&& !this.publicHolidays.some(x => x.hasSame(date, 'day'))
+			&& !this.cache.schoolHolidays.some(x => x.contains(date))
+			&& !this.cache.publicHolidays.some(x => x.hasSame(date, 'day'))
 		);
 	}
 
@@ -101,14 +115,22 @@ export class Calendar implements HumanJsonable {
 		;
 	}
 
-	static fromHumanJson(json: HumanJson<Calendar>) {
+	static async fromHumanJson(json: HumanJson<Calendar>, calendarService: CalendarService) {
+		const academies = await calendarService.getAcademies();
+		if (json.academie !== undefined && !academies.includes(json.academie)) {
+			throw new SyntaxError(`L'académie « ${json.academie} » n'existe pas.`);
+		}
+
 		const interval = intervalFromISO(json.interval, message => `L'intervalle de début et fin des colles est invalide (${message}).`);
-		return new Calendar(
+		const calendar = new Calendar(
 			json.academie,
 			Interval.fromDateTimes(interval.start, interval.end.endOf('day')),
 			json.firstWeekNumber,
 			json.interruptions?.map(jsonInterruption => Interruption.fromHumanJson(jsonInterruption)),
 		);
+		await calendar.updateWeeksAndHolidays(calendarService);
+
+		return calendar;
 	}
 }
 
