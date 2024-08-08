@@ -1,4 +1,5 @@
 import { AbstractControl, type ValidationErrors } from '@angular/forms';
+import { Interval } from 'luxon';
 
 export function notUniqueValidator<Type>(control: AbstractControl<string, string>, property: keyof Type, formObject: Type, objects: readonly Type[]): ValidationErrors | null {
 	for (const object of objects) {
@@ -57,4 +58,17 @@ type Entries<T> = {
 
 export function entries<T extends Record<string, unknown>>(object: T) {
 	return Object.entries(object) as Entries<T>;
+}
+
+export function intervalFromISO(text: string, errorMessage: (message: string) => string) {
+	try {
+		return Interval.fromISO(text);
+	}
+	catch (exception) {
+		if (exception instanceof Error) {
+			throw new SyntaxError(errorMessage(exception.message.replace(/^Invalid[^:]*: /, '')), {cause: exception});
+		}
+
+		throw exception;
+	}
 }

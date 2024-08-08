@@ -4,9 +4,11 @@
 		<mat-spinner />
 	</mat-dialog-content>
 }
-@else if (data.type === 'error') {
-	<h1 mat-dialog-title><mat-icon>error_outlined</mat-icon> Erreur</h1>
-	<mat-dialog-content>{{data.message}}</mat-dialog-content>
+@else if (data.type === 'invalid-json') {
+	<h1 mat-dialog-title><mat-icon>error_outlined</mat-icon> Fichier JSON invalide</h1>
+	<mat-dialog-content>
+		<div [outerHTML]="data.message"></div>
+	</mat-dialog-content>
 	<mat-dialog-actions align="end">
 		<button mat-button mat-dialog-close>OK</button>
 	</mat-dialog-actions>

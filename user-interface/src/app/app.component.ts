@@ -12,12 +12,13 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import * as FileSaver from 'file-saver-es';
 import { castDraft } from 'immer';
 
-import { type HumanJson, toHumanString } from './json';
+import { toHumanString } from './json';
 import { State } from './state';
+import { validateHumanJson } from './state.schema';
 import { StoreService } from './store.service';
 import { UndoStackService } from './undo-stack.service';
 
-import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
+import { DialogComponent } from './dialog/dialog.component';
 
 @Component({
 	selector: 'app-root',
@@ -72,12 +73,16 @@ export class AppComponent {
 		}
 		
 		try {
-			const json = JSON.parse(await files[0].text()) as HumanJson<State>;
-			this.undoStack.do(() => castDraft(State.fromHumanJson(json)))
+			const json = JSON.parse(await files[0].text()) as unknown;
+			if (!validateHumanJson(json)) {
+				const error = validateHumanJson.errors![0];
+				throw new SyntaxError(`'${error.instancePath}' ${error.message}.`);
+			}
+			this.undoStack.do(() => castDraft(State.fromHumanJson(json)));
 		}
 		catch (exception) {
 			if (exception instanceof SyntaxError) {
-				this.dialog.open(ConnectionDialogComponent, {data: {type: 'error', message: exception.message}});
+				this.dialog.open(DialogComponent, {data: {type: 'invalid-json', message: exception.message}});
 			}
 			else {
 				throw exception;

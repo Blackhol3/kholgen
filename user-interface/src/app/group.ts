@@ -29,31 +29,27 @@ export class Group implements HumanJsonable {
 	setNextGroupFromHumanJson(json: HumanJson<Group>, groups: readonly Group[]): Group {
 		const nextGroup = groups.find(group => group.name === json.nextGroup);
 		if (json.duration !== undefined && nextGroup !== undefined) {
-			return this.setNextGroup(json.duration!, nextGroup);
+			return this.setNextGroup(json.duration, nextGroup);
 		}
 		
 		return this;
 	}
 	
 	toHumanJson(state: State) {
-		return Object.assign(
-			{
-				name: this.name,
-				availableTimeslots: this.availableTimeslots.map(timeslot => timeslot.toString()),
-				trioIds: [...this.trioIds],
-			},
-			this.nextGroupId !== null ? {
-				duration: this.duration,
-				nextGroup: state.findId('groups', this.nextGroupId)!.name,
-			} : {}
-		);
+		return {
+			name: this.name,
+			availableTimeslots: this.availableTimeslots.map(timeslot => timeslot.toString()),
+			trios: [...this.trioIds],
+			duration: this.duration ?? undefined,
+			nextGroup: this.nextGroupId !== null ? state.findId('groups', this.nextGroupId)!.name : undefined,
+		};
 	}
 	
 	static fromHumanJson(json: HumanJson<Group>) {
 		return new Group(
 			json.name,
 			json.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
-			new Set(json.trioIds),
+			new Set(json.trios),
 		);
 	}
 }

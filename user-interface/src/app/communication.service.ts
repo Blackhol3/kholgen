@@ -9,7 +9,7 @@ import { toSolverJson } from './json';
 import { Timeslot } from './timeslot';
 import { StoreService } from './store.service';
 
-import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
+import { DialogComponent } from './dialog/dialog.component';
 
 type JsonColle = {
 	teacherId: string,
@@ -58,7 +58,7 @@ export class CommunicationService {
 			let dialogTimeout: number | undefined;
 			if (this.dialog.getDialogById('connection') === undefined) {
 				dialogTimeout = window.setTimeout(
-					() => this.dialog.open(ConnectionDialogComponent, { data: {type: 'connection'} }),
+					() => this.dialog.open(DialogComponent, { data: {type: 'connection'} }),
 					300
 				);
 			}

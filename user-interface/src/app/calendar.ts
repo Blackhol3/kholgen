@@ -3,6 +3,7 @@ import { DateTime, Interval } from 'luxon';
 
 import { Interruption } from './interruption';
 import type { HumanJson, HumanJsonable } from './json';
+import { intervalFromISO } from './misc';
 import { nbDaysInWeek } from './timeslot';
 import { Week, type WorkingWeek } from './week';
 
@@ -101,7 +102,7 @@ export class Calendar implements HumanJsonable {
 	}
 
 	static fromHumanJson(json: HumanJson<Calendar>) {
-		const interval = Interval.fromISO(json.interval);
+		const interval = intervalFromISO(json.interval, message => `L'intervalle de début et fin des colles est invalide (${message}).`);
 		return new Calendar(
 			json.academie,
 			Interval.fromDateTimes(interval.start, interval.end.endOf('day')),

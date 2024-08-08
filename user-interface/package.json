@@ -25,6 +25,7 @@
     "@angular/router": "^18.0.5",
     "@types/color": "^3.0.6",
     "@types/luxon": "^3.4.2",
+    "ajv": "^8.17.1",
     "color": "^4.2.3",
     "exceljs": "^4.4.0",
     "file-saver-es": "^2.0.5",

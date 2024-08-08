@@ -87,7 +87,7 @@ export class State implements HumanJsonable, SolverJsonable {
 			subjects: this.subjects,
 			teachers: this.teachers,
 			objectives: this.objectives,
-			lunchTimeRange: this.lunchTimeRange,
+			lunchTimeRange: this.lunchTimeRange as (readonly number[] | undefined),
 			forbiddenSubjectsCombination:
 				this.forbiddenSubjectIdsCombination.size === 0
 					? undefined
@@ -109,7 +109,6 @@ export class State implements HumanJsonable, SolverJsonable {
 		};
 	}
 	
-	/** @todo Throw better error messages **/
 	static fromHumanJson(json: HumanJson<State>) {
 		const groups = json.groups.map(group => Group.fromHumanJson(group));
 		for (let idGroup = 0; idGroup < groups.length; ++idGroup) {
@@ -117,19 +116,33 @@ export class State implements HumanJsonable, SolverJsonable {
 		}
 		
 		const subjects = json.subjects.map(subject => Subject.fromHumanJson(subject));
-		const teachers = json.teachers.map(teacher => Teacher.fromHumanJson(teacher, subjects)!);
-		
-		const objectives = [];
-		for (const objective of json.objectives) {
-			objectives.push(defaultObjectives.find(defaultObjective => defaultObjective.name === objective)!);
-		}
-		
-		const lunchTimeRange = json.lunchTimeRange ?? defaultLunchTimeRange;
+		const teachers = json.teachers.map(teacher => Teacher.fromHumanJson(teacher, subjects));
+		const objectives = json.objectives.map(objective => {
+			const defaultObjective = defaultObjectives.find(defaultObjective => defaultObjective.name === objective);
+			if (defaultObjective === undefined) {
+				throw new SyntaxError(`L'objectif « ${objective} » n'existe pas.`);
+			}
 
+			return defaultObjective;
+		});
+		
+		if (json.lunchTimeRange !== undefined && json.lunchTimeRange.length !== 2) {
+			throw new SyntaxError(`Les horaires du déjeuner doivent être formés d'exactement deux nombres.`);
+		}
+		const lunchTimeRange = json.lunchTimeRange?.slice(0, 2) as [number, number] ?? defaultLunchTimeRange;
+
+		if (json.forbiddenSubjectsCombination !== undefined && json.forbiddenSubjectsCombination.length === 1) {
+			throw new SyntaxError(`La combinaison interdite de matières doit comportement au moins deux matières.`);
+		}
 		const forbiddenSubjectIdsCombination = new Set(
-			json.forbiddenSubjectsCombination === undefined ? [] : json.forbiddenSubjectsCombination.map(
-				subjectName => subjects.find(subject => subject.name === subjectName)!.id
-			)
+			json.forbiddenSubjectsCombination === undefined ? [] : json.forbiddenSubjectsCombination.map(subjectName => {
+				const subject = subjects.find(subject => subject.name === subjectName);
+				if (subject === undefined) {
+					throw new SyntaxError(`La matière « ${subjectName} », inclue dans la combinaison interdite, n'a pas été définie.`);
+				}
+				
+				return subject.id;
+			})
 		);
 
 		const calendar = Calendar.fromHumanJson(json.calendar);

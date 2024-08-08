@@ -1,0 +1,12 @@
+mat-spinner {
+	margin: auto;
+}
+
+mat-icon {
+	vertical-align: middle;
+}
+
+:host ::ng-deep code {
+	background-color: rgba(0, 0, 0, 0.1);
+	padding: 0 2px;
+}

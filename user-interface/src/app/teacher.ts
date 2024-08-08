@@ -30,7 +30,11 @@ export class Teacher implements HumanJsonable {
 	
 	static fromHumanJson(json: HumanJson<Teacher>, subjects: readonly Subject[]) {
 		const subject = subjects.find(subject => subject.name === json.subject);
-		return subject === undefined ? undefined : new Teacher(
+		if (subject === undefined) {
+			throw new SyntaxError(`La matière « ${json.subject} », enseignée par « ${json.name} », n'a pas été définie.`);
+		}
+
+		return new Teacher(
 			json.name,
 			subject.id,
 			json.availableTimeslots.map(timeslot => Timeslot.fromString(timeslot)),
