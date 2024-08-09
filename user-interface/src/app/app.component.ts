@@ -6,20 +6,26 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
 import * as FileSaver from 'file-saver-es';
 import { castDraft } from 'immer';
 
-import { CalendarService } from './calendar.service';
 import { toHumanString } from './json';
 import { State } from './state';
 import { validateHumanJson } from './state.schema';
+
+import { CalendarService } from './calendar.service';
+import { ICalExporterService } from './ical-exporter.service';
+import { SpreadsheetExporterService } from './spreadsheet-exporter.service';
 import { StoreService } from './store.service';
 import { UndoStackService } from './undo-stack.service';
 
 import { DialogComponent } from './dialog/dialog.component';
+
+type ExportType = 'json' | 'xlsx' | 'csv' | 'ics';
 
 @Component({
 	selector: 'app-root',
@@ -51,6 +57,7 @@ import { DialogComponent } from './dialog/dialog.component';
 		MatButtonModule,
 		MatIconModule,
 		MatListModule,
+		MatMenuModule,
 		MatSidenavModule,
 		MatToolbarModule,
 	],
@@ -59,6 +66,8 @@ export class AppComponent {
 	readonly undoStack = inject(UndoStackService);
 	protected readonly calendarService = inject(CalendarService);
 	protected readonly dialog = inject(MatDialog);
+	protected readonly iCalExporter = inject(ICalExporterService);
+	protected readonly spreadsheetExporter = inject(SpreadsheetExporterService);
 	protected readonly store = inject(StoreService);
 
 	@ViewChild('importFileInput') importFileInput!: ElementRef<HTMLInputElement>;
@@ -95,14 +104,35 @@ export class AppComponent {
 	}
 	
 	/** @todo Add a warning that this does not save the results, only the configuration */
-	exportFile() {
-		FileSaver.saveAs(
-			new Blob(
-				[toHumanString(this.store.state, "\t")],
-				{type: 'application/json'},
-			),
-			'Colloscope.json',
-		);
+	async exportFile(extension: ExportType) {
+		let data: Blob;
+		let filename: string;
+		switch (extension) {
+			case 'json':
+				data = new Blob(
+					[toHumanString(this.store.state, "\t")],
+					{type: 'application/json'},
+				);
+				filename = 'Colloscope.json';
+				break;
+			
+			case 'xlsx':
+				data = await this.spreadsheetExporter.asExcel(this.store.state);
+				filename = 'Colloscope.xlsx';
+				break;
+			
+			case 'csv':
+				data = await this.spreadsheetExporter.asCsv(this.store.state);
+				filename = 'Colloscope.csv';
+				break;
+			
+			case 'ics':
+				data = await this.iCalExporter.asZip(this.store.state);
+				filename = 'Calendrier.zip';
+				break;
+		}
+
+		FileSaver.saveAs(data, filename);
 	}
 	
 	@HostListener('window:keydown', ['$event'])

@@ -1,12 +1,6 @@
 <div>
 	@if (!isRunning) { <button mat-raised-button (click)="compute()">Démarrer le calcul <mat-icon>play_arrow</mat-icon></button> }
 	@else { <button mat-raised-button (click)="stopComputation()">Arrêter le calcul <mat-icon>stop</mat-icon></button> }
-	<button mat-raised-button [disabled]="store.state.colles.length === 0" [matMenuTriggerFor]="saveMenu">Sauvegarder…</button>
-	<mat-menu #saveMenu="matMenu" class="no-overflow">
-		<button mat-menu-item (click)="saveAsExcel()">Excel (.xlsx)</button>
-		<button mat-menu-item (click)="saveAsCsv()">CSV (.csv)</button>
-		<button mat-menu-item (click)="saveAsICal()">iCalendar (.ics)</button>
-	</mat-menu>
 </div>
 
 @if (isRunning) {

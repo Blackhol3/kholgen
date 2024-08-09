@@ -1,9 +1,15 @@
 <mat-toolbar color="primary">
 	<span>KhôlGen</span>
 	<div>
-		<button mat-raised-button (click)="startImportFile()">Importer <mat-icon>file_download</mat-icon></button>
-		<button mat-raised-button (click)="exportFile()" [disabled]="!undoStack.canUndo()">Exporter <mat-icon>file_upload</mat-icon></button>
 		<input #importFileInput type="file" accept="application/json" (change)="importFile()" />
+		<button mat-raised-button (click)="startImportFile()">Importer <mat-icon>file_download</mat-icon></button>
+		<button mat-raised-button [disabled]="!undoStack.canUndo()" [matMenuTriggerFor]="exportMenu">Exporter… <mat-icon>file_upload</mat-icon></button>
+		<mat-menu #exportMenu="matMenu" class="no-overflow">
+			<button mat-menu-item (click)="exportFile('json')">JSON (.json)</button>
+			<button mat-menu-item (click)="exportFile('xlsx')" [disabled]="store.state.colles.length === 0">Excel (.xlsx)</button>
+			<button mat-menu-item (click)="exportFile('csv')"  [disabled]="store.state.colles.length === 0">CSV (.csv)</button>
+			<button mat-menu-item (click)="exportFile('ics')"  [disabled]="store.state.colles.length === 0">iCalendar (.ics)</button>
+		</mat-menu>
 	</div>
 </mat-toolbar>
 
