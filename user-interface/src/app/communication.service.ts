@@ -134,7 +134,7 @@ export class CommunicationService {
 			state.colles = jsonColles.map(colle => new Colle(
 				colle.teacherId,
 				new Timeslot(colle.timeslot.day, colle.timeslot.hour),
-				state.trios[colle.trioId].id,
+				colle.trioId,
 				colle.weekId,
 			));
 		});

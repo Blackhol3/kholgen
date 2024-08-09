@@ -34,8 +34,8 @@
 	@for (week of store.state.calendar.getWorkingWeeks(); track week.id) {
 		<ng-container matColumnDef="week-{{week.id}}">
 			<th mat-header-cell *matHeaderCellDef class="week-header-cell">{{week.number}}</th>
-			<td mat-cell *matCellDef="let rowData" [class]="rowData.triosByWeek[$index] ? 'trio trio-' + (rowData.triosByWeek[$index].id + 1) : ''">
-				{{rowData.triosByWeek[$index] ? rowData.triosByWeek[$index].id + 1 : ''}}
+			<td mat-cell *matCellDef="let rowData" [class]="rowData.triosByWeek[$index] ? ('trio trio-' + rowData.triosByWeek[$index].id) : ''">
+				{{rowData.triosByWeek[$index] ? rowData.triosByWeek[$index].id : ''}}
 			</td>
 		</ng-container>
 	}

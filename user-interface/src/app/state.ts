@@ -82,6 +82,14 @@ export class State implements HumanJsonable, SolverJsonable {
 		}
 	}
 
+	createTrios() {
+		const trioIds = [...new Set(this.groups.flatMap(group => [...group.trioIds]))].sort((a, b) => a - b);
+		return trioIds.map(trioId => new Trio(
+			trioId,
+			this.groups.filter(group => group.trioIds.has(trioId)).map(group => group.id),
+		));
+	}
+
 	toHumanJson() {
 		return {
 			groups: this.groups,

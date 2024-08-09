@@ -73,7 +73,7 @@ export class SpreadsheetExporterService {
 						const weekColumnIndex = this.workingWeeks.indexOf(week);
 
 						const cell = worksheet.getCell(row, TeachersSectionColumn.FirstColle + weekColumnIndex);
-						cell.value = colle.trioId + 1;
+						cell.value = colle.trioId;
 						this.fillIfNotWorkingDayCell(cell, colle);
 					}
 
@@ -163,7 +163,7 @@ export class SpreadsheetExporterService {
 			row += maximalNumberOfCollesByWeek
 
 			worksheet.mergeCells(trioStartingRow, StudentsSectionColumn.Trio, row - 1, StudentsSectionColumn.Trio);
-			worksheet.getCell(trioStartingRow, StudentsSectionColumn.Trio).value = `G${trio.id + 1}`;
+			worksheet.getCell(trioStartingRow, StudentsSectionColumn.Trio).value = `G${trio.id}`;
 		}
 
 		this.setDatesHeader(worksheet, StudentsSectionColumn.FirstColle, dateRow);

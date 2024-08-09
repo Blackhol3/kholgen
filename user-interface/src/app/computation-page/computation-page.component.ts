@@ -11,8 +11,6 @@ import { castDraft } from 'immer';
 import { Subscription } from 'rxjs';
 import * as FileSaver from 'file-saver-es';
 
-import { Trio } from '../trio';
-
 import { CommunicationService } from '../communication.service';
 import { ICalExporterService } from '../ical-exporter.service';
 import { SpreadsheetExporterService } from '../spreadsheet-exporter.service';
@@ -65,30 +63,13 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 		this.storeSubscription?.unsubscribe();
 	}
 	
-	/** @todo Do not renumbered trios */
-	compute() {
-		this.store.do(state => {
-			const trioInitialGroupIds: string[][] = [];
-			for (const group of state.groups) {
-				for (const trioId of group.trioIds) {
-					if (trioInitialGroupIds[trioId] === undefined) {
-						trioInitialGroupIds[trioId] = [];
-					}
-					trioInitialGroupIds[trioId].push(group.id);
-				}
-			}
-
-			state.trios = [];
-			for (const initialGroupIds of trioInitialGroupIds.filter(x => x !== undefined)) {
-				state.trios.push(castDraft(new Trio(state.trios.length, initialGroupIds)));
-			}
-		});
+	async compute() {
+		this.store.do(state => { state.trios = castDraft(state.createTrios()); });
 		
-		void this.communication.connect().then(() => {
-			this.isRunning = true;
-			this.communication.compute(this.store).subscribe({
-				complete: () => { this.isRunning = false; },
-			});
+		await this.communication.connect();
+		this.isRunning = true;
+		this.communication.compute(this.store).subscribe({
+			complete: () => { this.isRunning = false; },
 		});
 	}
 	

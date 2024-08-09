@@ -51,7 +51,7 @@ export class ICalExporterService {
 				transparency: ICalEventTransparency.OPAQUE,
 
 				summary: 'Colle',
-				description: `Trinôme ${colle.trioId + 1}`,
+				description: `Trinôme ${colle.trioId}`,
 				alarms: [] as ICalAlarmData[],
 			};
 
@@ -121,7 +121,7 @@ export class ICalExporterService {
 
 		return new File(
 			[calendar.toString()],
-			`Trinôme/${trio.id + 1}.ics`,
+			`Trinôme/${trio.id}.ics`,
 			{type: 'text/calendar'},
 		);
 	}
