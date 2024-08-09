@@ -11,11 +11,13 @@ import { castDraft } from 'immer';
 import { Subscription } from 'rxjs';
 import * as FileSaver from 'file-saver-es';
 
+import { Trio } from '../trio';
+
 import { CommunicationService } from '../communication.service';
+import { ICalExporterService } from '../ical-exporter.service';
+import { SpreadsheetExporterService } from '../spreadsheet-exporter.service';
 import { StoreService } from '../store.service';
 
-import { SpreadsheetExporterService } from '../spreadsheet-exporter.service';
-import { Trio } from '../trio';
 import { ColloscopeComponent } from '../colloscope/colloscope.component';
 
 @Component({
@@ -48,6 +50,7 @@ import { ColloscopeComponent } from '../colloscope/colloscope.component';
 export class ComputationPageComponent implements OnInit, OnDestroy {
 	readonly store = inject(StoreService);
 	protected readonly communication = inject(CommunicationService);
+	protected readonly iCalExporter = inject(ICalExporterService);
 	protected readonly spreadsheetExporter = inject(SpreadsheetExporterService);
 
 	isRunning = false;
@@ -99,5 +102,9 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 	
 	async saveAsExcel() {
 		FileSaver.saveAs(await this.spreadsheetExporter.asExcel(this.store.state), 'Colloscope.xlsx');
+	}
+
+	async saveAsICal() {
+		FileSaver.saveAs(await this.iCalExporter.asZip(this.store.state), 'Test.zip');
 	}
 }

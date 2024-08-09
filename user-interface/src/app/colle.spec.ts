@@ -8,11 +8,10 @@ import { Week } from './week';
 function specificDay(day: DateTime) {
 	return {
 		asymmetricMatch: (actual: unknown) => {
-			if (!(actual instanceof DateTime)) {
-				return false;
-			}
-
-			return actual.hasSame(day, 'day');
+			return actual instanceof DateTime && actual.hasSame(day, 'day');
+		},
+		jasmineToString: () => {
+			return day.toISODate();
 		}
 	};
 }
@@ -22,20 +21,20 @@ describe('Colle', () => {
 		expect(new Colle('teacher', new Timeslot(Day.Monday, 13), 42, 1337)).toBeTruthy();
 	});
 
-	it('should check if it is during a working day', () => {
+	it('should get the start date', () => {
 		const colle1 = new Colle('teacher', new Timeslot(Day.Tuesday, 13), 42, 1337);
-		const colle2 = new Colle('teacher', new Timeslot(Day.Friday, 13), 42, 1337);
+		const colle2 = new Colle('teacher', new Timeslot(Day.Wednesday, 13), 42, 1337);
+		const colle3 = new Colle('teacher', new Timeslot(Day.Friday, 13), 42, 35);
 
 		const today = DateTime.now().startOf('week');
 		const state = new State();
-		const spy = spyOn(state.calendar, 'isWorkingDay');
-		spyOn(state.calendar, 'getWeeks').and.returnValue([new Week(1337, 9, today)]);
+		spyOn(state.calendar, 'getWeeks').and.returnValue([
+			new Week(1337, 9, today),
+			new Week(35, 9, today.plus({week: 1})),
+		]);
 
-		colle1.isDuringWorkingDay(state);
-		expect(state.calendar.isWorkingDay).toHaveBeenCalledOnceWith(specificDay(today.plus({day: 1})));
-
-		spy.calls.reset();
-		colle2.isDuringWorkingDay(state);
-		expect(state.calendar.isWorkingDay).toHaveBeenCalledOnceWith(specificDay(today.plus({day: 4})));
+		expect(colle1.getStartDate(state)).toEqual(specificDay(today.plus({days: 1})));
+		expect(colle2.getStartDate(state)).toEqual(specificDay(today.plus({days: 2})));
+		expect(colle3.getStartDate(state)).toEqual(specificDay(today.plus({week: 1, days: 4})));
 	});
 });
