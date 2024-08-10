@@ -117,17 +117,17 @@ export class AppComponent {
 				break;
 			
 			case 'xlsx':
-				data = await this.spreadsheetExporter.asExcel(this.store.state);
+				data = await this.spreadsheetExporter.asExcel(this.store.state.computation!);
 				filename = 'Colloscope.xlsx';
 				break;
 			
 			case 'csv':
-				data = await this.spreadsheetExporter.asCsv(this.store.state);
+				data = await this.spreadsheetExporter.asCsv(this.store.state.computation!);
 				filename = 'Colloscope.csv';
 				break;
 			
 			case 'ics':
-				data = await this.iCalExporter.asZip(this.store.state);
+				data = await this.iCalExporter.asZip(this.store.state.computation!);
 				filename = 'Calendrier.zip';
 				break;
 		}

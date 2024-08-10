@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 
+import { castDraft } from 'immer';
 import { type ChannelObject, QWebChannel } from 'qwebchannel';
 import { Observable, Subject } from 'rxjs';
 
@@ -102,6 +103,13 @@ export class CommunicationService {
 		if (this.computeSubject !== undefined) {
 			return this.computeSubject.asObservable();
 		}
+
+		store.do(state => {
+			state.computation = castDraft(store.state.prepareComputation());
+			for (const objective of state.objectives) {
+				objective.setValue(undefined);
+			}
+		});
 		
 		this.computeSubject = new Subject<void>();
 		this.communication.solutionFound.connect((jsonColles, jsonObjectiveComputations) => {
@@ -131,7 +139,7 @@ export class CommunicationService {
 	
 	protected importJsonColles(store: StoreService, jsonColles: JsonColle[]): void {
 		store.do(state => {
-			state.colles = jsonColles.map(colle => new Colle(
+			state.computation!.colles = jsonColles.map(colle => new Colle(
 				colle.teacherId,
 				new Timeslot(colle.timeslot.day, colle.timeslot.hour),
 				colle.trioId,

@@ -1,6 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, type OnDestroy, type OnInit, inject } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 
+import { Subscription } from 'rxjs';
+
+import { Computation } from '../computation';
 import { type Subject } from '../subject';
 import { type Teacher } from '../teacher';
 import { type Timeslot } from '../timeslot';
@@ -20,28 +23,45 @@ type TableRow = {
 	selector: 'app-colloscope',
 	templateUrl: './colloscope.component.html',
 	styleUrls: ['./colloscope.component.scss'],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 	standalone: true,
 	imports: [MatTableModule],
 })
-export class ColloscopeComponent {
+export class ColloscopeComponent implements OnInit, OnDestroy {
 	readonly store = inject(StoreService);
+	protected readonly changeDetectorRef = inject(ChangeDetectorRef);
+
+	storeSubscription: Subscription | undefined;
+	computation: Computation = new Computation();
 
 	tableData: TableRow[] = [];
 	tableWeeksHeaderRowDef: string[] = [];
 	tableSubjectRowspan: number[] = [];
 	tableTeacherRowspan: number[] = [];
+
+	ngOnInit() {
+		this.storeSubscription = this.store.changeObservable.subscribe(() => {
+			this.computation = this.store.state.computation ?? this.store.state.prepareComputation();
+			this.computeTableData();
+			this.changeDetectorRef.markForCheck();
+		});
+	}
 	
-	getTableData() {
+	ngOnDestroy() {
+		this.storeSubscription?.unsubscribe();
+	}
+	
+	protected computeTableData() {
 		this.tableData = [];
-		for (const subject of this.store.state.subjects) {
-			for (const teacher of this.store.state.teachers.filter(t => t.subjectId === subject.id)) {
+		for (const subject of this.computation.subjects) {
+			for (const teacher of this.computation.teachers.filter(t => t.subjectId === subject.id)) {
 				for (const timeslot of teacher.availableTimeslots) {
 					const triosByWeek = [];
-					for (const week of this.store.state.calendar.getWorkingWeeks()) {
+					for (const week of this.computation.calendar.getWorkingWeeks()) {
 						triosByWeek.push(this.getTrio(teacher, timeslot, week));
 					}
 					
-					if (this.store.state.colles.length === 0 || triosByWeek.some(trio => trio !== null)) {
+					if (this.computation.colles.length === 0 || triosByWeek.some(trio => trio !== null)) {
 						this.tableData.push({
 							subject: subject,
 							teacher: teacher,
@@ -53,25 +73,23 @@ export class ColloscopeComponent {
 			}
 		}
 		
-		this.tableWeeksHeaderRowDef = this.store.state.calendar.getWorkingWeeks().map(week => 'week-' + week.id);
+		this.tableWeeksHeaderRowDef = this.computation.calendar.getWorkingWeeks().map(week => 'week-' + week.id);
 		
 		this.tableSubjectRowspan = this.getRowspanArray('subject');
 		this.tableTeacherRowspan = this.getRowspanArray('teacher');
-		
-		return this.tableData;
 	}
 	
-	getTrio(teacher: Teacher, timeslot: Timeslot, week: Week): Trio | null {
-		for (const colle of this.store.state.colles) {
+	protected getTrio(teacher: Teacher, timeslot: Timeslot, week: Week): Trio | null {
+		for (const colle of this.computation.colles) {
 			if (colle.teacherId === teacher.id && colle.timeslot.isEqual(timeslot) && colle.weekId === week.id) {
-				return this.store.state.findId('trios', colle.trioId)!;
+				return this.computation.trios.find(trio => trio.id === colle.trioId)!;
 			}
 		}
 		
 		return null;
 	}
 	
-	getRowspanArray(key: keyof TableRow): number[] {
+	protected getRowspanArray(key: keyof TableRow): number[] {
 		const array = [1];
 		let lastIndex = 0;
 		for (let i = 1; i < this.tableData.length; ++i) {

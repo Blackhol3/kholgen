@@ -1,12 +1,11 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, type OnInit, type OnDestroy, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, type OnInit, type OnDestroy, ViewChild, inject } from '@angular/core';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTable, MatTableModule } from '@angular/material/table';
 
-import { castDraft } from 'immer';
 import { Subscription } from 'rxjs';
 
 import { CommunicationService } from '../communication.service';
@@ -30,6 +29,7 @@ import { ColloscopeComponent } from '../colloscope/colloscope.component';
 			]),
 		]),
 	],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 	standalone: true,
 	imports: [
 		MatButtonModule,
@@ -42,6 +42,7 @@ import { ColloscopeComponent } from '../colloscope/colloscope.component';
 })
 export class ComputationPageComponent implements OnInit, OnDestroy {
 	readonly store = inject(StoreService);
+	protected readonly changeDetectorRef = inject(ChangeDetectorRef);
 	protected readonly communication = inject(CommunicationService);
 
 	isRunning = false;
@@ -49,7 +50,10 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 	@ViewChild(MatTable) objectivesTable: MatTable<unknown> | undefined;
 	
 	ngOnInit() {
-		this.storeSubscription = this.store.changeObservable.subscribe(() => this.objectivesTable!.renderRows());
+		this.storeSubscription = this.store.changeObservable.subscribe(() => {
+			this.objectivesTable!.renderRows();
+			this.changeDetectorRef.markForCheck();
+		});
 	}
 	
 	ngOnDestroy() {
@@ -57,12 +61,13 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 	}
 	
 	async compute() {
-		this.store.do(state => { state.trios = castDraft(state.createTrios()); });
-		
 		await this.communication.connect();
 		this.isRunning = true;
 		this.communication.compute(this.store).subscribe({
-			complete: () => { this.isRunning = false; },
+			complete: () => {
+				this.isRunning = false;
+				this.changeDetectorRef.markForCheck();
+			},
 		});
 	}
 	

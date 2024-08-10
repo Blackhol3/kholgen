@@ -1,10 +1,8 @@
 import { type Draft, castDraft } from 'immer';
 
-import { Group } from './group';
 import { State } from './state';
 import { Subject } from './subject';
 import { Teacher } from './teacher';
-import { Trio } from './trio';
 
 describe('State', () => {
 	it('should create an instance', () => {
@@ -70,24 +68,5 @@ describe('State', () => {
 			expect(state.forbiddenSubjectIdsCombination).toEqual(forbiddenSubjectIdsCombination);
 			expect(result.wasInForbiddenCombination).toBeFalse();
 		});
-	});
-
-	it('should create trios', () => {
-		const state = castDraft(new State());
-		state.groups = castDraft([
-			new Group('A', [], new Set([1, 2, 3])),
-			new Group('B', [], new Set([2, 5])),
-			new Group('C', [], new Set([1, 2, 9])),
-		]);
-		const groupIndexesToId = (...indexes: number[]) => indexes.map(i => state.groups[i].id);
-
-		const trios = state.createTrios();
-		expect(trios).toEqual([
-			new Trio(1, groupIndexesToId(0, 2)),
-			new Trio(2, groupIndexesToId(0, 1, 2)),
-			new Trio(3, groupIndexesToId(0)),
-			new Trio(5, groupIndexesToId(1)),
-			new Trio(9, groupIndexesToId(2)),
-		])
 	});
 });

@@ -4,7 +4,7 @@ import Color from 'color';
 import { type Cell, Workbook, type Worksheet } from 'exceljs';
 
 import { type Colle } from './colle';
-import { type State } from './state';
+import { type Computation } from './computation';
 import { dayNames } from './timeslot';
 import { type WorkingWeek } from './week';
 
@@ -25,7 +25,7 @@ enum StudentsSectionColumn {
 	providedIn: 'root'
 })
 export class SpreadsheetExporterService {
-	protected state!: State;
+	protected computation!: Computation;
 	protected workingWeeks!: WorkingWeek[];
 
 	protected createWorkbook() {
@@ -54,11 +54,11 @@ export class SpreadsheetExporterService {
 		this.setStandardColumnStyle(worksheet, TeachersSectionColumn.Subject, TeachersSectionColumn.FirstColle + this.workingWeeks.length - 1);
 
 		let row = firstColleRow;
-		for (const subject of this.state.subjects) {
+		for (const subject of this.computation.subjects) {
 			const subjectStartingRow = row;
-			const teachersOfSubject = this.state.teachers.filter(teacher => teacher.subjectId === subject.id);
+			const teachersOfSubject = this.computation.teachers.filter(teacher => teacher.subjectId === subject.id);
 			const teachersIdsOfSubject = teachersOfSubject.map(teacher => teacher.id);
-			const collesWithSubject = this.state.colles.filter(colle => teachersIdsOfSubject.includes(colle.teacherId));
+			const collesWithSubject = this.computation.colles.filter(colle => teachersIdsOfSubject.includes(colle.teacherId));
 
 			for (const teacher of teachersOfSubject) {
 				const teacherStartingRow = row;
@@ -100,9 +100,9 @@ export class SpreadsheetExporterService {
 			bottomBorderedRows.push(row - 1);
 		}
 
-		worksheet.getColumn(TeachersSectionColumn.Subject).width = this.state.subjects.map(x => x.name.length).sort((a, b) => b - a)[0];
+		worksheet.getColumn(TeachersSectionColumn.Subject).width = this.computation.subjects.map(x => x.name.length).sort((a, b) => b - a)[0];
 		worksheet.getColumn(TeachersSectionColumn.TeacherCode).width = 5.5;
-		worksheet.getColumn(TeachersSectionColumn.TeacherName).width = this.state.teachers.map(x => x.name.length).sort((a, b) => b - a)[0];
+		worksheet.getColumn(TeachersSectionColumn.TeacherName).width = this.computation.teachers.map(x => x.name.length).sort((a, b) => b - a)[0];
 		worksheet.getColumn(TeachersSectionColumn.Timeslot).width = dayNames.map(x => x.length).sort((a, b) => b - a)[0] + 5;
 
 		this.setDatesHeader(worksheet, TeachersSectionColumn.FirstColle, dateRow, 90);
@@ -135,22 +135,22 @@ export class SpreadsheetExporterService {
 		this.setStandardColumnStyle(worksheet, StudentsSectionColumn.Trio, StudentsSectionColumn.FirstColle + this.workingWeeks.length - 1);
 
 		let row = firstColleRow;
-		for (const trio of this.state.trios.toSorted((a, b) => a.id - b.id)) {
+		for (const trio of this.computation.trios.toSorted((a, b) => a.id - b.id)) {
 			const trioStartingRow = row;
-			const collesOfTrio = this.state.colles.filter(colle => colle.trioId === trio.id);
+			const collesOfTrio = this.computation.colles.filter(colle => colle.trioId === trio.id);
 
 			for (const [i, week] of this.workingWeeks.entries()) {
 				const collesOfTrioInWeek = collesOfTrio.filter(colle => colle.weekId === week.id);
 
 				for (const [j, colle] of collesOfTrioInWeek.entries()) {
-					const teacher = this.state.findId('teachers', colle.teacherId)!;
-					const teachersOfSubject = this.state.teachers.filter(x => x.subjectId === teacher.subjectId);
-					const subject = this.state.findId('subjects', teacher.subjectId)!;
+					const teacher = this.computation.findId('teachers', colle.teacherId)!;
+					const teachersOfSubject = this.computation.teachers.filter(x => x.subjectId === teacher.subjectId);
+					const subject = this.computation.findId('subjects', teacher.subjectId)!;
 					
 					const cell = worksheet.getCell(trioStartingRow + j, StudentsSectionColumn.FirstColle + i);
 					cell.value = `${subject.shortName}${teachersOfSubject.indexOf(teacher) + 1} ${colle.timeslot.toShortString()}`;
 
-					if (colle.isDuringWorkingDay(this.state)) {
+					if (colle.isDuringWorkingDay(this.computation.calendar)) {
 						cell.style.font = { size: 10, color: {argb: Color(subject.color).isDark() ? 'FFFFFFFF' : 'FF000000'} };
 						cell.style.fill = { type: 'pattern', pattern: 'solid', fgColor: {argb: `FF${subject.color.slice(1)}`} };
 					}
@@ -231,9 +231,9 @@ export class SpreadsheetExporterService {
 	}
 
 	protected fillIfNotWorkingDayCell(cell: Cell, colle: Colle) {
-		if (!colle.isDuringWorkingDay(this.state)) {
-			const teacher = this.state.findId('teachers', colle.teacherId)!;
-			const subject = this.state.findId('subjects', teacher.subjectId)!;
+		if (!colle.isDuringWorkingDay(this.computation.calendar)) {
+			const teacher = this.computation.findId('teachers', colle.teacherId)!;
+			const subject = this.computation.findId('subjects', teacher.subjectId)!;
 
 			cell.style.fill = { type: 'pattern', pattern: Color(subject.color).isDark() ? 'lightUp' : 'darkUp', fgColor: {argb: `FF${subject.color.slice(1)}`} };
 		}
@@ -241,7 +241,7 @@ export class SpreadsheetExporterService {
 
 	protected getMaximalNumberOfCollesByWeek() {
 		let maximalNumberOfCollesByWeek = 0;
-		for (const collesOfTrio of Map.groupBy(this.state.colles, colle => colle.trioId).values()) {
+		for (const collesOfTrio of Map.groupBy(this.computation.colles, colle => colle.trioId).values()) {
 			for (const collesOfTrioInWeek of Map.groupBy(collesOfTrio, colle => colle.weekId).values()) {
 				maximalNumberOfCollesByWeek = Math.max(
 					maximalNumberOfCollesByWeek,
@@ -253,9 +253,9 @@ export class SpreadsheetExporterService {
 		return maximalNumberOfCollesByWeek;
 	}
 
-	async asExcel(state: State) {
-		this.state = state;
-		this.workingWeeks = this.state.calendar.getWorkingWeeks();
+	async asExcel(computation: Computation) {
+		this.computation = computation;
+		this.workingWeeks = this.computation.calendar.getWorkingWeeks();
 
 		const workbook = this.createWorkbook();
 
@@ -268,9 +268,9 @@ export class SpreadsheetExporterService {
 		);
 	}
 
-	async asCsv(state: State) {
-		this.state = state;
-		this.workingWeeks = this.state.calendar.getWorkingWeeks();
+	async asCsv(computation: Computation) {
+		this.computation = computation;
+		this.workingWeeks = this.computation.calendar.getWorkingWeeks();
 
 		const workbook = this.createWorkbook();
 		const worksheet = workbook.addWorksheet();

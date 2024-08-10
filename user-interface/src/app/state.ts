@@ -1,12 +1,11 @@
 import { immerable, type Draft } from 'immer';
 
 import { Calendar } from './calendar';
-import { Colle } from './colle';
+import { Computation } from './computation';
 import { Group } from './group';
 import { Objective } from './objective';
 import { Subject } from './subject';
 import { Teacher } from './teacher';
-import { Trio } from './trio';
 
 import type { HumanJson, HumanJsonable, SolverJsonable } from './json';
 import type { CalendarService } from './calendar.service';
@@ -45,18 +44,17 @@ export class State implements HumanJsonable, SolverJsonable {
 	[immerable] = true;
 	
 	constructor(
-		readonly colles: readonly Colle[] = [],
 		readonly groups: readonly Group[] = [],
 		readonly subjects: readonly Subject[] = [],
 		readonly teachers: readonly Teacher[] = [],
-		readonly trios: readonly Trio[] = [],
 		readonly objectives: readonly Objective[] = defaultObjectives.slice(),
 		readonly lunchTimeRange: readonly [number, number] = defaultLunchTimeRange,
 		readonly forbiddenSubjectIdsCombination: ReadonlySet<string> = new Set(),
 		readonly calendar = new Calendar(),
+		readonly computation: Computation | null = null,
 	) {}
 	
-	findId<S extends this | Draft<this>, P extends 'groups' | 'subjects' | 'teachers' | 'trios'>(this: S, property: P, id: S[P][number]['id']): S[P][number] | undefined {
+	findId<S extends this | Draft<this>, P extends 'groups' | 'subjects' | 'teachers'>(this: S, property: P, id: S[P][number]['id']): S[P][number] | undefined {
 		for (const element of this[property]) {
 			if (element.id === id) {
 				return element;
@@ -82,12 +80,12 @@ export class State implements HumanJsonable, SolverJsonable {
 		}
 	}
 
-	createTrios() {
-		const trioIds = [...new Set(this.groups.flatMap(group => [...group.trioIds]))].sort((a, b) => a - b);
-		return trioIds.map(trioId => new Trio(
-			trioId,
-			this.groups.filter(group => group.trioIds.has(trioId)).map(group => group.id),
-		));
+	hasBeenComputed() {
+		return this.computation !== null && this.computation.colles.length !== 0;
+	}
+
+	prepareComputation() {
+		return new Computation(this.groups, this.subjects, this.teachers, this.calendar);
 	}
 
 	toHumanJson() {
@@ -104,13 +102,13 @@ export class State implements HumanJsonable, SolverJsonable {
 			calendar: this.calendar,
 		};
 	}
-	
+
 	toSolverJson() {
 		return {
 			groups: this.groups,
 			subjects: this.subjects,
 			teachers: this.teachers,
-			trios: this.trios,
+			trios: this.computation!.trios,
 			weeks: this.calendar.getWorkingWeeks(),
 			objectives: this.objectives,
 			lunchTimeRange: this.lunchTimeRange,
@@ -156,6 +154,6 @@ export class State implements HumanJsonable, SolverJsonable {
 
 		const calendar = await Calendar.fromHumanJson(json.calendar, calendarService);
 		
-		return new State([], groups, subjects, teachers, [], objectives, lunchTimeRange, forbiddenSubjectIdsCombination, calendar);
+		return new State(groups, subjects, teachers, objectives, lunchTimeRange, forbiddenSubjectIdsCombination, calendar);
 	}
 }

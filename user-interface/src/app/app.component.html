@@ -6,9 +6,9 @@
 		<button mat-raised-button [disabled]="!undoStack.canUndo()" [matMenuTriggerFor]="exportMenu">Exporter… <mat-icon>file_upload</mat-icon></button>
 		<mat-menu #exportMenu="matMenu" class="no-overflow">
 			<button mat-menu-item (click)="exportFile('json')">JSON (.json)</button>
-			<button mat-menu-item (click)="exportFile('xlsx')" [disabled]="store.state.colles.length === 0">Excel (.xlsx)</button>
-			<button mat-menu-item (click)="exportFile('csv')"  [disabled]="store.state.colles.length === 0">CSV (.csv)</button>
-			<button mat-menu-item (click)="exportFile('ics')"  [disabled]="store.state.colles.length === 0">iCalendar (.ics)</button>
+			<button mat-menu-item (click)="exportFile('xlsx')" [disabled]="!store.state.hasBeenComputed()">Excel (.xlsx)</button>
+			<button mat-menu-item (click)="exportFile('csv')"  [disabled]="!store.state.hasBeenComputed()">CSV (.csv)</button>
+			<button mat-menu-item (click)="exportFile('ics')"  [disabled]="!store.state.hasBeenComputed()">iCalendar (.ics)</button>
 		</mat-menu>
 	</div>
 </mat-toolbar>
