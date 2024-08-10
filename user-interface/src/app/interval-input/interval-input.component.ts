@@ -63,7 +63,7 @@ export class IntervalInputComponent implements ControlValueAccessor {
 	writeValue(interval: Interval) {
 		this.modelToViewUpdate = true;
 		this.start.set(interval.start);
-		this.end.set(interval.end);
+		this.end.set(interval.end.minus({millisecond: 1}));
 		this.changeDetectorRef.markForCheck();
 	}
 	

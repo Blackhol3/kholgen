@@ -5,17 +5,6 @@ import { Colle } from './colle';
 import { Day, Timeslot } from './timeslot';
 import { Week } from './week';
 
-function specificDay(day: DateTime) {
-	return {
-		asymmetricMatch: (actual: unknown) => {
-			return actual instanceof DateTime && actual.hasSame(day, 'day');
-		},
-		jasmineToString: () => {
-			return day.toISODate();
-		}
-	};
-}
-
 describe('Colle', () => {
 	it('should create an instance', () => {
 		expect(new Colle('teacher', new Timeslot(Day.Monday, 13), 42, 1337)).toBeTruthy();
@@ -33,8 +22,8 @@ describe('Colle', () => {
 			new Week(35, 9, today.plus({week: 1})),
 		]);
 
-		expect(colle1.getStartDate(calendar)).toEqual(specificDay(today.plus({days: 1})));
-		expect(colle2.getStartDate(calendar)).toEqual(specificDay(today.plus({days: 2})));
-		expect(colle3.getStartDate(calendar)).toEqual(specificDay(today.plus({week: 1, days: 4})));
+		expect(colle1.getStartDate(calendar)).toHaveSameDay(today.plus({days: 1}));
+		expect(colle2.getStartDate(calendar)).toHaveSameDay(today.plus({days: 2}));
+		expect(colle3.getStartDate(calendar)).toHaveSameDay(today.plus({week: 1, days: 4}));
 	});
 });

@@ -3,7 +3,7 @@ import { DateTime, Interval } from 'luxon';
 
 import { Interruption } from './interruption';
 import type { HumanJson, HumanJsonable } from './json';
-import { intervalFromISO } from './misc';
+import { intervalFromISO, intervaltoISO } from './misc';
 import { nbDaysInWeek } from './timeslot';
 import { Week, type WorkingWeek } from './week';
 
@@ -101,7 +101,7 @@ export class Calendar implements HumanJsonable {
 	toHumanJson() {
 		return {
 			academie: this.academie === null ? undefined : this.academie,
-			interval: this.interval.toISODate(),
+			interval: intervaltoISO(this.interval),
 			firstWeekNumber: this.firstWeekNumber === 1 ? undefined : this.firstWeekNumber,
 			interruptions: this.interruptions.length === 0 ? undefined : this.interruptions,
 		}
@@ -121,10 +121,9 @@ export class Calendar implements HumanJsonable {
 			throw new SyntaxError(`L'académie « ${json.academie} » n'existe pas.`);
 		}
 
-		const interval = intervalFromISO(json.interval, message => `L'intervalle de début et fin des colles est invalide (${message}).`);
 		const calendar = new Calendar(
 			json.academie,
-			Interval.fromDateTimes(interval.start, interval.end.endOf('day')),
+			intervalFromISO(json.interval, message => `L'intervalle de début et fin des colles est invalide (${message}).`),
 			json.firstWeekNumber,
 			json.interruptions?.map(jsonInterruption => Interruption.fromHumanJson(jsonInterruption)),
 		);

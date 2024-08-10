@@ -60,9 +60,17 @@ export function entries<T extends Record<string, unknown>>(object: T) {
 	return Object.entries(object) as Entries<T>;
 }
 
+export function intervaltoISO(interval: Interval) {
+	return Interval.fromDateTimes(interval.start, interval.end.minus({millisecond: 1})).toISODate();
+}
+
 export function intervalFromISO(text: string, errorMessage: (message: string) => string) {
 	try {
-		return Interval.fromISO(text);
+		const interval = Interval.fromISO(text);
+		return text.includes('/P')
+			? interval
+			: Interval.fromDateTimes(interval.start.startOf('day'), interval.end.endOf('day').plus({millisecond: 1}))
+		;
 	}
 	catch (exception) {
 		if (exception instanceof Error) {

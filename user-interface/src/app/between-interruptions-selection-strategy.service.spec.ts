@@ -29,7 +29,7 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 		expect(preview.end).toBeNull();
 
 		const newRange = service.selectionFinished(today, range);
-		expect(newRange.start?.hasSame(today, 'day')).toBeTrue();
+		expect(newRange.start).toHaveSameDay(today);
 		expect(newRange.end).toBeNull();
 	});
 
@@ -41,7 +41,7 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 		expect(preview.end).toBeNull();
 
 		const newRange = service.selectionFinished(today, range);
-		expect(newRange.start?.hasSame(today, 'day')).toBeTrue();
+		expect(newRange.start).toHaveSameDay(today);
 		expect(newRange.end).toBeNull();
 	});
 
@@ -56,8 +56,8 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 			store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}))];
 
 			const preview = service.createPreview(today, range);
-			expect(preview.start?.hasSame(range.start!, 'day')).toBeTrue();
-			expect(preview.end?.hasSame(today, 'day')).toBeTrue();
+			expect(preview.start).toHaveSameDay(range.start!);
+			expect(preview.end).toHaveSameDay(today);
 
 			const newRange = service.selectionFinished(today, range);
 			expect(newRange).toEqual(preview);
@@ -72,8 +72,8 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 			
 			it('nothing being ignored', () => {
 				const preview = service.createPreview(today, range);
-				expect(preview.start?.hasSame(range.start!, 'day')).toBeTrue();
-				expect(preview.end?.hasSame(interruptionStart.minus({day: 1}), 'day')).toBeTrue();
+				expect(preview.start).toHaveSameDay(range.start!);
+				expect(preview.end).toHaveSameDay(interruptionStart.minus({day: 1}));
 	
 				const newRange = service.selectionFinished(today, range);
 				expect(newRange).toEqual(preview);
@@ -83,8 +83,8 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 				service.ignoredInterruptions = store.state.calendar.interruptions;
 
 				const preview = service.createPreview(today, range);
-				expect(preview.start?.hasSame(range.start!, 'day')).toBeTrue();
-				expect(preview.end?.hasSame(today, 'day')).toBeTrue();
+				expect(preview.start).toHaveSameDay(range.start!);
+				expect(preview.end).toHaveSameDay(today);
 
 				const newRange = service.selectionFinished(today, range);
 				expect(newRange).toEqual(preview);
@@ -104,7 +104,7 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 			expect(preview.end).toBeNull();
 
 			const newRange = service.selectionFinished(today, range);
-			expect(newRange.start?.hasSame(today, 'day')).toBeTrue();
+			expect(newRange.start).toHaveSameDay(today);
 			expect(newRange.end).toBeNull();
 		});
 
@@ -114,13 +114,13 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 
 			const afterInterruption = today.minus({days: 7});
 			const afterInterruptionDrag = service.createDrag(range.start!, range, afterInterruption);
-			expect(afterInterruptionDrag?.start?.hasSame(afterInterruption, 'day')).toBeTrue();
-			expect(afterInterruptionDrag?.end?.hasSame(range.end!, 'day')).toBeTrue();
+			expect(afterInterruptionDrag?.start).toHaveSameDay(afterInterruption);
+			expect(afterInterruptionDrag?.end).toHaveSameDay(range.end!);
 
 			const beforeInterruption = today.minus({days: 13});
 			const beforeInterruptionDrag = service.createDrag(range.start!, range, beforeInterruption);
-			expect(beforeInterruptionDrag?.start?.hasSame(interruptionEnd.plus({day: 1}), 'day')).toBeTrue();
-			expect(beforeInterruptionDrag?.end?.hasSame(range.end!, 'day')).toBeTrue();
+			expect(beforeInterruptionDrag?.start).toHaveSameDay(interruptionEnd.plus({day: 1}));
+			expect(beforeInterruptionDrag?.end).toHaveSameDay(range.end!);
 		});
 
 		it('should drag the end until the next interruption', () => {
@@ -129,20 +129,20 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 
 			const beforeInterruption = today.plus({days: 7});
 			const beforeInterruptionDrag = service.createDrag(range.end!, range, beforeInterruption);
-			expect(beforeInterruptionDrag?.start?.hasSame(range.start!, 'day')).toBeTrue();
-			expect(beforeInterruptionDrag?.end?.hasSame(beforeInterruption, 'day')).toBeTrue();
+			expect(beforeInterruptionDrag?.start).toHaveSameDay(range.start!);
+			expect(beforeInterruptionDrag?.end).toHaveSameDay(beforeInterruption);
 
 			const afterInterruption = today.plus({days: 13});
 			const afterInterruptionDrag = service.createDrag(range.end!, range, afterInterruption);
-			expect(afterInterruptionDrag?.start?.hasSame(range.start!, 'day')).toBeTrue();
-			expect(afterInterruptionDrag?.end?.hasSame(interruptionStart.minus({day: 1}), 'day')).toBeTrue();
+			expect(afterInterruptionDrag?.start).toHaveSameDay(range.start!);
+			expect(afterInterruptionDrag?.end).toHaveSameDay(interruptionStart.minus({day: 1}));
 		});
 
 		it('should drag the whole range', () => {
 			const difference = Duration.fromObject({days: 3});
 			const drag = service.createDrag(today, range, today.plus(difference));
-			expect(drag?.start?.hasSame(range.start!.plus(difference), 'day')).toBeTrue();
-			expect(drag?.end?.hasSame(range.end!.plus(difference), 'day')).toBeTrue();
+			expect(drag?.start).toHaveSameDay(range.start!.plus(difference));
+			expect(drag?.end).toHaveSameDay(range.end!.plus(difference));
 		})
 	});
 });

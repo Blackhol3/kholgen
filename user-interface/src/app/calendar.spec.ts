@@ -67,7 +67,7 @@ describe('Calendar', () => {
 		for (const [i, week] of calendar.getWeeks().entries()) {
 			expect(week.id).toBe(i);
 			expect(week.number).toBe(expectedData[i].number);
-			expect(week.start.hasSame(firstMonday.plus({weeks: expectedData[i].weeks}), 'day')).toBeTrue();
+			expect(week.start).toHaveSameDay(firstMonday.plus({weeks: expectedData[i].weeks}));
 		}
 	});
 });

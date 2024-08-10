@@ -8,7 +8,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideLuxonDateAdapter, MAT_LUXON_DATE_ADAPTER_OPTIONS } from '@angular/material-luxon-adapter'; 
 import { MAT_DATE_LOCALE } from '@angular/material/core'; 
 
-import { Settings } from 'luxon';
+import { DateTime, Settings } from 'luxon';
 
 Settings.throwOnInvalid = true;
 declare module 'luxon' {
@@ -17,7 +17,6 @@ declare module 'luxon' {
 	}
 }
 
-// First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
 	[BrowserDynamicTestingModule, NoopAnimationsModule],
 	platformBrowserDynamicTesting([
@@ -26,3 +25,30 @@ getTestBed().initTestEnvironment(
 		provideLuxonDateAdapter(),
 	]),
 );
+
+declare global {
+	// eslint-disable-next-line @typescript-eslint/no-namespace
+	namespace jasmine {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		interface Matchers<T> {
+			toHaveSameDay(expected: DateTime): boolean;
+		}
+	}
+}
+
+beforeAll(() => {
+	jasmine.addMatchers({
+		toHaveSameDay: util => ({
+			compare: (actual: unknown, expected: DateTime) => {
+				if (actual instanceof DateTime === false) {
+					return {pass: false, message: `Expected ${util.pp(actual)} to be an instance of DateTime.`};
+				}
+
+				return actual.hasSame(expected, 'day')
+					? {pass: true}
+					: {pass: false, message: `Expected ${actual.toISODate()} to be ${expected.toISODate()}.`}
+				;
+			},
+		}),
+	});
+})
