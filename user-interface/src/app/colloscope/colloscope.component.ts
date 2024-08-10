@@ -32,7 +32,7 @@ export class ColloscopeComponent implements OnInit, OnDestroy {
 	protected readonly changeDetectorRef = inject(ChangeDetectorRef);
 
 	storeSubscription: Subscription | undefined;
-	computation: Computation = new Computation();
+	computation = new Computation();
 
 	tableData: TableRow[] = [];
 	tableWeeksHeaderRowDef: string[] = [];
@@ -40,15 +40,18 @@ export class ColloscopeComponent implements OnInit, OnDestroy {
 	tableTeacherRowspan: number[] = [];
 
 	ngOnInit() {
-		this.storeSubscription = this.store.changeObservable.subscribe(() => {
-			this.computation = this.store.state.computation ?? this.store.state.prepareComputation();
-			this.computeTableData();
-			this.changeDetectorRef.markForCheck();
-		});
+		this.storeSubscription = this.store.changeObservable.subscribe(() => this.update());
+		this.update();
 	}
 	
 	ngOnDestroy() {
 		this.storeSubscription?.unsubscribe();
+	}
+
+	protected update() {
+		this.computation = this.store.state.computation ?? this.store.state.prepareComputation();
+		this.computeTableData();
+		this.changeDetectorRef.markForCheck();
 	}
 	
 	protected computeTableData() {

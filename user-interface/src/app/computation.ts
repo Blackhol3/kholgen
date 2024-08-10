@@ -1,10 +1,11 @@
 import { immerable, type Draft } from 'immer';
 
 import { Calendar } from './calendar';
-import { Colle } from './colle';
-import { Group } from './group';
-import { Subject } from './subject';
-import { Teacher } from './teacher';
+import { type Colle } from './colle';
+import { type Group } from './group';
+import { type ObjectiveComputation } from './objective-computation';
+import { type Subject } from './subject';
+import { type Teacher } from './teacher';
 import { Trio } from './trio';
 
 export class Computation {
@@ -18,6 +19,7 @@ export class Computation {
 		readonly teachers: readonly Teacher[] = [],
 		readonly calendar = new Calendar(),
 		readonly colles: readonly Colle[] = [],
+		readonly objectiveComputations: readonly ObjectiveComputation[] = [],
 	) {
 		this.trios = this.createTrios();
 	}

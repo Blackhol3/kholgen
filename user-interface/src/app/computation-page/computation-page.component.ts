@@ -1,12 +1,14 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, type OnInit, type OnDestroy, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, type OnDestroy, type OnInit, inject } from '@angular/core';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatTable, MatTableModule } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 
 import { Subscription } from 'rxjs';
+
+import { ObjectiveComputation } from '../objective-computation';
 
 import { CommunicationService } from '../communication.service';
 import { StoreService } from '../store.service';
@@ -45,19 +47,24 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 	protected readonly changeDetectorRef = inject(ChangeDetectorRef);
 	protected readonly communication = inject(CommunicationService);
 
+	objectiveComputations: ObjectiveComputation[] = [];
+
 	isRunning = false;
 	storeSubscription: Subscription | undefined;
-	@ViewChild(MatTable) objectivesTable: MatTable<unknown> | undefined;
 	
 	ngOnInit() {
-		this.storeSubscription = this.store.changeObservable.subscribe(() => {
-			this.objectivesTable!.renderRows();
-			this.changeDetectorRef.markForCheck();
-		});
+		this.storeSubscription = this.store.changeObservable.subscribe(() => this.update());
+		this.update();
 	}
 	
 	ngOnDestroy() {
 		this.storeSubscription?.unsubscribe();
+	}
+
+	protected update() {
+		const computation = this.store.state.computation ?? this.store.state.prepareComputation();
+		this.objectiveComputations = [...computation.objectiveComputations];
+		this.changeDetectorRef.markForCheck();
 	}
 	
 	async compute() {

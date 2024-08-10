@@ -8,10 +8,10 @@
 }
 
 <section>
-	<table mat-table #objectivesTable="matTable" [dataSource]="store.state.objectives" class="mat-elevation-z3">
+	<table mat-table #objectivesTable="matTable" [dataSource]="objectiveComputations" class="mat-elevation-z3">
 		<ng-container matColumnDef="objective">
 			<th mat-header-cell *matHeaderCellDef>Contrainte</th>
-			<td mat-cell *matCellDef="let rowData">{{rowData.readableName}}</td>
+			<td mat-cell *matCellDef="let rowData">{{rowData.objective.readableName}}</td>
 		</ng-container>
 		
 		<ng-container matColumnDef="value">

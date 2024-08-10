@@ -4,6 +4,7 @@ import { Calendar } from './calendar';
 import { Computation } from './computation';
 import { Group } from './group';
 import { Objective } from './objective';
+import { ObjectiveComputation } from './objective-computation';
 import { Subject } from './subject';
 import { Teacher } from './teacher';
 
@@ -85,7 +86,14 @@ export class State implements HumanJsonable, SolverJsonable {
 	}
 
 	prepareComputation() {
-		return new Computation(this.groups, this.subjects, this.teachers, this.calendar);
+		return new Computation(
+			this.groups,
+			this.subjects,
+			this.teachers,
+			this.calendar,
+			[],
+			this.objectives.map(objective => new ObjectiveComputation(objective)),
+		);
 	}
 
 	toHumanJson() {

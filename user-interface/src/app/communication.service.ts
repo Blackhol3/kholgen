@@ -104,12 +104,7 @@ export class CommunicationService {
 			return this.computeSubject.asObservable();
 		}
 
-		store.do(state => {
-			state.computation = castDraft(store.state.prepareComputation());
-			for (const objective of state.objectives) {
-				objective.setValue(undefined);
-			}
-		});
+		store.do(state => { state.computation = castDraft(store.state.prepareComputation()); });
 		
 		this.computeSubject = new Subject<void>();
 		this.communication.solutionFound.connect((jsonColles, jsonObjectiveComputations) => {
@@ -150,8 +145,8 @@ export class CommunicationService {
 	
 	protected importJsonObjectiveComputations(store: StoreService, jsonObjectiveComputations: JsonObjectiveComputation[]): void {
 		store.do(state => {
-			for (const objectiveComputation of jsonObjectiveComputations) {
-				state.objectives.find(objective => objective.name === objectiveComputation.objectiveName)?.setValue(objectiveComputation.value);
+			for (const jsonObjectiveComputation of jsonObjectiveComputations) {
+				state.computation!.objectiveComputations.find(x => x.objective.name === jsonObjectiveComputation.objectiveName)!.value = jsonObjectiveComputation.value;
 			}
 		});
 	}
