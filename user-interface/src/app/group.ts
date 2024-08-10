@@ -48,7 +48,7 @@ export class Group implements HumanJsonable {
 	static fromHumanJson(json: HumanJson<Group>) {
 		return new Group(
 			json.name,
-			json.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)),
+			json.availableTimeslots.map((timeslot: string) => Timeslot.fromString(timeslot)).sort((a, b) => a.compare(b)),
 			new Set(json.trios),
 		);
 	}

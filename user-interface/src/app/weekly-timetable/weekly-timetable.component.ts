@@ -88,6 +88,7 @@ export class WeeklyTimetableComponent implements ControlValueAccessor {
 		const index = this.timeslots.findIndex(t => timeslot.isEqual(t));
 		if (this.currentEdit === 'select' && index === -1) {
 			this.timeslots.push(timeslot);
+			this.timeslots.sort((a, b) => a.compare(b));
 		}
 		else if (this.currentEdit === 'unselect' && index !== -1) {
 			this.timeslots.splice(index, 1);

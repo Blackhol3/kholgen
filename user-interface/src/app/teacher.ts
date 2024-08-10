@@ -37,7 +37,7 @@ export class Teacher implements HumanJsonable {
 		return new Teacher(
 			json.name,
 			subject.id,
-			json.availableTimeslots.map(timeslot => Timeslot.fromString(timeslot)),
+			json.availableTimeslots.map(timeslot => Timeslot.fromString(timeslot)).sort((a, b) => a.compare(b)),
 			json.weeklyAvailabilityFrequency,
 		);
 	}
