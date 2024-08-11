@@ -1,8 +1,6 @@
-import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { ChangeDetectionStrategy, Component, Input, type OnInit, type OnChanges, inject } from '@angular/core';
 import { AbstractControl, FormsModule, ReactiveFormsModule, NonNullableFormBuilder, type ValidationErrors, Validators } from '@angular/forms';
 
-import { type MatChipInputEvent } from '@angular/material/chips';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -45,12 +43,11 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	
 	form = this.formBuilder.group({
 		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string, string>) => notUniqueValidator(control, 'name', this.group, this.store.state.groups)]],
-		trioIds: [new Set() as ReadonlySet<number>, Validators.required],
+		trioIds: [new Set() as ReadonlySet<number>],
 		availableTimeslots: [[] as readonly Timeslot[]],
 		nextGroupId: ['' as (string | null)],
-		duration: [0 as (number | null)],
+		duration: [0 as (number | null), [Validators.min(1), Validators.pattern('^-?[0-9]*$')]],
 	}, {validators: control => this.nextGroupRequiredValidator(control)});
-	readonly separatorKeysCodes = [COMMA, ENTER, SPACE] as const;
 	
 	constructor() {
 		this.form.valueChanges.subscribe(() => this.formChange());
@@ -72,6 +69,8 @@ export class GroupFormComponent implements OnInit, OnChanges {
 			nextGroupId: this.group.nextGroupId,
 			duration: this.group.duration,
 		}, {emitEvent: false});
+
+		this.updateDurationFormControlStatus();
 	}
 	
 	formChange() {
@@ -89,43 +88,13 @@ export class GroupFormComponent implements OnInit, OnChanges {
 			}
 		}
 		
+		this.updateDurationFormControlStatus();
+	}
+
+	protected updateDurationFormControlStatus() {
 		this.form.controls.duration[this.form.controls.nextGroupId.value === null ? 'disable' : 'enable']({emitEvent: false});
 	}
 
-	/** @todo Show an error on invalid inputs */
-	addTrioIds(event: MatChipInputEvent) {
-		const results = event.value.trim().match(/^([0-9]+)(?:-([0-9]+))?$/);
-		if (results === null) {
-			return;
-		}
-
-		const trioIds = [...this.form.controls.trioIds.value];
-		if (results[2] === undefined) {
-			trioIds.push(parseInt(results[1]));
-		}
-		else {
-			const minTrioId = Math.min(parseInt(results[1]), parseInt(results[2]));
-			const maxTrioId = Math.max(parseInt(results[1]), parseInt(results[2]));
-
-			for (let trioId = minTrioId; trioId <= maxTrioId; ++trioId) {
-				trioIds.push(trioId);
-			}
-		}
-
-		trioIds.sort((a, b) => a - b);
-		const trioIdsSet = new Set(trioIds);
-		if (!equalIterables(trioIdsSet, this.form.controls.trioIds.value)) {
-			this.form.controls.trioIds.setValue(trioIdsSet);
-		}
-		event.chipInput.clear();
-	}
-
-	removeTrioId(trioId: number) {
-		const trioIds = new Set(this.form.controls.trioIds.value);
-		trioIds.delete(trioId);
-		this.form.controls.trioIds.setValue(trioIds);
-	}
-	
 	protected controlValueUpdated(key: keyof typeof this.form.controls): boolean {
 		if (key !== 'trioIds') {
 			return this.group[key] !== this.form.controls[key].value;
