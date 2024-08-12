@@ -29,9 +29,9 @@ export class UniqueIntegersChipInputComponent implements ControlValueAccessor {
 	@Input() label?: string;
 	@Input() placeholder?: string;
 
-	integers: Set<number> = new Set();
-	disabled = false;
-	readonly separatorKeysCodes = [COMMA, ENTER, SPACE] as const;
+	protected integers: Set<number> = new Set();
+	protected disabled = false;
+	protected readonly separatorKeysCodes = [COMMA, ENTER, SPACE] as const;
 	
 	protected onChange = (_: Set<number>) => {};
 	
@@ -50,7 +50,7 @@ export class UniqueIntegersChipInputComponent implements ControlValueAccessor {
 	}
 
 	/** @todo Show an error on invalid inputs */
-	add(event: MatChipInputEvent) {
+	protected add(event: MatChipInputEvent) {
 		const results = event.value.trim().match(/^([0-9]+)(?:-([0-9]+))?$/);
 		if (results === null) {
 			return;
@@ -83,7 +83,7 @@ export class UniqueIntegersChipInputComponent implements ControlValueAccessor {
 		event.chipInput.clear();
 	}
 
-	remove(integer: number) {
+	protected remove(integer: number) {
 		this.integers.delete(integer);
 		this.onChange(new Set(this.integers));
 	}

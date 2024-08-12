@@ -1,6 +1,5 @@
-import { type HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, ComponentFixtureAutoDetect, TestBed } from '@angular/core/testing';
 import { MatDateRangeInputHarness } from '@angular/material/datepicker/testing';
 
 import { DateTime, Interval } from 'luxon';
@@ -10,7 +9,7 @@ import { IntervalInputComponent } from './interval-input.component';
 describe('IntervalInputComponent', () => {
 	let component: IntervalInputComponent;
 	let fixture: ComponentFixture<IntervalInputComponent>;
-	let loader: HarnessLoader;
+	let dateRangeInput: MatDateRangeInputHarness;
 
 	const today = DateTime.local(2024, 12, 25);
 	let onChange: jasmine.Spy;
@@ -18,27 +17,24 @@ describe('IntervalInputComponent', () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [IntervalInputComponent],
+			providers: [{provide: ComponentFixtureAutoDetect, useValue: true}],
 		}).compileComponents();
-		
 		fixture = TestBed.createComponent(IntervalInputComponent);
-		fixture.detectChanges();
-
-		loader = TestbedHarnessEnvironment.loader(fixture);
+		
+		const loader = TestbedHarnessEnvironment.loader(fixture);
+		dateRangeInput = await loader.getHarness(MatDateRangeInputHarness);
 		component = fixture.componentInstance;
 
 		onChange = jasmine.createSpy();
 		component.registerOnChange(onChange);
 		component.writeValue(Interval.after(today, {days: 3}).toFullDay());
-		fixture.detectChanges();
 	});
 
 	it('should show the correct date after a model update', async () => {
-		const dateRangeInput = await loader.getHarness(MatDateRangeInputHarness);
 		expect(await dateRangeInput.getValue()).toBe('25/12/2024 – 27/12/2024');
 	});
 
 	it('should update the model correctly after selection in the calendar', async () => {
-		const dateRangeInput = await loader.getHarness(MatDateRangeInputHarness);
 		await dateRangeInput.openCalendar();
 
 		const calendar = await dateRangeInput.getCalendar();
@@ -54,7 +50,6 @@ describe('IntervalInputComponent', () => {
 	it('should allow to be disabled', async () => {
 		component.setDisabledState(true);
 
-		const dateRangeInput = await loader.getHarness(MatDateRangeInputHarness);
 		await dateRangeInput.openCalendar();
 		expect(await dateRangeInput.isCalendarOpen()).toBeFalse();
 	})

@@ -1,6 +1,6 @@
 import { AbstractControl, type ValidationErrors } from '@angular/forms';
 
-export function notUniqueValidator<Type>(control: AbstractControl<string, string>, property: keyof Type, formObject: Type, objects: readonly Type[]): ValidationErrors | null {
+export function notUniqueValidator<Type>(control: AbstractControl<string>, property: keyof Type, formObject: Type, objects: readonly Type[]): ValidationErrors | null {
 	for (const object of objects) {
 		if (object !== formObject && object[property] === control.value.trim()) {
 			return {notUnique: {object: object, property: property}};
@@ -10,11 +10,7 @@ export function notUniqueValidator<Type>(control: AbstractControl<string, string
 	return null;
 }
 
-export function trimValidator(control: AbstractControl): null {
-	if (typeof control.value !== 'string') {
-		return null;
-	}
-	
+export function trimValidator(control: AbstractControl<string>): null {
 	const trimmedValue = control.value.trim();
 	if (control.value !== trimmedValue) {
 		control.setValue(trimmedValue, {emitEvent: false, onlySelf: true, emitModelToViewChange: false});

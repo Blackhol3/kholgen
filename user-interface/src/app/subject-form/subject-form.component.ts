@@ -31,9 +31,9 @@ export class SubjectFormComponent implements OnInit, OnChanges {
 	@Input({required: true}) subject!: Subject;
 	
 	form = this.formBuilder.group({
-		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string, string>) => notUniqueValidator(control, 'name', this.subject, this.store.state.subjects)]],
-		shortName: ['', [Validators.required, trimValidator, (control: AbstractControl<string, string>) => notUniqueValidator(control, 'shortName', this.subject, this.store.state.subjects)]],
-		frequency: [1, [Validators.required, Validators.min(1), Validators.pattern('^-?[0-9]*$')]],
+		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string>) => notUniqueValidator(control, 'name', this.subject, this.store.state.subjects)]],
+		shortName: ['', [Validators.required, trimValidator, (control: AbstractControl<string>) => notUniqueValidator(control, 'shortName', this.subject, this.store.state.subjects)]],
+		frequency: [1, [Validators.required, Validators.min(1), Validators.pattern(/^-?[0-9]*$/)]],
 		color: ['', Validators.required],
 	});
 	

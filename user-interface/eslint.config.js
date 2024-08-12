@@ -35,6 +35,8 @@ export default tseslint.config(
 				style: 'kebab-case',
 			}],
 			'@angular-eslint/no-input-rename': 'off',
+			'@angular-eslint/prefer-standalone': 'error',
+			'@angular-eslint/prefer-standalone-component': 'error',
 			'@stylistic/indent': ['error', 'tab', {flatTernaryExpressions: true, SwitchCase: 1}],
 			'@stylistic/linebreak-style': ['error', 'unix'],
 			'@typescript-eslint/no-floating-promises': 'error',

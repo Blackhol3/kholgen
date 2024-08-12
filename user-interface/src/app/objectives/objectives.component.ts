@@ -24,16 +24,9 @@ import { Objective } from '../objective';
 	],
 })
 export class ObjectivesComponent implements ControlValueAccessor {
-	objectives: Objective[] = [];
+	protected objectives: Objective[] = [];
 	
 	protected onChange = (_: Objective[]) => {};
-	
-	onDrop($event: CdkDragDrop<unknown[]>) {
-		if ($event.previousIndex !== $event.currentIndex) {
-			moveItemInArray(this.objectives, $event.previousIndex, $event.currentIndex);
-			this.onChange(this.objectives.slice());
-		}
-	}
 	
 	writeValue(objectives: Objective[] | null) {
 		this.objectives = objectives === null ? [] : objectives.slice();
@@ -44,4 +37,11 @@ export class ObjectivesComponent implements ControlValueAccessor {
 	}
 	
 	registerOnTouched() {}
+
+	protected onDrop($event: CdkDragDrop<unknown[]>) {
+		if ($event.previousIndex !== $event.currentIndex) {
+			moveItemInArray(this.objectives, $event.previousIndex, $event.currentIndex);
+			this.onChange(this.objectives.slice());
+		}
+	}
 }

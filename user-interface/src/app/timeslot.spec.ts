@@ -20,4 +20,16 @@ describe('Timeslot', () => {
 		expect(timeslot.compare(new Timeslot(Day.Wednesday, 18))).toBeLessThan(0);
 		expect(timeslot.compare(new Timeslot(Day.Friday, 8))).toBeLessThan(0);
 	});
+
+	it('should create an object from a string', () => {
+		expect(Timeslot.fromString('Lundi 8h')).toEqual(new Timeslot(Day.Monday, 8));
+		expect(Timeslot.fromString('Mardi 09h')).toEqual(new Timeslot(Day.Tuesday, 9));
+		expect(Timeslot.fromString('mErcRedI 13')).toEqual(new Timeslot(Day.Wednesday, 13));
+		expect(Timeslot.fromString('j15')).toEqual(new Timeslot(Day.Thursday, 15));
+
+		expect(() => Timeslot.fromString('X12')).toThrow();
+		expect(() => Timeslot.fromString('Lundi x8')).toThrow();
+		expect(() => Timeslot.fromString('Lundi 5')).toThrow();
+		expect(() => Timeslot.fromString('Lundi 22')).toThrow();
+	});
 });

@@ -73,7 +73,7 @@ export class Timeslot {
 		}
 		
 		const hour = parseInt(hourString!.trim());
-		if (hour < firstHour || hour > lastHour) {
+		if (Number.isNaN(hour) || hour < firstHour || hour > lastHour) {
 			throw new SyntaxError(`L'horaire associé au créneau « ${string} » est mal défini.`);
 		}
 

@@ -43,7 +43,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 		name: ['', [Validators.required, trimValidator]],
 		subjectId: ['', Validators.required],
 		availableTimeslots: [[] as readonly Timeslot[], Validators.required],
-		weeklyAvailabilityFrequency: [1, [Validators.required, Validators.min(1), Validators.pattern('^-?[0-9]*$')]],
+		weeklyAvailabilityFrequency: [1, [Validators.required, Validators.min(1), Validators.pattern(/^-?[0-9]*$/)]],
 	}, {validators: control => this.notUniqueValidator(control)});
 	
 	constructor() {

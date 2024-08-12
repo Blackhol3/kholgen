@@ -38,28 +38,19 @@ export class IntervalInputComponent implements ControlValueAccessor {
 	@Input() startPlaceholder?: string;
 	@Input() endPlaceholder?: string;
 
-	start = model<DateTime | null>(null);
-	end = model<DateTime | null>(null);
-	modelToViewUpdate = false;
+	protected start = model<DateTime | null>(null);
+	protected end = model<DateTime | null>(null);
+	protected modelToViewUpdate = false;
 
-	firstValidDate = getFirstValidDate();
-	disabled = false;
+	protected firstValidDate = getFirstValidDate();
+	protected disabled = false;
+
+	protected onChange = (_: FullDayInterval) => {};
 
 	constructor() {
 		effect(() => this.valueChanges(this.start(), this.end()));
 	}
 
-	protected onChange = (_: FullDayInterval) => {};
-
-	valueChanges(start: DateTime | null, end: DateTime | null) {
-		if (this.modelToViewUpdate) {
-			this.modelToViewUpdate = false;
-		}
-		else if (start !== null && end !== null && start < end) {
-			this.onChange(Interval.fromDateTimes(start, end.endOf('day')).toFullDay());
-		}
-	}
-	
 	writeValue(interval: FullDayInterval) {
 		this.modelToViewUpdate = true;
 		this.start.set(interval.start);
@@ -76,5 +67,14 @@ export class IntervalInputComponent implements ControlValueAccessor {
 	setDisabledState(disabled: boolean) {
 		this.disabled = disabled;
 		this.changeDetectorRef.markForCheck();
+	}
+
+	protected valueChanges(start: DateTime | null, end: DateTime | null) {
+		if (this.modelToViewUpdate) {
+			this.modelToViewUpdate = false;
+		}
+		else if (start !== null && end !== null && start < end) {
+			this.onChange(Interval.fromDateTimes(start, end.endOf('day')).toFullDay());
+		}
 	}
 }

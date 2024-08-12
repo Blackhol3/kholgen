@@ -25,42 +25,14 @@ import { dayNames, firstHour, lastHour, Day, Timeslot } from '../timeslot';
 export class WeeklyTimetableComponent implements ControlValueAccessor {
 	@Input() label?: string;
 
-	timeslots: Timeslot[] = [];
-	editable = true;
+	protected timeslots: Timeslot[] = [];
+	protected editable = true;
 	protected currentEdit: 'select' | 'unselect' | null = null;
 	
-	dayNames = dayNames;
-	hours: readonly number[] = Array(lastHour - firstHour + 1).fill(null).map((_, i) => firstHour + i);
+	protected dayNames = dayNames;
+	protected hours: readonly number[] = Array(lastHour - firstHour + 1).fill(null).map((_, i) => firstHour + i);
 	
 	protected onChange = (_: Timeslot[]) => {};
-	
-	isTimeslotSelected(day: Day, hour: number): boolean {
-		const timeslot = new Timeslot(day, hour);
-		return this.timeslots.some(t => timeslot.isEqual(t));
-	}
-	
-	onMousedown($event: MouseEvent) {
-		if (this.isTargetEditable($event)) {
-			const timeslot = this.getTimeslotFromTarget($event.target);
-			this.currentEdit = this.timeslots.some(t => timeslot.isEqual(t)) ? 'unselect' : 'select';
-			this.edit(timeslot);
-			$event.preventDefault();
-		}
-	}
-	
-	onMouseover($event: MouseEvent) {
-		if (this.isTargetEditable($event)) {
-			this.edit(this.getTimeslotFromTarget($event.target));
-		}
-	}
-	
-	@HostListener('window:mouseup')
-	onMouseup() {
-		if (this.currentEdit !== null) {
-			this.onChange(this.timeslots.slice());
-		}
-		this.currentEdit = null;
-	}
 	
 	writeValue(timeslots: Timeslot[] | null) {
 		this.timeslots = timeslots === null ? [] : timeslots.slice();
@@ -74,6 +46,34 @@ export class WeeklyTimetableComponent implements ControlValueAccessor {
 	
 	setDisabledState(disabled: boolean) {
 		this.editable = !disabled;
+	}
+
+	protected isTimeslotSelected(day: Day, hour: number): boolean {
+		const timeslot = new Timeslot(day, hour);
+		return this.timeslots.some(t => timeslot.isEqual(t));
+	}
+	
+	protected onMousedown($event: MouseEvent) {
+		if (this.isTargetEditable($event)) {
+			const timeslot = this.getTimeslotFromTarget($event.target);
+			this.currentEdit = this.timeslots.some(t => timeslot.isEqual(t)) ? 'unselect' : 'select';
+			this.edit(timeslot);
+			$event.preventDefault();
+		}
+	}
+	
+	protected onMouseover($event: MouseEvent) {
+		if (this.isTargetEditable($event)) {
+			this.edit(this.getTimeslotFromTarget($event.target));
+		}
+	}
+	
+	@HostListener('window:mouseup')
+	protected onMouseup() {
+		if (this.currentEdit !== null) {
+			this.onChange(this.timeslots.slice());
+		}
+		this.currentEdit = null;
 	}
 	
 	protected isTargetEditable($event: MouseEvent): $event is MouseEvent & {target: HTMLElement} {

@@ -35,18 +35,18 @@ import { UniqueIntegersChipInputComponent } from '../unique-integers-chip-input/
 	],
 })
 export class GroupFormComponent implements OnInit, OnChanges {
-	readonly store = inject(StoreService);
 	protected readonly formBuilder = inject(NonNullableFormBuilder);
+	protected readonly store = inject(StoreService);
 	protected readonly undoStack = inject(UndoStackService);
 
 	@Input({required: true}) group!: Group;
 	
 	form = this.formBuilder.group({
-		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string, string>) => notUniqueValidator(control, 'name', this.group, this.store.state.groups)]],
+		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string>) => notUniqueValidator(control, 'name', this.group, this.store.state.groups)]],
 		trioIds: [new Set() as ReadonlySet<number>],
 		availableTimeslots: [[] as readonly Timeslot[]],
 		nextGroupId: ['' as (string | null)],
-		duration: [0 as (number | null), [Validators.min(1), Validators.pattern('^-?[0-9]*$')]],
+		duration: [0 as (number | null), [Validators.min(1), Validators.pattern(/^-?[0-9]*$/)]],
 	}, {validators: control => this.nextGroupRequiredValidator(control)});
 	
 	constructor() {
