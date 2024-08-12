@@ -63,7 +63,7 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 	
 	form = this.formBuilder.group({
 		academie: [null as string | null, [Validators.required]],
-		interval: [Interval.fromDateTimes(DateTime.now(), DateTime.now()), [Validators.required]],
+		interval: [Interval.fromDateTimes(DateTime.now(), DateTime.now()).toFullDay(), [Validators.required]],
 		firstWeekNumber: [1, [Validators.required, Validators.min(0), Validators.pattern(/^-?[0-9]*$/)]],
 	});
 	selectedInterruptionIds: string[] = [];
@@ -127,7 +127,7 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 			// Empty
 		}
 
-		const interruption = new Interruption(name, Interval.after(this.store.state.calendar.interval.start, {day: 1}));
+		const interruption = new Interruption(name, Interval.after(this.store.state.calendar.interval.start, {day: 1}).toFullDay());
 		this.undoStack.do(state => { state.calendar.interruptions.push(castDraft(interruption)); });
 		this.store.state.calendar.updateWeeks();
 		this.selectedInterruptionIds = [interruption.id];

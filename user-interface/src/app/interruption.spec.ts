@@ -4,7 +4,7 @@ import { Interruption } from './interruption';
 
 describe('Interruption', () => {
 	it('should create an instance', () => {
-		const createHoliday = () => new Interruption('name', Interval.after(DateTime.now(), {week: 1}));
+		const createHoliday = () => new Interruption('name', Interval.after(DateTime.now(), {week: 1}).toFullDay());
 		const interruption1 = createHoliday();
 		const interruption2 = createHoliday();
 

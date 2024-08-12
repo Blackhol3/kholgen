@@ -56,7 +56,7 @@ export class BetweenInterruptionsSelectionStrategyService implements MatDateRang
 
 	protected clamp(currentStart: DateTime, currentEnd: DateTime, validDate: DateTime = currentStart) {
 		const interruptions = this.store.state.calendar.interruptions.filter(x => !this.ignoredInterruptions.includes(x));
-		const interruptionEnds   = interruptions.map(x => x.interval.end  .plus( {day: 1})).filter(x => x <= validDate);
+		const interruptionEnds   = interruptions.map(x => x.interval.end                  ).filter(x => x <= validDate);
 		const interruptionStarts = interruptions.map(x => x.interval.start.minus({day: 1})).filter(x => x >= validDate);
 
 		const start = DateTime.max(currentStart, ...interruptionEnds);

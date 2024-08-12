@@ -5,12 +5,22 @@ import { Interruption } from './interruption';
 
 import { type CalendarService } from './calendar.service';
 
+function withNow<R>(newNow: DateTime, f: () => R) {
+	const oldNow = Settings.now;
+	Settings.now = () => +newNow;
+
+	try { return f(); }
+	finally { Settings.now = oldNow; }
+}
+
 describe('Calendar', () => {
 	it('should create an instance', () => {
-		Settings.now = () => +new Date(2024, 11, 25); // Wednesday
-		const calendar = new Calendar();
+		const calendar = withNow(
+			DateTime.local(2024, 12, 25), // Wednesday
+			() => new Calendar(),
+		);
 
-		expect(calendar.interval.start.toMillis()).toBe(+new Date(2024, 11, 30)); // Monday
+		expect(calendar.interval.start).toEqual(DateTime.local(2024, 12, 30)); // Monday
 		expect(calendar.interval.length('days')).toBeCloseTo(7*10 - 2);
 	});
 
@@ -35,17 +45,17 @@ describe('Calendar', () => {
 			Interval.fromDateTimes(
 				firstMonday.plus({days: 3}),
 				firstMonday.plus({weeks: 8}).endOf('week'),
-			),
+			).toFullDay(),
 			101,
 			[
-				new Interruption('', Interval.after(firstMonday.plus({weeks: 3, days: 5}), {weeks: 2}), false, true),
-				new Interruption('', Interval.after(firstMonday.plus({weeks: 7         }), {weeks: 1}), true, false),
+				new Interruption('', Interval.after(firstMonday.plus({weeks: 3, days: 5}), {weeks: 2}).toFullDay(), false, true),
+				new Interruption('', Interval.after(firstMonday.plus({weeks: 7         }), {weeks: 1}).toFullDay(), true, false),
 			],
 		);
 		//
 		const calendarService = jasmine.createSpyObj<CalendarService>('calendarService', ['getSchoolHolidays', 'getPublicHolidays']);
 		calendarService.getSchoolHolidays.and.resolveTo([
-			Interval.after(firstMonday.plus({weeks: 1, days: 2}), {weeks: 1}),
+			Interval.after(firstMonday.plus({weeks: 1, days: 2}), {weeks: 1}).toFullDay(),
 		]);
 		calendarService.getPublicHolidays.and.resolveTo([
 			firstMonday.plus({days: 3}),

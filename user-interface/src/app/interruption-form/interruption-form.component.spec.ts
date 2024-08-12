@@ -9,7 +9,7 @@ import { Interruption } from '../interruption';
 describe('HolidayFormComponent', () => {
 	let component: InterruptionFormComponent;
 	let fixture: ComponentFixture<InterruptionFormComponent>;
-	const interruption = new Interruption('name', Interval.after(DateTime.now(), {week: 1}));
+	const interruption = new Interruption('name', Interval.after(DateTime.now(), {week: 1}).toFullDay());
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({

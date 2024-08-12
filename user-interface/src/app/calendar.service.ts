@@ -100,7 +100,7 @@ export class CalendarService {
 
 		const stringHolidays = getFromLocalStorage<string[]>(`schoolHolidays.${academie}`);
 		if (stringHolidays !== null) {
-			return stringHolidays.map(x => Interval.fromISO(x));
+			return stringHolidays.map(x => Interval.fromFullDayISO(x));
 		}
 
 		const firstValidDate = getFirstValidDate();
@@ -111,12 +111,9 @@ export class CalendarService {
 		});
 		const schoolUrl = new URL(`${schoolHolidayAPI}?${params.toString()}`);
 		const schoolData = await fetchData(schoolUrl) as {results: Record<'start_date' | 'end_date', string>[]};
-		const holidays = schoolData.results.map(x => Interval.fromDateTimes(
-			DateTime.fromISO(x.start_date),
-			DateTime.fromISO(x.end_date).minus({milliseconds: 1}),
-		));
+		const holidays = schoolData.results.map(x => Interval.fromISO(`${x.start_date}/${x.end_date}`).toFullDay());
 
-		setToLocalStorage(`schoolHolidays.${academie}`, holidays.map(x => x.toISODate()));
+		setToLocalStorage(`schoolHolidays.${academie}`, holidays.map(x => x.toFullDayISO()));
 		return holidays;
 	}
 

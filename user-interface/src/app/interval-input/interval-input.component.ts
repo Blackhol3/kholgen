@@ -5,7 +5,7 @@ import { MatDatepickerModule, type MatDateRangeInput } from '@angular/material/d
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
-import { DateTime, Interval } from 'luxon';
+import { DateTime, type FullDayInterval, Interval } from 'luxon';
 
 import { getFirstValidDate } from '../calendar';
 
@@ -49,21 +49,21 @@ export class IntervalInputComponent implements ControlValueAccessor {
 		effect(() => this.valueChanges(this.start(), this.end()));
 	}
 
-	protected onChange = (_: Interval) => {};
+	protected onChange = (_: FullDayInterval) => {};
 
 	valueChanges(start: DateTime | null, end: DateTime | null) {
 		if (this.modelToViewUpdate) {
 			this.modelToViewUpdate = false;
 		}
 		else if (start !== null && end !== null && start < end) {
-			this.onChange(Interval.fromDateTimes(start.startOf('day'), end.endOf('day')));
+			this.onChange(Interval.fromDateTimes(start, end.endOf('day')).toFullDay());
 		}
 	}
 	
-	writeValue(interval: Interval) {
+	writeValue(interval: FullDayInterval) {
 		this.modelToViewUpdate = true;
 		this.start.set(interval.start);
-		this.end.set(interval.end.minus({millisecond: 1}));
+		this.end.set(interval.end.minus({day: 1}));
 		this.changeDetectorRef.markForCheck();
 	}
 	

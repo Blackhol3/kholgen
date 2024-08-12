@@ -9,7 +9,7 @@ import { Interruption } from './interruption';
 import { BetweenInterruptionsSelectionStrategyService } from './between-interruptions-selection-strategy.service';
 import { StoreService } from './store.service';
 
-describe('ToNextInterruptionSelectionStrategyService', () => {
+describe('BetweenInterruptionsSelectionStrategyService', () => {
 	let service: BetweenInterruptionsSelectionStrategyService;
 	let store: Draft<StoreService>;
 	let today: DateTime;
@@ -53,7 +53,7 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 
 		it('but before the next interruption', () => {
 			const interruptionStart = today.plus({days: 5});
-			store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}))];
+			store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}).toFullDay())];
 
 			const preview = service.createPreview(today, range);
 			expect(preview.start).toHaveSameDay(range.start!);
@@ -67,7 +67,7 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 			let interruptionStart: DateTime;
 			beforeEach(() => {
 				interruptionStart = today.minus({days: 2});
-				store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}))];
+				store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}).toFullDay())];
 			});
 			
 			it('nothing being ignored', () => {
@@ -110,7 +110,7 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 
 		it('should drag the start until the previous interruption', () => {
 			const interruptionEnd = today.minus({days: 10});
-			store.state.calendar.interruptions = [new Interruption('', Interval.before(interruptionEnd, {week: 1}))];
+			store.state.calendar.interruptions = [new Interruption('', Interval.before(interruptionEnd, {week: 1}).toFullDay())];
 
 			const afterInterruption = today.minus({days: 7});
 			const afterInterruptionDrag = service.createDrag(range.start!, range, afterInterruption);
@@ -125,7 +125,7 @@ describe('ToNextInterruptionSelectionStrategyService', () => {
 
 		it('should drag the end until the next interruption', () => {
 			const interruptionStart = today.plus({days: 10});
-			store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}))];
+			store.state.calendar.interruptions = [new Interruption('', Interval.after(interruptionStart, {week: 1}).toFullDay())];
 
 			const beforeInterruption = today.plus({days: 7});
 			const beforeInterruptionDrag = service.createDrag(range.end!, range, beforeInterruption);

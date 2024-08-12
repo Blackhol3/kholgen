@@ -1,3 +1,5 @@
+import './luxon';
+
 import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -7,7 +9,6 @@ import { provideLuxonDateAdapter, MAT_LUXON_DATE_ADAPTER_OPTIONS } from '@angula
 import { MAT_DATE_LOCALE } from '@angular/material/core'; 
 
 import { enableMapSet, enablePatches } from 'immer';
-import { Settings } from 'luxon';
 
 import { environment } from './environments/environment';
 import { AppComponent } from './app/app.component';
@@ -22,13 +23,6 @@ import { ComputationPageComponent } from './app/computation-page/computation-pag
 
 enableMapSet();
 enablePatches();
-
-Settings.throwOnInvalid = true;
-declare module 'luxon' {
-	interface TSSettings {
-		throwOnInvalid: true;
-	}
-}
 
 if (environment.production) {
 	enableProdMode();

@@ -1,6 +1,8 @@
 // This file is required by karma.conf.js and loads recursively all the .spec and framework files
 
 import 'zone.js/testing';
+import './luxon';
+
 import { getTestBed } from '@angular/core/testing';
 import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -8,14 +10,11 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideLuxonDateAdapter, MAT_LUXON_DATE_ADAPTER_OPTIONS } from '@angular/material-luxon-adapter'; 
 import { MAT_DATE_LOCALE } from '@angular/material/core'; 
 
-import { DateTime, Settings } from 'luxon';
+import { enableMapSet, enablePatches } from 'immer';
+import { DateTime } from 'luxon';
 
-Settings.throwOnInvalid = true;
-declare module 'luxon' {
-	interface TSSettings {
-		throwOnInvalid: true;
-	}
-}
+enableMapSet();
+enablePatches();
 
 getTestBed().initTestEnvironment(
 	[BrowserDynamicTestingModule, NoopAnimationsModule],

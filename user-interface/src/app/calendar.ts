@@ -1,9 +1,8 @@
 import { immerable, type Draft } from 'immer';
-import { DateTime, Interval } from 'luxon';
+import { DateTime, type FullDayInterval, Interval } from 'luxon';
 
 import { Interruption } from './interruption';
 import type { HumanJson, HumanJsonable } from './json';
-import { intervalFromISO, intervaltoISO } from './misc';
 import { nbDaysInWeek } from './timeslot';
 import { Week, type WorkingWeek } from './week';
 
@@ -15,7 +14,7 @@ export function getFirstValidDate() {
 
 class CalendarCache {
 	weeks: readonly Week[] = [];
-	schoolHolidays: readonly Interval[] = [];
+	schoolHolidays: readonly FullDayInterval[] = [];
 	publicHolidays: readonly DateTime[] = [];
 }
 
@@ -29,7 +28,7 @@ export class Calendar implements HumanJsonable {
 		readonly interval = Interval.fromDateTimes(
 			getFirstValidDate(),
 			DateTime.now().plus({week: 10}).endOf('week').minus({days: 7 - nbDaysInWeek}),
-		),
+		).toFullDay(),
 		readonly firstWeekNumber = 1,
 		readonly interruptions: readonly Interruption[] = [],
 	) {}
@@ -47,6 +46,7 @@ export class Calendar implements HumanJsonable {
 
 		const weekIntervals = Interval
 			.fromDateTimes(this.interval.start.startOf('week'), this.interval.end.endOf('week'))
+			.toFullDay()
 			.splitBy({week: 1})
 		;
 
@@ -101,7 +101,7 @@ export class Calendar implements HumanJsonable {
 	toHumanJson() {
 		return {
 			academie: this.academie === null ? undefined : this.academie,
-			interval: intervaltoISO(this.interval),
+			interval: this.interval.toFullDayISO(),
 			firstWeekNumber: this.firstWeekNumber === 1 ? undefined : this.firstWeekNumber,
 			interruptions: this.interruptions.length === 0 ? undefined : this.interruptions,
 		}
@@ -123,7 +123,7 @@ export class Calendar implements HumanJsonable {
 
 		const calendar = new Calendar(
 			json.academie,
-			intervalFromISO(json.interval, message => `L'intervalle de début et fin des colles est invalide (${message}).`),
+			Interval.fromFullDayISO(json.interval, message => `L'intervalle de début et fin des colles est invalide (${message}).`),
 			json.firstWeekNumber,
 			json.interruptions?.map(jsonInterruption => Interruption.fromHumanJson(jsonInterruption)),
 		);

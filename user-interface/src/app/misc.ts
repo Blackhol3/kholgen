@@ -1,5 +1,4 @@
 import { AbstractControl, type ValidationErrors } from '@angular/forms';
-import { Interval } from 'luxon';
 
 export function notUniqueValidator<Type>(control: AbstractControl<string, string>, property: keyof Type, formObject: Type, objects: readonly Type[]): ValidationErrors | null {
 	for (const object of objects) {
@@ -58,25 +57,4 @@ type Entries<T> = {
 
 export function entries<T extends Record<string, unknown>>(object: T) {
 	return Object.entries(object) as Entries<T>;
-}
-
-export function intervaltoISO(interval: Interval) {
-	return Interval.fromDateTimes(interval.start, interval.end.minus({millisecond: 1})).toISODate();
-}
-
-export function intervalFromISO(text: string, errorMessage: (message: string) => string) {
-	try {
-		const interval = Interval.fromISO(text);
-		return text.includes('/P')
-			? interval
-			: Interval.fromDateTimes(interval.start.startOf('day'), interval.end.endOf('day').plus({millisecond: 1}))
-		;
-	}
-	catch (exception) {
-		if (exception instanceof Error) {
-			throw new SyntaxError(errorMessage(exception.message.replace(/^Invalid[^:]*: /, '')), {cause: exception});
-		}
-
-		throw exception;
-	}
 }
