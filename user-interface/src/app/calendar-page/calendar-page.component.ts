@@ -127,7 +127,15 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 			// Empty
 		}
 
-		const interruption = new Interruption(name, Interval.after(this.store.state.calendar.interval.start, {day: 1}).toFullDay());
+		let start = DateTime.max(
+			this.store.state.calendar.interval.start.plus({day: 1}),
+			...this.store.state.calendar.interruptions.map(interruption => interruption.interval.end)
+		);
+		while (!this.store.state.calendar.isWorkingDay(start)) {
+			start = start.plus({day: 1});
+		}
+
+		const interruption = new Interruption(name, Interval.after(start, {day: 1}).toFullDay());
 		this.undoStack.do(state => { state.calendar.interruptions.push(castDraft(interruption)); });
 		this.store.state.calendar.updateWeeks();
 		this.selectedInterruptionIds = [interruption.id];
