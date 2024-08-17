@@ -1,5 +1,5 @@
-#include <QLocale>
 #include <QCoreApplication>
+#include <QLocale>
 #include <QTranslator>
 #include <QWebChannel>
 #include <QWebSocketServer>
@@ -18,17 +18,12 @@ int main(int argc, char *argv[])
 {
 	QCoreApplication a(argc, argv);
 	QCoreApplication::setApplicationName("KhôlGen");
-	QCoreApplication::setApplicationVersion("2.0.0-dev");
+    QCoreApplication::setApplicationVersion("2.0.0-dev");
 
-	QTranslator translator;
-	const QStringList uiLanguages = QLocale::system().uiLanguages();
-	for (const QString &locale : uiLanguages) {
-		const QString baseName = "KholGen_" + QLocale(locale).name();
-		if (translator.load(":/i18n/" + baseName)) {
-			a.installTranslator(&translator);
-			break;
-		}
-	}
+    QTranslator translator;
+    if (translator.load(QLocale(), "KholGen", "_", ":/i18n")) {
+        a.installTranslator(&translator);
+    }
 
 	initStdout();
 

@@ -1,0 +1,11 @@
+{
+	"version": 3,
+	"configurePresets": [{
+		"name": "default",
+		"displayName": "KhôlGen",
+		"binaryDir": "${sourceDir}/../build/solver/Release",
+		"cacheVariables": {
+			"CMAKE_BUILD_TYPE": "Release"
+		}
+	}]
+}
