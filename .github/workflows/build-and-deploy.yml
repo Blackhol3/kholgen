@@ -1,0 +1,46 @@
+name: Build and deploy the user interface to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - user-interface/
+      
+jobs:
+  build:
+    defaults:
+      run:
+        working-directory: user-interface/
+    
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          cache-dependency-path: user-interface/package-lock.json
+      - run: npm ci
+      - run: npm run build -- --configuration production --output-path dist/ --base-href=/${{ github.event.repository.name }}/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  deploy:
+    needs: build
+        
+    permissions:
+      pages: write
+      id-token: write
+        
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
