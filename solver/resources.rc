@@ -1,0 +1,30 @@
+/* This file is purposely encoded in ISO 8859-2 */
+
+IDI_ICON1   ICON    DISCARDABLE "${CMAKE_SOURCE_DIR}/../user-interface/src/assets/icon/icon.ico"
+
+#include <windows.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     ${PROJECT_VERSION_MAJOR},${PROJECT_VERSION_MINOR},${PROJECT_VERSION_PATCH},${PROJECT_VERSION_TWEAK}
+PRODUCTVERSION  ${PROJECT_VERSION_MAJOR},${PROJECT_VERSION_MINOR},${PROJECT_VERSION_PATCH},${PROJECT_VERSION_TWEAK}
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040C04B0"
+        BEGIN
+            VALUE "CompanyName",        "KhôlGen"
+            VALUE "FileDescription",    ""
+            VALUE "FileVersion",        "${PROJECT_VERSION}"
+            VALUE "InternalName",       "${PROJECT_NAME}"
+            VALUE "LegalCopyright",     "Copyright (c) 2019 Amaury Dalla Monta"
+            VALUE "OriginalFilename",   "${PROJECT_NAME}.exe"
+            VALUE "ProductName",        "KhôlGen"
+            VALUE "ProductVersion",     "${PROJECT_VERSION}"
+        END
+    END
+
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x40C, 1200
+    END
+END

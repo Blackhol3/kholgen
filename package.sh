@@ -28,4 +28,5 @@ cd package/
 
 cp -r "../${SOLVER_BUILD_PATH}/package" solver/
 cp -r "../user-interface/browser" user-interface/
+cp "../user-interface/3rdpartylicenses.txt" user-interface/
 create-shortcut "${PWD}/solver/KholGen.exe" "${PWD}/KholGen.lnk"

@@ -4,6 +4,16 @@ $palette: mat.m2-define-palette(mat.$m2-indigo-palette);
 
 mat-toolbar {
 	justify-content: space-between;
+
+	h1 {
+		display: flex;
+		align-items: center;
+
+		img {
+			height: 32px;
+			margin-right: 8px;
+		}
+	}
 	
 	button {
 		margin-left: 8px;
