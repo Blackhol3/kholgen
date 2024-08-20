@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { type Patch } from 'immer';
+import type { Patch } from 'immer';
 
 import { StoreService } from './store.service';
 

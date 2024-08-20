@@ -11,7 +11,7 @@ const publicHolidayAPI = 'https://calendrier.api.gouv.fr/jours-feries';
 /* @todo Handle network errors */
 async function fetchData(url: URL) {
 	const response = await fetch(url);
-	return response.json();
+	return response.json() as unknown;
 }
 
 function getLocalStorageDataKey(item: string) {

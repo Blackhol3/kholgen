@@ -75,6 +75,7 @@ export class CalendarPageComponent implements OnInit, OnDestroy {
 		this.form.valueChanges.subscribe(() => void this.formChange());
 	}
 	
+	// eslint-disable-next-line @typescript-eslint/no-misused-promises
 	async ngOnInit() {
 		this.academies = await this.calendarService.getAcademies();
 		this.storeSubscription = this.store.changeObservable.subscribe(() => this.updateForm());
