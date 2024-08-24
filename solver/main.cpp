@@ -1,5 +1,7 @@
 #include <QCoreApplication>
 #include <QLocale>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QTranslator>
 #include <QWebChannel>
 #include <QWebSocketServer>
@@ -14,6 +16,31 @@
 #include "Objective/OnlyOneCollePerDayObjective.h"
 #include "Objective/SameSlotOnlyOnceInCycleObjective.h"
 
+#ifdef Q_OS_WIN
+	#include <Windows.h>
+#endif
+
+bool shouldQuitAlreadyRunningApplication(QCoreApplication *a) {
+	auto localSocket = new QLocalSocket(a);
+	localSocket->connectToServer(a->applicationName());
+	if (localSocket->waitForConnected()) {
+		localSocket->disconnectFromServer();
+		return true;
+	}
+
+	auto localServer = new QLocalServer(a);
+	localServer->listen(a->applicationName());
+	QObject::connect(localServer, &QLocalServer::newConnection, [=]() {
+		#ifdef Q_OS_WIN
+			::SetForegroundWindow(::GetConsoleWindow());
+		#endif
+
+		localServer->nextPendingConnection()->deleteLater();
+	});
+
+	return false;
+}
+
 int main(int argc, char *argv[])
 {
 	QCoreApplication a(argc, argv);
@@ -26,6 +53,11 @@ int main(int argc, char *argv[])
     }
 
 	initStdout();
+
+	if (shouldQuitAlreadyRunningApplication(&a)) {
+		qStdout() << QCoreApplication::tr("Une autre instance de l'application est déjà en train de s'exécuter.") << Qt::endl;
+		return EXIT_FAILURE;
+	}
 
 	QWebSocketServer server(QCoreApplication::tr("Serveur KhôlGen"), QWebSocketServer::NonSecureMode);
 	int const port = 4201;
