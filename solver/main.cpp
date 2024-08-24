@@ -44,13 +44,13 @@ bool shouldQuitAlreadyRunningApplication(QCoreApplication *a) {
 int main(int argc, char *argv[])
 {
 	QCoreApplication a(argc, argv);
-	QCoreApplication::setApplicationName("KhôlGen");
-    QCoreApplication::setApplicationVersion("2.0.0-dev");
+	QCoreApplication::setApplicationName(PROJECT_HUMAN_NAME);
+	QCoreApplication::setApplicationVersion(PROJECT_VERSION);
 
-    QTranslator translator;
-    if (translator.load(QLocale(), "KholGen", "_", ":/i18n")) {
-        a.installTranslator(&translator);
-    }
+	QTranslator translator;
+	if (translator.load(QLocale(), PROJECT_NAME, "_", ":/i18n")) {
+		a.installTranslator(&translator);
+	}
 
 	initStdout();
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	QWebSocketServer server(QCoreApplication::tr("Serveur KhôlGen"), QWebSocketServer::NonSecureMode);
+	QWebSocketServer server(QCoreApplication::tr("Serveur %1").arg(QCoreApplication::applicationName()), QWebSocketServer::NonSecureMode);
 	int const port = 4201;
 	if (!server.listen(QHostAddress::LocalHost, port)) {
 		qStdout() << QCoreApplication::tr("Impossible d'ouvrir le serveur WebSocket sur le port %1.").arg(port) << Qt::endl;

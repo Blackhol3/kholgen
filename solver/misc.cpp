@@ -1,15 +1,15 @@
 #include "misc.h"
 
-#ifdef _WIN32
+#include <QTextStream>
+
+#ifdef Q_OS_WIN
 	#include <cstdio>
 	#include <Windows.h>
 #endif
 
-#include <QTextStream>
-
 void initStdout()
 {
-	#ifdef _WIN32
+	#ifdef Q_OS_WIN
 		SetConsoleOutputCP(CP_UTF8);
 		setvbuf(stdout, nullptr, _IOFBF, 1000);
 	#endif

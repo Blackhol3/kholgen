@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(KholGen VERSION 2.0.0.0 LANGUAGES CXX)
+set(PROJECT_HUMAN_NAME KhôlGen)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -72,6 +73,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(or-tools)
 target_link_libraries(${PROJECT_NAME} PRIVATE ortools::ortools)
+
+target_compile_definitions(${PROJECT_NAME}
+	PRIVATE "PROJECT_NAME=\"${PROJECT_NAME}\""
+	PRIVATE "PROJECT_HUMAN_NAME=\"${PROJECT_HUMAN_NAME}\""
+	PRIVATE "PROJECT_VERSION=\"${PROJECT_VERSION}\""
+)
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
