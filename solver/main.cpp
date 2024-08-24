@@ -1,7 +1,11 @@
 #include <QCoreApplication>
+#include <QFile>
+#include <QFileInfo>
+#include <QHttpServer>
 #include <QLocale>
 #include <QLocalServer>
 #include <QLocalSocket>
+#include <QMimeDatabase>
 #include <QTranslator>
 #include <QWebChannel>
 #include <QWebSocketServer>
@@ -18,27 +22,84 @@
 
 #ifdef Q_OS_WIN
 	#include <Windows.h>
+	#include <shellapi.h>
 #endif
 
-bool shouldQuitAlreadyRunningApplication(QCoreApplication *a) {
-	auto localSocket = new QLocalSocket(a);
-	localSocket->connectToServer(a->applicationName());
-	if (localSocket->waitForConnected()) {
-		localSocket->disconnectFromServer();
-		return true;
+void createLocalServer() {
+	QLocalSocket socket;
+	socket.connectToServer(QCoreApplication::applicationName());
+	if (socket.waitForConnected()) {
+		qStdout() << QCoreApplication::tr("Une autre instance de l'application est déjà en train de s'exécuter.") << Qt::endl;
+		std::exit(EXIT_FAILURE);
 	}
 
-	auto localServer = new QLocalServer(a);
-	localServer->listen(a->applicationName());
-	QObject::connect(localServer, &QLocalServer::newConnection, [=]() {
+	auto const server = new QLocalServer(QCoreApplication::instance());
+	server->listen(QCoreApplication::applicationName());
+	QObject::connect(server, &QLocalServer::newConnection, [=]() {
 		#ifdef Q_OS_WIN
 			::SetForegroundWindow(::GetConsoleWindow());
 		#endif
 
-		localServer->nextPendingConnection()->deleteLater();
+		auto const socket = server->nextPendingConnection();
+		socket->disconnectFromServer();
+		socket->deleteLater();
+	});
+}
+
+QFile getFileFromUrl(QUrl const &url = QUrl()) {
+	auto const &path = url.fileName().contains('.') ? url.path() : "index.html";
+	return QFile(QCoreApplication::applicationDirPath() + "/../user-interface/" + path);
+}
+
+void createHttpServer(int port) {
+	auto const indexFile = getFileFromUrl();
+	if (!indexFile.exists()) {
+		qStdout() << QCoreApplication::tr("Les fichiers de l'interface graphique n'ont pas été trouvés.") << Qt::endl;
+		return;
+	}
+
+	auto const server = new QHttpServer(QCoreApplication::instance());
+	server->setMissingHandler([] (const QHttpServerRequest &request, QHttpServerResponder &&responder) {
+		auto file = getFileFromUrl(request.url());
+		if (!file.open(QIODevice::ReadOnly)) {
+			return responder.write(QHttpServerResponse::StatusCode::NotFound);
+		}
+
+		QFileInfo fileInfo(file);
+		QMimeDatabase mimeDatabase;
+		QMimeType mimeType = mimeDatabase.mimeTypeForFile(fileInfo);
+		return responder.write(file.readAll(), mimeType.name().toUtf8());
 	});
 
-	return false;
+	if (!server->listen(QHostAddress::LocalHost, port)) {
+		qStdout() << QCoreApplication::tr("Impossible d'ouvrir le serveur HTTP sur le port %1.").arg(port) << Qt::endl;
+		server->deleteLater();
+		return;
+	}
+
+	#ifdef Q_OS_WIN
+		ShellExecute(NULL, L"open", QString("http://localhost:%1").arg(port).toStdWString().c_str(), NULL, NULL, SW_SHOW);
+	#endif
+}
+
+QWebChannel* createWebSocketServer(int port) {
+	auto server = new QWebSocketServer(
+		QCoreApplication::tr("Serveur %1").arg(QCoreApplication::applicationName()),
+		QWebSocketServer::NonSecureMode,
+		QCoreApplication::instance()
+	);
+	if (!server->listen(QHostAddress::LocalHost, port)) {
+		qStdout() << QCoreApplication::tr("Impossible d'ouvrir le serveur WebSocket sur le port %1.").arg(port) << Qt::endl;
+		std::exit(EXIT_FAILURE);
+	}
+
+	/* @todo Only accepts a single connection */
+	auto const channel = new QWebChannel(QCoreApplication::instance());
+	QObject::connect(server, &QWebSocketServer::newConnection, [=]() {
+		channel->connectTo(new WebSocketTransport(server->nextPendingConnection()));
+	});
+
+	return channel;
 }
 
 int main(int argc, char *argv[])
@@ -54,23 +115,9 @@ int main(int argc, char *argv[])
 
 	initStdout();
 
-	if (shouldQuitAlreadyRunningApplication(&a)) {
-		qStdout() << QCoreApplication::tr("Une autre instance de l'application est déjà en train de s'exécuter.") << Qt::endl;
-		return EXIT_FAILURE;
-	}
-
-	QWebSocketServer server(QCoreApplication::tr("Serveur %1").arg(QCoreApplication::applicationName()), QWebSocketServer::NonSecureMode);
-	int const port = 4201;
-	if (!server.listen(QHostAddress::LocalHost, port)) {
-		qStdout() << QCoreApplication::tr("Impossible d'ouvrir le serveur WebSocket sur le port %1.").arg(port) << Qt::endl;
-		return a.exec();
-	}
-
-	/* @todo Only accepts a single connection */
-	QWebChannel channel;
-	QObject::connect(&server, &QWebSocketServer::newConnection, [&]() {
-		channel.connectTo(new WebSocketTransport(server.nextPendingConnection()));
-	});
+	createLocalServer();
+	createHttpServer(4200);
+	auto const channel = createWebSocketServer(4201);
 
 	const EvenDistributionBetweenTeachersObjective evenDistributionBetweenTeachersObjective;
 	const MinimalNumberOfSlotsObjective minimalNumberOfSlotsObjective;
@@ -90,7 +137,7 @@ int main(int argc, char *argv[])
 	Solver solver(state);
 
 	Communication communication(state, solver);
-	channel.registerObject("communication", &communication);
+	channel->registerObject("communication", &communication);
 	preventSleepMode(true);
 
 	return a.exec();

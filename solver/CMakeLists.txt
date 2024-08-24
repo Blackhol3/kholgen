@@ -6,7 +6,7 @@ set(PROJECT_HUMAN_NAME KhôlGen)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Concurrent Core WebChannel WebSockets LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Concurrent Core HttpServer WebChannel WebSockets LinguistTools)
 qt_standard_project_setup(I18N_SOURCE_LANGUAGE fr)
 qt_add_translations(${PROJECT_NAME} NO_GENERATE_PLURALS_TS_FILE TS_FILE_DIR translations)
 
@@ -59,7 +59,7 @@ add_executable(${PROJECT_NAME}
 	${CMAKE_BINARY_DIR}/resources.rc
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt::Concurrent Qt::Core Qt::WebChannel Qt::WebSockets)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt::Concurrent Qt::Core Qt::HttpServer Qt::WebChannel Qt::WebSockets)
 
 include(FetchContent)
 set(ABSL_PROPAGATE_CXX_STD ON)
