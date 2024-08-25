@@ -26,6 +26,10 @@
 			<a mat-list-item routerLink="/options" routerLinkActive="active">Options</a>
 			<a mat-list-item routerLink="/computation" routerLinkActive="active">Calcul</a>
 		</mat-nav-list>
+		<a mat-button href="https://github.com/Blackhol3/kholgen">
+			<img src="assets/github.svg" alt="Icône de GitHub" />
+			<span>GitHub</span>
+		</a>
 	</mat-sidenav>
 	<mat-sidenav-content [@routeAnimation]="outlet.isActivated ? outlet.activatedRoute.component?.name : ''">
 		<router-outlet #outlet="outlet" />

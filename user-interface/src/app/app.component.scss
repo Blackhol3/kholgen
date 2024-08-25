@@ -37,10 +37,31 @@ mat-sidenav-container {
 
 mat-sidenav {
 	width: 200px;
+
+	::ng-deep .mat-drawer-inner-container {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+	}
 	
 	.active {
 		color: map.get($palette, 500);
 		background: map.get($palette, 50);
+	}
+
+	[mat-button] {
+		height: 48px;
+
+		::ng-deep .mdc-button__label {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		img {
+			height: 24px;
+			margin-right: 8px;
+		}
 	}
 }
 
