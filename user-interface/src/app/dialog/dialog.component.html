@@ -1,7 +1,11 @@
 @if (data.type === 'connection') {
 	<h1 mat-dialog-title>Connexion en cours</h1>
-	<mat-dialog-content>
+	<mat-dialog-content class="connection">
 		<mat-spinner />
+		<div>
+			La connexion au serveur prend un temps anormalement long.<br />
+			Assurez-vous qu'il ait demarré correctement.
+		</div>
 	</mat-dialog-content>
 }
 @else if (data.type === 'invalid-json') {

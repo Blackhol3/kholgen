@@ -27,10 +27,7 @@ export class DialogComponent {
 	protected readonly dialogRef = inject(MatDialogRef<this, boolean>);
 
 	constructor() {
-		if (this.data.type === 'connection') {
-			this.dialogRef.disableClose = true;
-		}
-		else if (this.data.type === 'invalid-json') {
+		if (this.data.type === 'invalid-json') {
 			this.data.message = this.data.message.replaceAll(/'([^' ]*)'/g, '<code>$1</code>');
 
 			const jsonParseHeader = 'JSON.parse: ';

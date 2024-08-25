@@ -45,21 +45,21 @@ type Communication = {
 export class CommunicationService {
 	protected readonly dialog = inject(MatDialog);
 
-	protected websocket: WebSocket | undefined;
+	protected websocket: WebSocket & {closedManually?: boolean} | undefined;
 	protected communication: ChannelObject<Communication> | undefined;
 	protected computeSubject: Subject<void> | undefined;
 	
-	connect(): Promise<void> {
+	async connect(): Promise<boolean> {
 		return new Promise(resolve => {
 			if (this.websocket !== undefined) {
-				resolve();
+				resolve(this.websocket.readyState === WebSocket.OPEN);
 				return;
 			}
 			
 			let dialogTimeout: number | undefined;
 			if (this.dialog.getDialogById('connection') === undefined) {
 				dialogTimeout = window.setTimeout(
-					() => this.dialog.open(DialogComponent, { data: {type: 'connection'} }),
+					() => this.dialog.open(DialogComponent, { data: {type: 'connection'} }).afterClosed().subscribe(() => this.disconnect()),
 					300
 				);
 			}
@@ -70,29 +70,36 @@ export class CommunicationService {
 				}
 				window.clearTimeout(dialogTimeout);
 			};
-			 
+			
 			this.websocket = new WebSocket('ws://localhost:4201');
 			this.websocket.addEventListener('open', () => {
 				new QWebChannel<{communication: Communication}>(this.websocket!, channel => {
 					this.communication = channel.objects.communication;
 					
 					closeDialog();
-					resolve();
+					resolve(true);
 				});
 			});
-			this.websocket.addEventListener('close', (event: CloseEvent) => {
-				const tryToReconnect = this.communication === undefined && !event.wasClean;
+			this.websocket.addEventListener('close', () => {
+				const tryToReconnect = this.communication === undefined && this.websocket?.closedManually !== true;
 				this.websocket = undefined;
 				this.communication = undefined;
 				this.computeSubject = undefined;
 				
-				tryToReconnect ? resolve(this.connect()) : closeDialog();
+				if (tryToReconnect) {
+					resolve(this.connect());
+				}
+				else {
+					closeDialog();
+					resolve(false);
+				}
 			});
 		});
 	}
 	
 	disconnect(): void {
 		if (this.websocket !== undefined) {
+			this.websocket.closedManually = true;
 			this.websocket.close();
 		}
 	}

@@ -68,7 +68,10 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 	}
 	
 	async compute() {
-		await this.communication.connect();
+		if (await this.communication.connect() === false) {
+			return;
+		}
+		
 		this.isRunning = true;
 		this.communication.compute(this.store).subscribe({
 			complete: () => {

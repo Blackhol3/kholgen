@@ -1,5 +1,13 @@
-mat-spinner {
-	margin: auto;
+mat-dialog-content.connection {
+	display: flex;
+	width: 30em;
+	
+	hyphens: auto;
+
+	mat-spinner {
+		flex-shrink: 0;
+		margin-right: 1em;
+	}
 }
 
 mat-icon {
