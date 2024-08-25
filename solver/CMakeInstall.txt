@@ -1,0 +1,30 @@
+set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/package/")
+get_filename_component(QT_BINARY_DIR ${WINDEPLOYQT_EXECUTABLE} DIRECTORY)
+
+install(CODE "file(REMOVE_RECURSE ${CMAKE_INSTALL_PREFIX})")
+
+install(FILES ${or-tools_SOURCE_DIR}/LICENSE DESTINATION 3rdpartylicenses/ RENAME "OR-Tools.txt")
+install(FILES ${QT_BINARY_DIR}/../../../Licenses/LICENSE DESTINATION 3rdpartylicenses/ RENAME "Qt.txt")
+
+install(TARGETS ${PROJECT_NAME}
+	BUNDLE  DESTINATION ./
+	RUNTIME DESTINATION ./
+)
+
+qt_generate_deploy_script(
+	TARGET ${PROJECT_NAME}
+	OUTPUT_SCRIPT DEPLOY_SCRIPT
+	CONTENT "
+		qt_deploy_runtime_dependencies(
+			EXECUTABLE $<TARGET_FILE_NAME:${PROJECT_NAME}>
+			BIN_DIR .
+			PLUGINS_DIR .
+			NO_TRANSLATIONS
+			NO_COMPILER_RUNTIME
+			DEPLOY_TOOL_OPTIONS --no-qml
+		)
+	"
+)
+install(SCRIPT ${DEPLOY_SCRIPT})
+
+install(FILES ${QT_BINARY_DIR}/Qt6Qml.dll DESTINATION ./)

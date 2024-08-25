@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.28)
 
 project(KholGen VERSION 2.0.0.0 LANGUAGES CXX)
 set(PROJECT_HUMAN_NAME KhôlGen)
@@ -70,6 +70,7 @@ FetchContent_Declare(
     or-tools
     GIT_REPOSITORY https://github.com/google/or-tools.git
     GIT_TAG        ed8db9097cdbaa06b40384d3a86164744a606043 # v9.7
+    EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(or-tools)
 target_link_libraries(${PROJECT_NAME} PRIVATE ortools::ortools)
@@ -87,14 +88,4 @@ else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-set(PACKAGE_DIR "${CMAKE_BINARY_DIR}/package/")
-file(REMOVE_RECURSE ${PACKAGE_DIR})
-file(READ "${or-tools_SOURCE_DIR}/LICENSE" OR-TOOLS_LICENSE)
-file(WRITE "${PACKAGE_DIR}/3rdpartylicenses.txt" "Package: or-tools\n${OR-TOOLS_LICENSE}")
-
-add_custom_command(
-    TARGET ${PROJECT_NAME} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_BINARY_DIR}/${PROJECT_NAME}${CMAKE_EXECUTABLE_SUFFIX}" "${PACKAGE_DIR}/${PROJECT_NAME}${CMAKE_EXECUTABLE_SUFFIX}"
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:${PROJECT_NAME}> ${PACKAGE_DIR}
-    COMMAND_EXPAND_LISTS
-)
+include(CMakeInstall.txt)
