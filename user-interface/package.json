@@ -1,6 +1,6 @@
 {
-  "name": "khol-gen",
-  "version": "0.0.0",
+  "name": "kholgen",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "ng": "ng",
@@ -10,7 +10,6 @@
     "test": "ng test",
     "lint": "ng lint"
   },
-  "private": true,
   "dependencies": {
     "@angular/animations": "^18.2.0",
     "@angular/cdk": "^18.2.0",
