@@ -32,7 +32,10 @@ const schema: JTDSchemaType<HumanJson<State>> = {
 					subject: { type: 'string' },
 					availableTimeslots: { elements: { type: 'string' } },
 				},
-				optionalProperties: { weeklyAvailabilityFrequency: { type: 'uint8' } },
+				optionalProperties: {
+					weeklyAvailabilityFrequency: { type: 'uint8' },
+					meanWeeklyVolume: { type: 'float32' }
+				},
 			},
 		},
 		objectives: { elements: { type: 'string' } },

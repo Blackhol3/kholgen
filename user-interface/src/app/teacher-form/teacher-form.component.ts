@@ -44,6 +44,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 		subjectId: ['', Validators.required],
 		availableTimeslots: [[] as readonly Timeslot[], Validators.required],
 		weeklyAvailabilityFrequency: [1, [Validators.required, Validators.min(1), Validators.pattern(/^-?[0-9]*$/)]],
+		meanWeeklyVolume: [null as number | null, [Validators.min(0.001)]],
 	}, {validators: control => this.notUniqueValidator(control)});
 	
 	constructor() {
@@ -64,6 +65,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 			subjectId: this.teacher.subjectId,
 			availableTimeslots: this.teacher.availableTimeslots,
 			weeklyAvailabilityFrequency: this.teacher.weeklyAvailabilityFrequency,
+			meanWeeklyVolume: this.teacher.meanWeeklyVolume,
 		}, {emitEvent: false});
 	}
 	

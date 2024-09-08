@@ -18,8 +18,14 @@
 	
 	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Disponibilité hebdomadaire <small>(disponible toutes les … semaines)</small></mat-label>
-		<input matInput type="number" formControlName="weeklyAvailabilityFrequency" min="1">
+		<input matInput type="number" formControlName="weeklyAvailabilityFrequency">
 		@if (form.controls.weeklyAvailabilityFrequency.hasError('pattern')) { <mat-error>La fréquence de disponibilité doit être un entier.</mat-error> }
 		@if (form.controls.weeklyAvailabilityFrequency.hasError('min')) { <mat-error>La fréquence de disponibilité doit être supérieure ou égale à 1.</mat-error> }
+	</mat-form-field>
+	
+	<mat-form-field appearance="fill" hideRequiredMarker>
+		<mat-label>Volume horaire hebdomadaire moyen</mat-label>
+		<input matInput type="number" formControlName="meanWeeklyVolume">
+		@if (form.controls.meanWeeklyVolume.hasError('min')) { <mat-error>Le volume horaire doit être strictement positif.</mat-error> }
 	</mat-form-field>
 </form>

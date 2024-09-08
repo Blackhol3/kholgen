@@ -64,6 +64,7 @@ add_executable(${PROJECT_NAME}
 )
 
 add_executable(${PROJECT_TESTS_NAME}
+	Teacher.test.cpp
 )
 
 target_link_libraries(${PROJECT_LIB_NAME} PUBLIC Qt::Concurrent Qt::Core Qt::HttpServer Qt::WebChannel Qt::WebSockets)

@@ -184,6 +184,28 @@ bool Solver::compute(std::function<void(vector<Colle> const &colles, vector<Obje
 		}
 	}
 
+	// Teachers must have colles according to the expected mean weekly volume
+	for (auto const &teacher: state->getTeachers() | std::views::filter(&Teacher::hasMeanWeeklyVolume)) {
+		LinearExpr nbCollesOfTeacher;
+
+		for (auto const &week: state->getWeeks()) {
+			for (auto const &trio: state->getTrios()) {
+				for (auto const &timeslot: state->getAvailableTimeslots(teacher, trio, week)) {
+					nbCollesOfTeacher += isTrioWithTeacherAtTimeslotInWeek[trio][teacher][timeslot][week];
+				}
+			}
+		}
+
+		auto const &totalVolume = teacher.getTotalVolume(state->getWeeks().size());
+		if (totalVolume.isExact) {
+			modelBuilder.AddEquality(nbCollesOfTeacher, totalVolume.value);
+		}
+		else {
+			modelBuilder.AddGreaterOrEqual(nbCollesOfTeacher, totalVolume.value);
+			modelBuilder.AddLessOrEqual(nbCollesOfTeacher, totalVolume.value + 1);
+		}
+	}
+
 	/****************************/
 	/***** ADD OPTIMISATION *****/
 	/****************************/

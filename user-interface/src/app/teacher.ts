@@ -15,6 +15,7 @@ export class Teacher implements HumanJsonable {
 		readonly subjectId: string,
 		readonly availableTimeslots: readonly Timeslot[],
 		readonly weeklyAvailabilityFrequency: number = 1,
+		readonly meanWeeklyVolume: number | null = null,
 	) {
 		this.id = nanoid();
 	}
@@ -25,6 +26,7 @@ export class Teacher implements HumanJsonable {
 			subject: state.findId('subjects', this.subjectId)!.name,
 			availableTimeslots: this.availableTimeslots.map(timeslot => timeslot.toString()),
 			weeklyAvailabilityFrequency: this.weeklyAvailabilityFrequency > 1 ? this.weeklyAvailabilityFrequency : undefined,
+			meanWeeklyVolume: this.meanWeeklyVolume !== null ? this.meanWeeklyVolume : undefined,
 		};
 	}
 	
@@ -39,6 +41,7 @@ export class Teacher implements HumanJsonable {
 			subject.id,
 			json.availableTimeslots.map(timeslot => Timeslot.fromString(timeslot)).sort((a, b) => a.compare(b)),
 			json.weeklyAvailabilityFrequency,
+			json.meanWeeklyVolume,
 		);
 	}
 }
