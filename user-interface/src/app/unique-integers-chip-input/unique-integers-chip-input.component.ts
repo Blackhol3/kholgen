@@ -68,15 +68,15 @@ export class UniqueIntegersChipInputComponent implements ControlValueAccessor {
 
 			for (let integer = minInteger; integer <= maxInteger; ++integer) {
 				if (!this.integers.has(integer)) {
+					this.integers.add(integer);
 					updated = true;
 				}
-				this.integers.add(integer);
 			}
 		}
 
 		if (updated) {
 			const integersArray = [...this.integers];
-			integersArray.sort();
+			integersArray.sort((a, b) => a - b);
 			this.integers = new Set(integersArray);
 			this.onChange(new Set(this.integers));
 		}

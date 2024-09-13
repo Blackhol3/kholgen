@@ -5,6 +5,13 @@ import { MatChipGridHarness, MatChipInputHarness } from '@angular/material/chips
 
 import { UniqueIntegersChipInputComponent } from './unique-integers-chip-input.component';
 
+function orderedSet(...values: number[]): jasmine.AsymmetricMatcher<Set<number>> {
+	return {
+		asymmetricMatch: compareTo => compareTo instanceof Set && values.length === compareTo.size && [...compareTo].every((value, index) => value === values[index]),
+		jasmineToString: prettyPrint => prettyPrint(new Set(values)),
+	};
+}
+
 describe('UniqueIntegersChipInputComponent', () => {
 	let component: UniqueIntegersChipInputComponent;
 	let fixture: ComponentFixture<UniqueIntegersChipInputComponent>;
@@ -44,7 +51,7 @@ describe('UniqueIntegersChipInputComponent', () => {
 		const rows = await grid.getRows();
 
 		await (await rows[1].getRemoveButton()).click();
-		expect(onChange).toHaveBeenCalledOnceWith(new Set([1, 5]));
+		expect(onChange).toHaveBeenCalledOnceWith(orderedSet(1, 5));
 	});
 
 	it('should not update the model when writing an invalid input', async () => {
@@ -63,17 +70,17 @@ describe('UniqueIntegersChipInputComponent', () => {
 		expect(await input.getValue()).toBe('');
 	});
 
-	it('should update the model correctly when writing a single new chip', async () => {
-		await input.setValue('7');
+	it('should update the model correctly and in numerical order when writing a single new chip', async () => {
+		await input.setValue('12');
 		await input.sendSeparatorKey(TestKey.ENTER);
 
-		expect(onChange).toHaveBeenCalledOnceWith(new Set([1, 3, 5, 7]));
+		expect(onChange).toHaveBeenCalledOnceWith(orderedSet(1, 3, 5, 12));
 	});
 
 	it('should update the model correctly when writing several new chips', async () => {
 		await input.setValue('4-7');
 		await input.sendSeparatorKey(TestKey.ENTER);
 
-		expect(onChange).toHaveBeenCalledOnceWith(new Set([1, 3, 4, 5, 6, 7]));
+		expect(onChange).toHaveBeenCalledOnceWith(orderedSet(1, 3, 4, 5, 6, 7));
 	});
 });

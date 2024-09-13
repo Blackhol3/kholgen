@@ -43,6 +43,7 @@ export default tseslint.config(
 			'@typescript-eslint/no-misused-promises': 'error',
 			'@typescript-eslint/no-unused-expressions': ['error', {allowTernary: true}],
 			'@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
+			'@typescript-eslint/require-array-sort-compare': ['error', {ignoreStringArrays: true}],
 			'@typescript-eslint/unbound-method': 'off',
 			'no-promise-executor-return': 'error',
 			'no-irregular-whitespace': 'off',
