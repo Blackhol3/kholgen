@@ -1,8 +1,8 @@
 <mat-form-field appearance="fill" hideRequiredMarker>
-	@if (label !== undefined) { <mat-label>{{label}}</mat-label> }
+	@if (label() !== undefined) { <mat-label>{{label()}}</mat-label> }
 	<mat-chip-grid #chipList>
-		@for (integer of integers; track $index) {
-			<mat-chip-row [disabled]="disabled" (removed)="remove(integer)">
+		@for (integer of integers(); track $index) {
+			<mat-chip-row [disabled]="disabled()" (removed)="remove(integer)">
 				{{integer}}
 				<button matChipRemove>
 					<mat-icon>cancel</mat-icon>
@@ -11,7 +11,7 @@
 		}
 		<input
 			matInput
-			[placeholder]="placeholder ?? ''"
+			[placeholder]="placeholder() ?? ''"
 			[matChipInputFor]="chipList"
 			[matChipInputSeparatorKeyCodes]="separatorKeysCodes"
 			(matChipInputTokenEnd)="add($event)"

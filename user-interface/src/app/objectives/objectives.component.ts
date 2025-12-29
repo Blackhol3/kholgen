@@ -16,7 +16,6 @@ import { Objective } from '../objective';
 		multi: true,
 		useExisting: ObjectivesComponent,
 	}],
-	standalone: true,
 	imports: [
 		CdkDrag,
 		CdkDropList,

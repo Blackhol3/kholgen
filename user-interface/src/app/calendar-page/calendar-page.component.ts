@@ -36,7 +36,6 @@ import { IntervalInputComponent } from '../interval-input/interval-input.compone
 		slideAnimation,
 	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	standalone: true,
 	imports: [
 		FormsModule,
 		ReactiveFormsModule,

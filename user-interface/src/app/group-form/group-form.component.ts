@@ -20,7 +20,6 @@ import { UniqueIntegersChipInputComponent } from '../unique-integers-chip-input/
 	templateUrl: './group-form.component.html',
 	styleUrls: ['./group-form.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	standalone: true,
 	imports: [
 		FormsModule,
 		ReactiveFormsModule,

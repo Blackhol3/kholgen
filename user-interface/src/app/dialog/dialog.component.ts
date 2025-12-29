@@ -14,7 +14,6 @@ export type DialogData =
 	selector: 'app-connection-dialog',
 	templateUrl: './dialog.component.html',
 	styleUrls: ['./dialog.component.scss'],
-	standalone: true,
 	imports: [
 		MatButtonModule,
 		MatDialogModule,

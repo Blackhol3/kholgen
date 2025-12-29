@@ -4,7 +4,7 @@ import { DateTime, type FullDayInterval, Interval } from 'luxon';
 import { Interruption } from './interruption';
 import type { HumanJson, HumanJsonable } from './json';
 import { nbDaysInWeek } from './timeslot';
-import { Week, type WorkingWeek } from './week';
+import { Week } from './week';
 
 import { type CalendarService } from './calendar.service';
 
@@ -82,7 +82,7 @@ export class Calendar implements HumanJsonable {
 	}
 
 	getWorkingWeeks() {
-		return this.cache.weeks.filter(week => week.isWorking()) as WorkingWeek[];
+		return this.cache.weeks.filter(week => week.isWorking());
 	}
 
 	findInterruptionId<S extends this | Draft<this>>(this: S, id: S['interruptions'][number]['id']): S['interruptions'][number] | undefined {

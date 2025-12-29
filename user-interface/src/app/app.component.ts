@@ -48,7 +48,6 @@ type ExportType = 'json' | 'xlsx' | 'csv' | 'ics';
 			]),
 		]),
 	],
-	standalone: true,
 	imports: [
 		RouterLink,
 		RouterLinkActive,

@@ -26,7 +26,6 @@ import { IntervalInputComponent } from '../interval-input/interval-input.compone
 		useClass: BetweenInterruptionsSelectionStrategyService,
 	}],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	standalone: true,
 	imports: [
 		FormsModule,
 		ReactiveFormsModule,

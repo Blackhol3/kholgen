@@ -1,5 +1,5 @@
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { type MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
@@ -17,7 +17,7 @@ import { MatInputModule } from '@angular/material/input';
 		multi: true,
 		useExisting: UniqueIntegersChipInputComponent,
 	}],
-	standalone: true,
+	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		MatChipsModule,
 		MatFormFieldModule,
@@ -26,17 +26,17 @@ import { MatInputModule } from '@angular/material/input';
 	],
 })
 export class UniqueIntegersChipInputComponent implements ControlValueAccessor {
-	@Input() label?: string;
-	@Input() placeholder?: string;
+	label = input<string>();
+	placeholder = input<string>();
 
-	protected integers: Set<number> = new Set();
-	protected disabled = false;
+	protected integers = signal(new Set<number>());
+	protected disabled = signal(false);
 	protected readonly separatorKeysCodes = [COMMA, ENTER, SPACE] as const;
 	
 	protected onChange = (_: Set<number>) => {};
 	
 	writeValue(integers: Set<number> | null) {
-		this.integers = new Set(integers);
+		this.integers.set(new Set(integers));
 	}
 	
 	registerOnChange(onChange: typeof this.onChange) {
@@ -46,7 +46,7 @@ export class UniqueIntegersChipInputComponent implements ControlValueAccessor {
 	registerOnTouched() {}
 	
 	setDisabledState(disabled: boolean) {
-		this.disabled = disabled;
+		this.disabled.set(disabled);
 	}
 
 	/** @todo Show an error on invalid inputs */
@@ -56,35 +56,34 @@ export class UniqueIntegersChipInputComponent implements ControlValueAccessor {
 			return;
 		}
 
-		let updated = false;
+		const integers = new Set(this.integers());
 		if (results[2] === undefined) {
 			const integer = parseInt(results[1]);
-			updated = !this.integers.has(integer);
-			this.integers.add(integer);
+			integers.add(integer);
 		}
 		else {
 			const minInteger = Math.min(parseInt(results[1]), parseInt(results[2]));
 			const maxInteger = Math.max(parseInt(results[1]), parseInt(results[2]));
 
 			for (let integer = minInteger; integer <= maxInteger; ++integer) {
-				if (!this.integers.has(integer)) {
-					this.integers.add(integer);
-					updated = true;
-				}
+				integers.add(integer);
 			}
 		}
 
-		if (updated) {
-			const integersArray = [...this.integers];
+		if (!this.integers().isSupersetOf(integers)) {
+			const integersArray = [...integers];
 			integersArray.sort((a, b) => a - b);
-			this.integers = new Set(integersArray);
-			this.onChange(new Set(this.integers));
+			this.integers.set(new Set(integersArray));
+			this.onChange(new Set(this.integers()));
 		}
 		event.chipInput.clear();
 	}
 
 	protected remove(integer: number) {
-		this.integers.delete(integer);
-		this.onChange(new Set(this.integers));
+		this.integers.update(set => {
+			set.delete(integer);
+			return set;
+		});
+		this.onChange(new Set(this.integers()));
 	}
 }

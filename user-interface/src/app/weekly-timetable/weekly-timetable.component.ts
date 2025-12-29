@@ -16,7 +16,6 @@ import { dayNames, firstHour, lastHour, Day, Timeslot } from '../timeslot';
 		multi: true,
 		useExisting: WeeklyTimetableComponent,
 	}],
-	standalone: true,
 	imports: [
 		MatFormFieldModule,
 		MatTableModule,

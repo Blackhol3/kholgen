@@ -20,7 +20,6 @@ import { ObjectivesComponent } from '../objectives/objectives.component';
 	selector: 'app-options-page',
 	templateUrl: './options-page.component.html',
 	styleUrls: ['./options-page.component.scss'],
-	standalone: true,
 	imports: [
 		FormsModule,
 		ReactiveFormsModule,

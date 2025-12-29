@@ -11,7 +11,7 @@ declare const FullDayInterval: unique symbol;
 type FullDayInterval = Interval & {[FullDayInterval]: true};
 type FullDayIntervalAlias = FullDayInterval;
 
-declare module 'luxon/src/interval' {
+declare module 'luxon' {
 	export interface Interval {
 		toFullDay(): FullDayInterval;
 		toFullDayISO(): string;

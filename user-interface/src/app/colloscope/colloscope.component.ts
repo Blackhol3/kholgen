@@ -24,7 +24,6 @@ type TableRow = {
 	templateUrl: './colloscope.component.html',
 	styleUrls: ['./colloscope.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	standalone: true,
 	imports: [MatTableModule],
 })
 export class ColloscopeComponent implements OnInit, OnDestroy {

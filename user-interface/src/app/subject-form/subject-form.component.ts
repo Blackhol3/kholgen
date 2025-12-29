@@ -14,7 +14,6 @@ import { UndoStackService } from '../undo-stack.service';
 	templateUrl: './subject-form.component.html',
 	styleUrls: ['./subject-form.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	standalone: true,
 	imports: [
 		FormsModule,
 		ReactiveFormsModule,

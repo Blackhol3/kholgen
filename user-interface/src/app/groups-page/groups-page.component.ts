@@ -38,7 +38,6 @@ import { GroupsGraphComponent } from '../groups-graph/groups-graph.component';
 			]),
 		]),
 	],
-	standalone: true,
 	imports: [
 		CdkDrag,
 		CdkDropList,

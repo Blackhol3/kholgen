@@ -27,7 +27,6 @@ import { TeacherFormComponent } from '../teacher-form/teacher-form.component';
 		listAnimation,
 		slideAnimation,
 	],
-	standalone: true,
 	imports: [
 		CdkDrag,
 		CdkDropList,

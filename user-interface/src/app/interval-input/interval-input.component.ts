@@ -20,7 +20,6 @@ import { getFirstValidDate } from '../calendar';
 		useExisting: IntervalInputComponent,
 	}],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	standalone: true,
 	imports: [
 		FormsModule,
 

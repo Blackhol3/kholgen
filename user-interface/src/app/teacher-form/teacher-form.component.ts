@@ -19,7 +19,6 @@ import { WeeklyTimetableComponent } from '../weekly-timetable/weekly-timetable.c
 	templateUrl: './teacher-form.component.html',
 	styleUrls: ['./teacher-form.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	standalone: true,
 	imports: [
 		FormsModule,
 		ReactiveFormsModule,

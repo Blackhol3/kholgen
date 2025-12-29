@@ -32,7 +32,6 @@ import { ColloscopeComponent } from '../colloscope/colloscope.component';
 		]),
 	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	standalone: true,
 	imports: [
 		MatButtonModule,
 		MatIconModule,

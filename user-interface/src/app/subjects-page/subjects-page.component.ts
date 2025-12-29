@@ -67,7 +67,6 @@ const standardClasses: {[className: string]: StandardClass}[] = [
 		listAnimation,
 		slideAnimation,
 	],
-	standalone: true,
 	imports: [
 		CdkDrag,
 		CdkDropList,

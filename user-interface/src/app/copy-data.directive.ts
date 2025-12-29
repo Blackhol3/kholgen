@@ -2,7 +2,6 @@ import { Directive, HostListener, Input } from '@angular/core';
 
 @Directive({
 	selector: '[appCopyData]',
-	standalone: true,
 })
 export class CopyDataDirective {
 	@Input('appCopyData') data: unknown;

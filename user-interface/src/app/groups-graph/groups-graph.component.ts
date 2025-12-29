@@ -8,7 +8,6 @@ import { State } from '../state';
 	templateUrl: './groups-graph.component.html',
 	styleUrls: ['./groups-graph.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	standalone: true,
 })
 export class GroupsGraphComponent {
 	@Input() state: State = new State();
