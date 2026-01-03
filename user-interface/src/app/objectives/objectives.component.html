@@ -1,6 +1,6 @@
 <div class="scale"></div>
 <mat-list cdkDropList (cdkDropListDropped)="onDrop($event)">
-	@for (objective of objectives; track objective.name) {
+	@for (objective of objectives(); track objective.name) {
 		<mat-list-item cdkDrag>
 			{{objective.readableName}}
 		</mat-list-item>

@@ -17,7 +17,7 @@ describe('SubjectFormComponent', () => {
 		fixture = TestBed.createComponent(SubjectFormComponent);
 		component = fixture.componentInstance;
 		component.subject = subject;
-		fixture.detectChanges();
+		await fixture.whenStable();
 	});
 
 	it('should create', () => {

@@ -1,5 +1,5 @@
 import { animate, query, style, transition, trigger } from '@angular/animations';
-import { Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -48,6 +48,7 @@ type ExportType = 'json' | 'xlsx' | 'csv' | 'ics';
 			]),
 		]),
 	],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		RouterLink,
 		RouterLinkActive,
@@ -109,24 +110,24 @@ export class AppComponent {
 		switch (extension) {
 			case 'json':
 				data = new Blob(
-					[toHumanString(this.store.state, "\t")],
+					[toHumanString(this.store.state(), "\t")],
 					{type: 'application/json'},
 				);
 				filename = 'Colloscope.json';
 				break;
 			
 			case 'xlsx':
-				data = await this.spreadsheetExporter.asExcel(this.store.state.computation!);
+				data = await this.spreadsheetExporter.asExcel(this.store.state().computation!);
 				filename = 'Colloscope.xlsx';
 				break;
 			
 			case 'csv':
-				data = await this.spreadsheetExporter.asCsv(this.store.state.computation!);
+				data = await this.spreadsheetExporter.asCsv(this.store.state().computation!);
 				filename = 'Colloscope.csv';
 				break;
 			
 			case 'ics':
-				data = await this.iCalExporter.asZip(this.store.state.computation!);
+				data = await this.iCalExporter.asZip(this.store.state().computation!);
 				filename = 'Calendrier.zip';
 				break;
 		}

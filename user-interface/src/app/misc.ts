@@ -1,3 +1,4 @@
+import { type Signal, effect, untracked } from '@angular/core';
 import { AbstractControl, type ValidationErrors } from '@angular/forms';
 
 export function notUniqueValidator<Type>(control: AbstractControl<string>, property: keyof Type, formObject: Type, objects: readonly Type[]): ValidationErrors | null {
@@ -53,4 +54,16 @@ type Entries<T> = {
 
 export function entries<T extends Record<string, unknown>>(object: T) {
 	return Object.entries(object) as Entries<T>;
+}
+
+export function effectOn<T>(watchedSignal: Signal<T>, effectFn: () => void, ignoreFirstRun = false) {
+	let firstRun = true;
+	return effect(() => {
+		watchedSignal();
+		if (!firstRun || !ignoreFirstRun) {
+			untracked(effectFn);
+		}
+
+		firstRun = false;
+	});
 }

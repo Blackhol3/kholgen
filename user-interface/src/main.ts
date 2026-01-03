@@ -1,6 +1,6 @@
 import './luxon';
 
-import { enableProdMode, provideZoneChangeDetection } from '@angular/core';
+import { enableProdMode, provideZonelessChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouteReuseStrategy, provideRouter } from '@angular/router';
@@ -31,7 +31,7 @@ if (environment.production) {
 bootstrapApplication(AppComponent, {
 	providers: [
 		{provide: RouteReuseStrategy, useClass: ReuseStrategy},
-		provideZoneChangeDetection(),
+		provideZonelessChangeDetection(),
 		provideAnimations(),
 		provideRouter([
 			{path: 'groups', component: GroupsPageComponent},

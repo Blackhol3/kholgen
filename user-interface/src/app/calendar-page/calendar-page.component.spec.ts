@@ -21,30 +21,30 @@ describe('CalendarPageComponent', () => {
 		fixture = TestBed.createComponent(CalendarPageComponent);
 		store = TestBed.inject(StoreService);
 		component = fixture.componentInstance;
-		fixture.detectChanges();
+		await fixture.whenStable();
 	});
 
 	describe('should add a new interruption', () => {
 		it('when there are none yet', () => {
 			component.addNewInterruption();
-			expect(store.state.calendar.interruptions).toHaveSize(1);
-			expect(store.state.calendar.interruptions[0].name).toBe('Interruption 1');
-			expect(store.state.calendar.interruptions[0].interval.start).toHaveSameDay(store.state.calendar.interval.start.plus({day: 1}));
-			expect(store.state.calendar.interruptions[0].interval.toDuration().as('day')).toBe(1);
+			expect(store.state().calendar.interruptions).toHaveSize(1);
+			expect(store.state().calendar.interruptions[0].name).toBe('Interruption 1');
+			expect(store.state().calendar.interruptions[0].interval.start).toHaveSameDay(store.state().calendar.interval.start.plus({day: 1}));
+			expect(store.state().calendar.interruptions[0].interval.toDuration().as('day')).toBe(1);
 		});
 
 		it('when there are already some', () => {
-			const calendarStart = store.state.calendar.interval.start;
-			castDraft(store).state.calendar.interruptions.push(
+			const calendarStart = store.state().calendar.interval.start;
+			castDraft(store.state()).calendar.interruptions.push(
 				new Interruption('Interruption 1', Interval.after(calendarStart.plus({weeks: 2}), {days: 2}).toFullDay()),
 				new Interruption('Interruption 3', Interval.after(calendarStart.plus({weeks: 3}), {days: 5}).toFullDay()),
 			);
 
 			component.addNewInterruption();
-			expect(store.state.calendar.interruptions).toHaveSize(3);
-			expect(store.state.calendar.interruptions[2].name).toBe('Interruption 2');
-			expect(store.state.calendar.interruptions[2].interval.start).toHaveSameDay(calendarStart.plus({weeks: 4}));
-			expect(store.state.calendar.interruptions[2].interval.toDuration().as('day')).toBe(1);
+			expect(store.state().calendar.interruptions).toHaveSize(3);
+			expect(store.state().calendar.interruptions[2].name).toBe('Interruption 2');
+			expect(store.state().calendar.interruptions[2].interval.start).toHaveSameDay(calendarStart.plus({weeks: 4}));
+			expect(store.state().calendar.interruptions[2].interval.toDuration().as('day')).toBe(1);
 		});
 	});
 });

@@ -1,6 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { type Draft, type Patch, applyPatches, produceWithPatches } from 'immer';
-import { Subject } from 'rxjs';
 
 import { State } from './state';
 
@@ -8,21 +7,17 @@ import { State } from './state';
 	providedIn: 'root'
 })
 export class StoreService {
-	protected changeSubject = new Subject<void>();
-	changeObservable = this.changeSubject.asObservable();
-	
-	state = new State();
+	#state = signal(new State());
+	state = this.#state.asReadonly();
 	
 	do(recipe: (state: Draft<State>) => Draft<State> | void | undefined) {
-		const [state, patches, inversePatches] = produceWithPatches(this.state, recipe);
-		this.state = state;
-		this.changeSubject.next();
+		const [state, patches, inversePatches] = produceWithPatches(this.#state(), recipe);
+		this.#state.set(state);
 		
 		return [patches, inversePatches] as const;
 	}
 	
 	apply(patches: Patch[]) {
-		this.state = applyPatches(this.state, patches);
-		this.changeSubject.next();
+		this.#state.set(applyPatches(this.state(), patches));
 	}
 }

@@ -89,7 +89,7 @@ export class TeacherFormComponent implements OnInit, OnChanges {
 			return null;
 		}
 		
-		for (const teacher of this.store.state.teachers) {
+		for (const teacher of this.store.state().teachers) {
 			if (teacher !== this.teacher && teacher.subjectId === this.form.controls.subjectId.value && teacher.name === this.form.controls.name.value) {
 				const error = {notUnique: {teacher: teacher}};
 				setErrors(control, 'name', error);

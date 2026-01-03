@@ -46,7 +46,7 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 	@Input({required: true}) interruption!: Interruption;
 	
 	form = this.formBuilder.group({
-		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string>) => notUniqueValidator(control, 'name', this.interruption, this.store.state.calendar.interruptions)]],
+		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string>) => notUniqueValidator(control, 'name', this.interruption, this.store.state().calendar.interruptions)]],
 		interval: [Interval.fromDateTimes(DateTime.now(), DateTime.now()), [Validators.required]],
 		weeksNumbering: [false],
 		groupsRotation: [false],
@@ -94,6 +94,6 @@ export class InterruptionFormComponent implements OnInit, OnChanges {
 	}
 
 	dateFilter = (date: DateTime | null) => {
-		return date === null || this.store.state.calendar.isWorkingDay(date, this.interruption.id);
+		return date === null || this.store.state().calendar.isWorkingDay(date, this.interruption.id);
 	}
 }

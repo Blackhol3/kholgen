@@ -17,7 +17,7 @@ describe('GroupFormComponent', () => {
 		fixture = TestBed.createComponent(GroupFormComponent);
 		component = fixture.componentInstance;
 		component.group = group;
-		fixture.detectChanges();
+		await fixture.whenStable();
 	});
 
 	it('should create', () => {

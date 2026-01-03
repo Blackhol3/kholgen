@@ -1,4 +1,4 @@
-import { Component, HostListener, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, input } from '@angular/core';
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,13 +16,14 @@ import { dayNames, firstHour, lastHour, Day, Timeslot } from '../timeslot';
 		multi: true,
 		useExisting: WeeklyTimetableComponent,
 	}],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		MatFormFieldModule,
 		MatTableModule,
 	],
 })
 export class WeeklyTimetableComponent implements ControlValueAccessor {
-	@Input() label?: string;
+	label = input<string>();
 
 	protected timeslots: Timeslot[] = [];
 	protected editable = true;

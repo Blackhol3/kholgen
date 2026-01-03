@@ -111,7 +111,7 @@ export class CommunicationService {
 			return this.computeSubject.asObservable();
 		}
 
-		store.do(state => { state.computation = castDraft(store.state.prepareComputation()); });
+		store.do(state => { state.computation = castDraft(store.state().prepareComputation()); });
 		
 		this.computeSubject = new Subject<void>();
 		this.communication.solutionFound.connect((jsonColles, jsonObjectiveComputations) => {
@@ -123,7 +123,7 @@ export class CommunicationService {
 			this.computeSubject?.complete();
 			this.computeSubject = undefined;
 		});
-		void this.communication.compute(toSolverJson(store.state));
+		void this.communication.compute(toSolverJson(store.state()));
 		
 		return this.computeSubject.asObservable();
 	}

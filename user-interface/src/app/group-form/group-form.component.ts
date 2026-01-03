@@ -41,7 +41,7 @@ export class GroupFormComponent implements OnInit, OnChanges {
 	@Input({required: true}) group!: Group;
 	
 	form = this.formBuilder.group({
-		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string>) => notUniqueValidator(control, 'name', this.group, this.store.state.groups)]],
+		name: ['', [Validators.required, trimValidator, (control: AbstractControl<string>) => notUniqueValidator(control, 'name', this.group, this.store.state().groups)]],
 		trioIds: [new Set() as ReadonlySet<number>],
 		availableTimeslots: [[] as readonly Timeslot[]],
 		nextGroupId: ['' as (string | null)],

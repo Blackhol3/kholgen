@@ -37,7 +37,7 @@
 
 		<mat-selection-list
 			[multiple]="false" [(ngModel)]="selectedInterruptionIds"
-			[@listAnimation]="store.state.calendar.interruptions.length"
+			[@listAnimation]="store.state().calendar.interruptions.length"
 			(paste)="onPaste($event)"
 			(keydown)="onKeydown($event)"
 		>
@@ -47,7 +47,7 @@
 					[appCopyData]="interruption.toHumanJson()" appCopyType="subject"
 				>
 					{{interruption.name}}
-					@if (!interruption.interval.overlaps(store.state.calendar.interval)) {
+					@if (!interruption.interval.overlaps(store.state().calendar.interval)) {
 						<mat-icon matListItemIcon matTooltip="Hors de la période de colles">warning_amber</mat-icon>
 					}
 				</mat-list-option>
@@ -57,5 +57,5 @@
 </div>
 
 @if (selectedInterruptionIds.length > 0) {
-	<app-interruption-form [interruption]="store.state.calendar.findInterruptionId(selectedInterruptionIds[0])!" @slideAnimation />
+	<app-interruption-form [interruption]="store.state().calendar.findInterruptionId(selectedInterruptionIds[0])!" @slideAnimation />
 }

@@ -19,7 +19,7 @@ describe('HolidayFormComponent', () => {
 		fixture = TestBed.createComponent(InterruptionFormComponent);
 		component = fixture.componentInstance;
 		component.interruption = interruption;
-		fixture.detectChanges();
+		await fixture.whenStable();
 	});
 
 	it('should create', () => {

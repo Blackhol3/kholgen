@@ -13,7 +13,7 @@ describe('TeachersPageComponent', () => {
 
 		fixture = TestBed.createComponent(TeachersPageComponent);
 		component = fixture.componentInstance;
-		fixture.detectChanges();
+		await fixture.whenStable();
 	});
 
 	it('should create', () => {

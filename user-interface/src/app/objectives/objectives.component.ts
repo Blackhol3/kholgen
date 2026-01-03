@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { type CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -16,6 +16,7 @@ import { Objective } from '../objective';
 		multi: true,
 		useExisting: ObjectivesComponent,
 	}],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		CdkDrag,
 		CdkDropList,
@@ -23,12 +24,12 @@ import { Objective } from '../objective';
 	],
 })
 export class ObjectivesComponent implements ControlValueAccessor {
-	protected objectives: Objective[] = [];
+	protected objectives = signal<readonly Objective[]>([]);
 	
 	protected onChange = (_: Objective[]) => {};
 	
 	writeValue(objectives: Objective[] | null) {
-		this.objectives = objectives === null ? [] : objectives.slice();
+		this.objectives.set(objectives === null ? [] : [...objectives]);
 	}
 	
 	registerOnChange(onChange: typeof this.onChange) {
@@ -39,8 +40,11 @@ export class ObjectivesComponent implements ControlValueAccessor {
 
 	protected onDrop($event: CdkDragDrop<unknown[]>) {
 		if ($event.previousIndex !== $event.currentIndex) {
-			moveItemInArray(this.objectives, $event.previousIndex, $event.currentIndex);
-			this.onChange(this.objectives.slice());
+			const objectives = [...this.objectives()];
+			moveItemInArray(objectives, $event.previousIndex, $event.currentIndex);
+			
+			this.objectives.set(objectives);
+			this.onChange(objectives);
 		}
 	}
 }

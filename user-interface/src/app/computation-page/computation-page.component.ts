@@ -1,13 +1,12 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, type OnDestroy, type OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, signal } from '@angular/core';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
 
-import { Subscription } from 'rxjs';
-
+import { effectOn } from '../misc';
 import { ObjectiveComputation } from '../objective-computation';
 
 import { CommunicationService } from '../communication.service';
@@ -41,29 +40,21 @@ import { ColloscopeComponent } from '../colloscope/colloscope.component';
 		ColloscopeComponent,
 	],
 })
-export class ComputationPageComponent implements OnInit, OnDestroy {
+export class ComputationPageComponent {
 	readonly store = inject(StoreService);
 	protected readonly changeDetectorRef = inject(ChangeDetectorRef);
 	protected readonly communication = inject(CommunicationService);
 
-	objectiveComputations: ObjectiveComputation[] = [];
+	objectiveComputations = signal<readonly ObjectiveComputation[]>([]);
+	isRunning = signal(false);
 
-	isRunning = false;
-	storeSubscription: Subscription | undefined;
-	
-	ngOnInit() {
-		this.storeSubscription = this.store.changeObservable.subscribe(() => this.update());
-		this.update();
-	}
-	
-	ngOnDestroy() {
-		this.storeSubscription?.unsubscribe();
+	constructor() {
+		effectOn(this.store.state, () => this.update());
 	}
 
 	protected update() {
-		const computation = this.store.state.computation ?? this.store.state.prepareComputation();
-		this.objectiveComputations = [...computation.objectiveComputations];
-		this.changeDetectorRef.markForCheck();
+		const computation = this.store.state().computation ?? this.store.state().prepareComputation();
+		this.objectiveComputations.set([...computation.objectiveComputations]);
 	}
 	
 	async compute() {
@@ -71,11 +62,10 @@ export class ComputationPageComponent implements OnInit, OnDestroy {
 			return;
 		}
 		
-		this.isRunning = true;
+		this.isRunning.set(true);
 		this.communication.compute(this.store).subscribe({
 			complete: () => {
-				this.isRunning = false;
-				this.changeDetectorRef.markForCheck();
+				this.isRunning.set(false);
 			},
 		});
 	}

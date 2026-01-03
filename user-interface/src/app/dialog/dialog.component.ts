@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
@@ -14,6 +14,7 @@ export type DialogData =
 	selector: 'app-connection-dialog',
 	templateUrl: './dialog.component.html',
 	styleUrls: ['./dialog.component.scss'],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		MatButtonModule,
 		MatDialogModule,

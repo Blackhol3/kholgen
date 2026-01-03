@@ -13,7 +13,7 @@
 		<mat-label>Groupe suivant</mat-label>
 		<mat-select formControlName="nextGroupId">
 			<mat-option [value]="null" [style.fontStyle]="'italic'">[Aucun]</mat-option>
-			@for (nextGroup of store.state.groups; track nextGroup.id) {
+			@for (nextGroup of store.state().groups; track nextGroup.id) {
 				@if (group !== nextGroup) {
 					<mat-option [value]="nextGroup.id">{{nextGroup.name}}</mat-option>
 				}

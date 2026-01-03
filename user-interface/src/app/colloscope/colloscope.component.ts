@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, type OnDestroy, type OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, signal } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 
-import { Subscription } from 'rxjs';
-
 import { Computation } from '../computation';
+import { effectOn } from '../misc';
 import { type Subject } from '../subject';
 import { type Teacher } from '../teacher';
 import { type Timeslot } from '../timeslot';
@@ -26,45 +25,38 @@ type TableRow = {
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [MatTableModule],
 })
-export class ColloscopeComponent implements OnInit, OnDestroy {
+export class ColloscopeComponent {
 	readonly store = inject(StoreService);
 	protected readonly changeDetectorRef = inject(ChangeDetectorRef);
 
-	storeSubscription: Subscription | undefined;
-	computation = new Computation();
+	readonly computation = signal(new Computation());
 
-	tableData: TableRow[] = [];
-	tableWeeksHeaderRowDef: string[] = [];
-	tableSubjectRowspan: number[] = [];
-	tableTeacherRowspan: number[] = [];
+	readonly tableData = signal<TableRow[]>([]);
+	tableWeeksHeaderRowDef = signal<string[]>([]);
+	tableSubjectRowspan = signal<number[]>([]);
+	tableTeacherRowspan = signal<number[]>([]);
 
-	ngOnInit() {
-		this.storeSubscription = this.store.changeObservable.subscribe(() => this.update());
-		this.update();
-	}
-	
-	ngOnDestroy() {
-		this.storeSubscription?.unsubscribe();
+	constructor() {
+		effectOn(this.store.state, () => this.update());
 	}
 
 	protected update() {
-		this.computation = this.store.state.computation ?? this.store.state.prepareComputation();
+		this.computation.set(this.store.state().computation ?? this.store.state().prepareComputation());
 		this.computeTableData();
-		this.changeDetectorRef.markForCheck();
 	}
 	
 	protected computeTableData() {
-		this.tableData = [];
-		for (const subject of this.computation.subjects) {
-			for (const teacher of this.computation.teachers.filter(t => t.subjectId === subject.id)) {
+		const tableData = [];
+		for (const subject of this.computation().subjects) {
+			for (const teacher of this.computation().teachers.filter(t => t.subjectId === subject.id)) {
 				for (const timeslot of teacher.availableTimeslots) {
 					const triosByWeek = [];
-					for (const week of this.computation.calendar.getWorkingWeeks()) {
+					for (const week of this.computation().calendar.getWorkingWeeks()) {
 						triosByWeek.push(this.getTrio(teacher, timeslot, week));
 					}
 					
-					if (this.computation.colles.length === 0 || triosByWeek.some(trio => trio !== null)) {
-						this.tableData.push({
+					if (this.computation().colles.length === 0 || triosByWeek.some(trio => trio !== null)) {
+						tableData.push({
 							subject: subject,
 							teacher: teacher,
 							timeslot: timeslot,
@@ -74,17 +66,18 @@ export class ColloscopeComponent implements OnInit, OnDestroy {
 				}
 			}
 		}
+		this.tableData.set(tableData);
 		
-		this.tableWeeksHeaderRowDef = this.computation.calendar.getWorkingWeeks().map(week => 'week-' + week.id);
+		this.tableWeeksHeaderRowDef.set(this.computation().calendar.getWorkingWeeks().map(week => 'week-' + week.id));
 		
-		this.tableSubjectRowspan = this.getRowspanArray('subject');
-		this.tableTeacherRowspan = this.getRowspanArray('teacher');
+		this.tableSubjectRowspan.set(this.getRowspanArray('subject'));
+		this.tableTeacherRowspan.set(this.getRowspanArray('teacher'));
 	}
 	
 	protected getTrio(teacher: Teacher, timeslot: Timeslot, week: Week): Trio | null {
-		for (const colle of this.computation.colles) {
+		for (const colle of this.computation().colles) {
 			if (colle.teacherId === teacher.id && colle.timeslot.isEqual(timeslot) && colle.weekId === week.id) {
-				return this.computation.trios.find(trio => trio.id === colle.trioId)!;
+				return this.computation().trios.find(trio => trio.id === colle.trioId)!;
 			}
 		}
 		
@@ -94,8 +87,8 @@ export class ColloscopeComponent implements OnInit, OnDestroy {
 	protected getRowspanArray(key: keyof TableRow): number[] {
 		const array = [1];
 		let lastIndex = 0;
-		for (let i = 1; i < this.tableData.length; ++i) {
-			if (this.tableData[i][key] === this.tableData[lastIndex][key]) {
+		for (let i = 1; i < this.tableData().length; ++i) {
+			if (this.tableData()[i][key] === this.tableData()[lastIndex][key]) {
 				++array[lastIndex];
 				array.push(0);
 			}

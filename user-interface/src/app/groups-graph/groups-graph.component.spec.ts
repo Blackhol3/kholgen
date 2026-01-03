@@ -13,7 +13,7 @@ describe('GroupsGraphComponent', () => {
 
 		fixture = TestBed.createComponent(GroupsGraphComponent);
 		component = fixture.componentInstance;
-		fixture.detectChanges();
+		await fixture.whenStable();
 	});
 
 	it('should create', () => {

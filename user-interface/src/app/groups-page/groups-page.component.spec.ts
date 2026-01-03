@@ -13,7 +13,7 @@ describe('GroupsPageComponent', () => {
 
 		fixture = TestBed.createComponent(GroupsPageComponent);
 		component = fixture.componentInstance;
-		fixture.detectChanges();
+		await fixture.whenStable();
 	});
 
 	it('should create', () => {

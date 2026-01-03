@@ -1,4 +1,4 @@
-import { Component, type OnInit, type OnDestroy, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
 import { type CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
@@ -11,10 +11,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { Subscription } from 'rxjs';
-
 import { listAnimation, slideAnimation } from '../animations';
 import { type HumanJson } from '../json';
+import { effectOn } from '../misc';
 import { Subject } from '../subject';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
@@ -67,6 +66,7 @@ const standardClasses: {[className: string]: StandardClass}[] = [
 		listAnimation,
 		slideAnimation,
 	],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		CdkDrag,
 		CdkDropList,
@@ -85,33 +85,28 @@ const standardClasses: {[className: string]: StandardClass}[] = [
 		SubjectFormComponent,
 	],
 })
-export class SubjectsPageComponent implements OnInit, OnDestroy {
+export class SubjectsPageComponent {
 	readonly store = inject(StoreService);
 	protected readonly snackBar = inject(MatSnackBar);
 	protected readonly undoStack = inject(UndoStackService);
 
 	selectedSubjectIds: string[] = [];
-	storeSubscription: Subscription | undefined;
 	
 	selectedStandardClass: StandardClass | undefined;
 	readonly standardClasses = standardClasses;
-	
-	ngOnInit() {
-		this.storeSubscription = this.store.changeObservable.subscribe(() => this.updateSelectedSubject());
-	}
-	
-	ngOnDestroy() {
-		this.storeSubscription?.unsubscribe();
+
+	constructor() {
+		effectOn(this.store.state, () => this.updateSelectedSubject());
 	}
 	
 	onDrop($event: CdkDragDrop<unknown[]>) {
-		this.selectedSubjectIds = [this.store.state.subjects[$event.previousIndex].id];
+		this.selectedSubjectIds = [this.store.state().subjects[$event.previousIndex].id];
 		this.undoStack.do(state => { moveItemInArray(state.subjects, $event.previousIndex, $event.currentIndex) });
 	}
 	
 	addNewSubject() {
 		let name = '';
-		for (let i = 1; name = `Matière ${i}`, this.store.state.subjects.some(subject => subject.name === name || subject.shortName === name); ++i) {
+		for (let i = 1; name = `Matière ${i}`, this.store.state().subjects.some(subject => subject.name === name || subject.shortName === name); ++i) {
 			// Empty
 		}
 		
@@ -121,8 +116,8 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	}
 	
 	deleteSubject() {
-		const subject = this.store.state.findId('subjects', this.selectedSubjectIds[0])!;
-		const index = this.store.state.subjects.indexOf(subject);
+		const subject = this.store.state().findId('subjects', this.selectedSubjectIds[0])!;
+		const index = this.store.state().subjects.indexOf(subject);
 		
 		let hadAssociatedTeachers = false;
 		let wasInForbiddenCombination = false;
@@ -131,7 +126,7 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 			({hadAssociatedTeachers, wasInForbiddenCombination} = state.removeSubject(subject));
 		});
 		
-		this.selectedSubjectIds = this.store.state.subjects.length > 0 ? [this.store.state.subjects[Math.max(0, index - 1)].id] : [];
+		this.selectedSubjectIds = this.store.state().subjects.length > 0 ? [this.store.state().subjects[Math.max(0, index - 1)].id] : [];
 		
 		if (hadAssociatedTeachers || wasInForbiddenCombination) {
 			this.snackBar.open(
@@ -150,8 +145,8 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 	}
 	
 	updateSelectedSubject() {
-		if (this.store.state.findId('subjects', this.selectedSubjectIds[0]) === undefined) {
-			this.selectedSubjectIds = this.store.state.subjects.length > 0 ? [this.store.state.subjects[this.store.state.subjects.length - 1].id] : [];
+		if (this.store.state().findId('subjects', this.selectedSubjectIds[0]) === undefined) {
+			this.selectedSubjectIds = this.store.state().subjects.length > 0 ? [this.store.state().subjects[this.store.state().subjects.length - 1].id] : [];
 		}
 	}
 	
@@ -178,7 +173,7 @@ export class SubjectsPageComponent implements OnInit, OnDestroy {
 		}
 		
 		const jsonSubject = JSON.parse(jsonString) as HumanJson<Subject>;
-		while (this.store.state.subjects.some(subject => subject.name === jsonSubject.name || subject.shortName === jsonSubject.shortName)) {
+		while (this.store.state().subjects.some(subject => subject.name === jsonSubject.name || subject.shortName === jsonSubject.shortName)) {
 			jsonSubject.name += ' (copie)';
 			jsonSubject.shortName += ' (copie)';
 		}

@@ -8,7 +8,7 @@
 	<mat-form-field appearance="fill" hideRequiredMarker>
 		<mat-label>Matière</mat-label>
 		<mat-select formControlName="subjectId">
-			@for (subject of store.state.subjects; track subject.id) {
+			@for (subject of store.state().subjects; track subject.id) {
 				<mat-option [value]="subject.id" [style.color]="subject.color">{{subject.name}}</mat-option>
 			}
 		</mat-select>

@@ -17,7 +17,7 @@ describe('TeacherFormComponent', () => {
 		fixture = TestBed.createComponent(TeacherFormComponent);
 		component = fixture.componentInstance;
 		component.teacher = teacher;
-		fixture.detectChanges();
+		await fixture.whenStable();
 	});
 
 	it('should create', () => {

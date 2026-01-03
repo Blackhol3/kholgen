@@ -1,8 +1,8 @@
 // This file is required by karma.conf.js and loads recursively all the .spec and framework files
 
-import 'zone.js/testing';
 import './luxon';
 
+import { NgModule, provideZonelessChangeDetection } from '@angular/core';
 import { getTestBed } from '@angular/core/testing';
 import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -13,11 +13,16 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { enableMapSet, enablePatches } from 'immer';
 import { DateTime } from 'luxon';
 
+@NgModule({
+	providers: [provideZonelessChangeDetection()],
+})
+class ZonelessChangeDetectionModule {}
+
 enableMapSet();
 enablePatches();
 
 getTestBed().initTestEnvironment(
-	[BrowserDynamicTestingModule, NoopAnimationsModule],
+	[BrowserDynamicTestingModule, NoopAnimationsModule, ZonelessChangeDetectionModule],
 	platformBrowserDynamicTesting([
 		{provide: MAT_LUXON_DATE_ADAPTER_OPTIONS, useValue: {firstDayOfWeek: 1}},
 		{provide: MAT_DATE_LOCALE, useValue: 'fr'},

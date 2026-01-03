@@ -22,7 +22,7 @@
 	<mat-form-field>
 		<mat-label>Combinaison interdite de matières</mat-label>
 		<mat-select formControlName="forbiddenSubjectIdsCombination" placeholder="Matière supplémentaire…" multiple>
-			@for (subject of store.state.subjects; track subject.id) {
+			@for (subject of store.state().subjects; track subject.id) {
 				<mat-option [value]="subject.id">{{subject.name}}</mat-option>
 			}
 		</mat-select>
