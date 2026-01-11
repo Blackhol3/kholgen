@@ -9,6 +9,10 @@ describe('toFullDay', () => {
 		const interval2 = Interval.fromDateTimes(DateTime.local(2024, 12, 25, 5), DateTime.local(2024, 12, 29, 0)).toFullDay();
 		expect(interval2.start).toEqual(DateTime.local(2024, 12, 25, 0, 0, 0, 0));
 		expect(interval2.end).toEqual(DateTime.local(2024, 12, 29, 0, 0, 0, 0));
+
+		const interval3 = Interval.fromDateTimes(DateTime.local(2024, 12, 25, 0), DateTime.local(2024, 12, 25, 0)).toFullDay();
+		expect(interval3.start).toEqual(DateTime.local(2024, 12, 25, 0, 0, 0, 0));
+		expect(interval3.end).toEqual(DateTime.local(2024, 12, 26, 0, 0, 0, 0));
 	});
 });
 

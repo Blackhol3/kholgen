@@ -28,7 +28,7 @@ declare module 'luxon' {
 Interval.prototype.toFullDay = function (this: Interval) {
 	return Interval.fromDateTimes(
 		this.start.startOf('day'),
-		this.end.equals(this.end.startOf('day')) ? this.end : this.end.endOf('day').plus({millisecond: 1}),
+		this.end.equals(this.end.startOf('day')) && !this.end.equals(this.start) ? this.end : this.end.endOf('day').plus({millisecond: 1}),
 	) as FullDayInterval;
 }
 
