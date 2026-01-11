@@ -34,6 +34,9 @@ button {
 }
 
 app-subject-form {
+	--max-width: 40em;
+	--max-height: 40em;
+
 	min-width: 20em;
 	margin-left: 8px;
 	padding-left: 8px;

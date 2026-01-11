@@ -1,5 +1,5 @@
 @if (store.state().groups.length >= 2) {
-	<app-groups-graph [state]="store.state()" (groupClick)="selectedGroupIds.set([$event.id])" @scaleAnimation />
+	<app-groups-graph [state]="store.state()" (groupClick)="selectedGroupIds.set([$event.id])" animate.enter="enter" animate.leave="leave" />
 }
 <section>
 	<div>
@@ -9,13 +9,12 @@
 		</div>
 		<mat-selection-list
 			[multiple]="false" [(ngModel)]="selectedGroupIds"
-			[@listAnimation]="store.state().groups.length"
 			cdkDropList (cdkDropListDropped)="onDrop($event)"
 			(paste)="onPaste($event)"
 			(keydown)="onKeydown($event)"
 		>
 			@for (group of store.state().groups; track group.id) {
-				<mat-list-option cdkDrag [value]="group.id" [appCopyData]="group.toHumanJson(store.state())" appCopyType="group">
+				<mat-list-option cdkDrag [value]="group.id" [appCopyData]="group.toHumanJson(store.state())" appCopyType="group" appEnterLeaveAnimation="fade">
 					{{group.name}}
 				</mat-list-option>
 			}
@@ -23,6 +22,6 @@
 	</div>
 	
 	@if (selectedGroupIds().length > 0) {
-		<app-group-form [group]="store.state().findId('groups', selectedGroupIds()[0])!" @slideAnimation />
+		<app-group-form [group]="store.state().findId('groups', selectedGroupIds()[0])!" appEnterLeaveAnimation="slide" />
 	}
 </section>

@@ -44,6 +44,9 @@ button {
 }
 
 app-interruption-form {
+	--max-width: 20em;
+	--max-height: 20em;
+
 	min-width: 20em;
 	margin-left: 8px;
 	padding-left: 8px;

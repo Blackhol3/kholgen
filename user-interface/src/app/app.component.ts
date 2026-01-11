@@ -1,4 +1,3 @@
-import { animate, query, style, transition, trigger } from '@angular/animations';
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
@@ -31,23 +30,6 @@ type ExportType = 'json' | 'xlsx' | 'csv' | 'ics';
 	selector: 'app-root',
 	templateUrl: './app.component.html',
 	styleUrls: ['./app.component.scss'],
-	animations: [
-		trigger('routeAnimation', [
-			transition('* => *', [
-				style({position: 'relative'}),
-				query(':enter, :leave', style({position: 'absolute'}), {optional: true}),
-				query(':enter', style({left: '-100%'}), {optional: true}),
-				query(':leave', [
-					animate('150ms', style({opacity: 0})),
-					style({left: '-100%'}),
-				], {optional: true}),
-				query(':enter', [
-					style({left: 'initial', opacity: 0}),
-					animate('200ms', style({opacity: 1})),
-				], {optional: true}),
-			]),
-		]),
-	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		RouterLink,

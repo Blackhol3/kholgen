@@ -8,7 +8,6 @@ import { MatButtonModule } from '@angular/material/button';
 
 import { castDraft } from 'immer';
 
-import { listAnimation, slideAnimation } from '../animations';
 import { type HumanJson } from '../json';
 import { effectOn } from '../misc';
 import { Subject } from '../subject';
@@ -17,16 +16,13 @@ import { UndoStackService } from '../undo-stack.service';
 import { StoreService } from '../store.service';
 
 import { CopyDataDirective } from '../copy-data.directive';
+import { EnterLeaveAnimationDirective } from '../enter-leave-animation.directive';
 import { TeacherFormComponent } from '../teacher-form/teacher-form.component';
 
 @Component({
 	selector: 'app-teachers-page',
 	templateUrl: './teachers-page.component.html',
 	styleUrls: ['./teachers-page.component.scss'],
-	animations: [
-		listAnimation,
-		slideAnimation,
-	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		CdkDrag,
@@ -39,6 +35,7 @@ import { TeacherFormComponent } from '../teacher-form/teacher-form.component';
 		MatListModule,
 
 		CopyDataDirective,
+		EnterLeaveAnimationDirective,
 		TeacherFormComponent,
 	],
 })

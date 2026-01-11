@@ -7,7 +7,6 @@
 		</div>
 		<mat-selection-list
 			[multiple]="false" [(ngModel)]="selectedSubjectIds"
-			[@listAnimation]="store.state().subjects.length"
 			cdkDropList (cdkDropListDropped)="onDrop($event)"
 			(paste)="onPaste($event)"
 			(keydown)="onKeydown($event)"
@@ -17,6 +16,7 @@
 					cdkDrag [value]="subject.id"
 					[appCopyData]="subject.toHumanJson()" appCopyType="subject"
 					[style.color]="subject.color"
+					appEnterLeaveAnimation="fade"
 				>
 					{{subject.name}}
 				</mat-list-option>
@@ -25,7 +25,7 @@
 	</div>
 
 	@if (selectedSubjectIds.length > 0) {
-		<app-subject-form [subject]="store.state().findId('subjects', selectedSubjectIds[0])!" @slideAnimation />
+		<app-subject-form [subject]="store.state().findId('subjects', selectedSubjectIds[0])!" appEnterLeaveAnimation="slide" />
 	}
 </section>
 <section>

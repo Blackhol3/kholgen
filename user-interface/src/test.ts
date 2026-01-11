@@ -4,8 +4,7 @@ import './luxon';
 
 import { NgModule, provideZonelessChangeDetection } from '@angular/core';
 import { getTestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 
 import { provideLuxonDateAdapter, MAT_LUXON_DATE_ADAPTER_OPTIONS } from '@angular/material-luxon-adapter'; 
 import { MAT_DATE_LOCALE } from '@angular/material/core'; 
@@ -22,8 +21,8 @@ enableMapSet();
 enablePatches();
 
 getTestBed().initTestEnvironment(
-	[BrowserDynamicTestingModule, NoopAnimationsModule, ZonelessChangeDetectionModule],
-	platformBrowserDynamicTesting([
+	[BrowserTestingModule, ZonelessChangeDetectionModule],
+	platformBrowserTesting([
 		{provide: MAT_LUXON_DATE_ADAPTER_OPTIONS, useValue: {firstDayOfWeek: 1}},
 		{provide: MAT_DATE_LOCALE, useValue: 'fr'},
 		provideLuxonDateAdapter(),

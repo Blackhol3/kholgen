@@ -16,6 +16,13 @@ button {
 	margin: 0 4px;
 }
 
+mat-progress-bar {
+	height: 4px;
+
+	&.enter { animation: 200ms scale-in; }
+	&.leave { animation: 150ms scale-out; }
+}
+
 section {
 	display: flex;
 	
@@ -45,4 +52,12 @@ section {
 
 ::ng-deep .mat-mdc-menu-panel.no-overflow {
 	overflow: hidden !important;
+}
+
+@keyframes scale-in {
+	from { height: 0; }
+}
+
+@keyframes scale-out {
+	to { height: 0; }
 }

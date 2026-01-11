@@ -65,3 +65,52 @@ mat-list-option {
 	letter-spacing: normal;
 }
 
+/** @todo Use `interpolate-size: allow-keywords` once more compatible, rather than hard-coded max-width and max-height */
+.slide-animation {
+	&.enter, &.leave {
+		min-width: 0;
+		min-height: 0;
+
+		max-width: var(--max-width, 40em);
+		max-height: var(--max-height, 60em);
+	}
+	&.enter { animation: 200ms grow; }
+	&.leave { animation: 150ms shrink; }
+}
+
+.fade-animation {
+	&.enter { animation: 250ms fade-in; }
+	&.leave { animation: 200ms fade-out; }
+}
+
+::view-transition-new(application) {
+	animation: 300ms fade-in;
+}
+
+::view-transition-old(application) {
+	animation: 300ms fade-out;
+}
+
+@keyframes grow {
+	from {
+		max-width: 0;
+		max-height: 0;
+	}
+}
+
+@keyframes shrink {
+	to {
+		max-width: 0;
+		max-height: 0;
+	}
+}
+
+@keyframes fade-out {
+	from { opacity: 1; }
+	to { opacity: 0; }
+}
+
+@keyframes fade-in {
+	from { opacity: 0;  }
+	to { opacity: 1; }
+}

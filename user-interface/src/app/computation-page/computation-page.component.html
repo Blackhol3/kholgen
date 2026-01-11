@@ -4,7 +4,7 @@
 </div>
 
 @if (isRunning()) {
-	<mat-progress-bar mode="indeterminate" @insertAnimation />
+	<mat-progress-bar mode="indeterminate" animate.enter="enter" animate.leave="leave" />
 }
 
 <section>

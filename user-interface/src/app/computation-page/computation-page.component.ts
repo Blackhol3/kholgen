@@ -1,4 +1,3 @@
-import { animate, style, transition, trigger } from '@angular/animations';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, signal } from '@angular/core';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -18,18 +17,6 @@ import { ColloscopeComponent } from '../colloscope/colloscope.component';
 	selector: 'app-computation-page',
 	templateUrl: './computation-page.component.html',
 	styleUrls: ['./computation-page.component.scss'],
-	animations: [
-		trigger('insertAnimation', [
-			transition(':enter', [
-				style({height: 0}),
-				animate('200ms', style({height: '*'})),
-			]),
-			transition(':leave', [
-				style({height: '*'}),
-				animate('150ms', style({height: 0})),
-			]),
-		]),
-	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		MatButtonModule,

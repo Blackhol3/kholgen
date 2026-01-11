@@ -15,6 +15,9 @@
 app-groups-graph {
 	width: 30em;
 	margin: auto;
+
+	&.enter { animation: 200ms scale-in; }
+	&.leave { animation: 150ms scale-out; }
 }
 
 section {
@@ -37,4 +40,12 @@ app-group-form {
 	padding-left: 8px;
 	border-left: common.$border;
 	overflow: hidden;
+}
+
+@keyframes scale-in {
+	from { width: 0; }
+}
+
+@keyframes scale-out {
+	to { width: 0; }
 }

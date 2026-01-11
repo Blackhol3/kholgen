@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { type CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag } from '@angular/cdk/drag-drop';
-import { animate, style, transition, trigger } from '@angular/animations';
 import { FormsModule } from '@angular/forms';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -9,14 +8,14 @@ import { MatListModule } from '@angular/material/list';
 
 import { castDraft } from 'immer';
 
-import { listAnimation, slideAnimation } from '../animations';
 import { Group } from '../group';
 import { type HumanJson } from '../json';
 import { effectOn } from '../misc';
 import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
-import { CopyDataDirective } from '../copy-data.directive';
 
+import { CopyDataDirective } from '../copy-data.directive';
+import { EnterLeaveAnimationDirective } from '../enter-leave-animation.directive';
 import { GroupFormComponent } from '../group-form/group-form.component';
 import { GroupsGraphComponent } from '../groups-graph/groups-graph.component';
 
@@ -24,20 +23,6 @@ import { GroupsGraphComponent } from '../groups-graph/groups-graph.component';
 	selector: 'app-groups-page',
 	templateUrl: './groups-page.component.html',
 	styleUrls: ['./groups-page.component.scss'],
-	animations: [
-		listAnimation,
-		slideAnimation,
-		trigger('scaleAnimation', [
-			transition(':enter', [
-				style({width: 0}),
-				animate('200ms', style({width: '*'})),
-			]),
-			transition(':leave', [
-				style({width: '*'}),
-				animate('150ms', style({width: 0})),
-			]),
-		]),
-	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		CdkDrag,
@@ -48,6 +33,7 @@ import { GroupsGraphComponent } from '../groups-graph/groups-graph.component';
 		MatListModule,
 
 		CopyDataDirective,
+		EnterLeaveAnimationDirective,
 		GroupsGraphComponent,
 		GroupFormComponent,
 	],

@@ -31,7 +31,7 @@
 			<span>GitHub</span>
 		</a>
 	</mat-sidenav>
-	<mat-sidenav-content [@routeAnimation]="outlet.isActivated ? outlet.activatedRoute.component?.name : ''">
-		<router-outlet #outlet="outlet" />
+	<mat-sidenav-content>
+		<router-outlet />
 	</mat-sidenav-content>
 </mat-sidenav-container>

@@ -2,8 +2,7 @@ import './luxon';
 
 import { enableProdMode, provideZonelessChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { RouteReuseStrategy, provideRouter } from '@angular/router';
+import { RouteReuseStrategy, provideRouter, withViewTransitions } from '@angular/router';
 
 import { provideLuxonDateAdapter, MAT_LUXON_DATE_ADAPTER_OPTIONS } from '@angular/material-luxon-adapter'; 
 import { MAT_DATE_LOCALE } from '@angular/material/core'; 
@@ -32,7 +31,6 @@ bootstrapApplication(AppComponent, {
 	providers: [
 		{provide: RouteReuseStrategy, useClass: ReuseStrategy},
 		provideZonelessChangeDetection(),
-		provideAnimations(),
 		provideRouter([
 			{path: 'groups', component: GroupsPageComponent},
 			{path: 'subjects', component: SubjectsPageComponent},
@@ -41,7 +39,7 @@ bootstrapApplication(AppComponent, {
 			{path: 'options', component: OptionsPageComponent},
 			{path: 'computation', component: ComputationPageComponent},
 			{path: '**', redirectTo: '/groups'},
-		]),
+		], withViewTransitions()),
 		
 		{provide: MAT_LUXON_DATE_ADAPTER_OPTIONS, useValue: {firstDayOfWeek: 1}},
 		{provide: MAT_DATE_LOCALE, useValue: 'fr'},

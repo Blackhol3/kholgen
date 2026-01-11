@@ -11,7 +11,6 @@ import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { listAnimation, slideAnimation } from '../animations';
 import { type HumanJson } from '../json';
 import { effectOn } from '../misc';
 import { Subject } from '../subject';
@@ -19,6 +18,7 @@ import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
 
 import { CopyDataDirective } from '../copy-data.directive';
+import { EnterLeaveAnimationDirective } from '../enter-leave-animation.directive';
 import { SubjectFormComponent } from '../subject-form/subject-form.component';
 
 const standardSubjects = {
@@ -62,10 +62,6 @@ const standardClasses: {[className: string]: StandardClass}[] = [
 	selector: 'app-subjects-page',
 	templateUrl: './subjects-page.component.html',
 	styleUrls: ['./subjects-page.component.scss'],
-	animations: [
-		listAnimation,
-		slideAnimation,
-	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		CdkDrag,
@@ -82,6 +78,7 @@ const standardClasses: {[className: string]: StandardClass}[] = [
 		MatSnackBarModule,
 
 		CopyDataDirective,
+		EnterLeaveAnimationDirective,
 		SubjectFormComponent,
 	],
 })

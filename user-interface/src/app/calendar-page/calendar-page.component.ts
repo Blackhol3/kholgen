@@ -13,7 +13,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { castDraft } from 'immer';
 import { DateTime, Interval } from 'luxon';
 
-import { listAnimation, slideAnimation } from '../animations';
 import { Interruption } from '../interruption';
 import { type HumanJson } from '../json';
 import { effectOn, entries } from '../misc';
@@ -23,6 +22,7 @@ import { StoreService } from '../store.service';
 import { UndoStackService } from '../undo-stack.service';
 
 import { CopyDataDirective } from '../copy-data.directive';
+import { EnterLeaveAnimationDirective } from '../enter-leave-animation.directive';
 import { InterruptionFormComponent } from '../interruption-form/interruption-form.component';
 import { IntervalInputComponent } from '../interval-input/interval-input.component';
 
@@ -30,10 +30,6 @@ import { IntervalInputComponent } from '../interval-input/interval-input.compone
 	selector: 'app-calendar-page',
 	templateUrl: './calendar-page.component.html',
 	styleUrls: ['./calendar-page.component.scss'],
-	animations: [
-		listAnimation,
-		slideAnimation,
-	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
 		FormsModule,
@@ -49,6 +45,7 @@ import { IntervalInputComponent } from '../interval-input/interval-input.compone
 		MatTooltipModule,
 
 		CopyDataDirective,
+		EnterLeaveAnimationDirective,
 		InterruptionFormComponent,
 		IntervalInputComponent,
 	],
