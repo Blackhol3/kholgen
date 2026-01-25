@@ -42,6 +42,7 @@ describe('CommunicationService', () => {
 			expect(dialog.openDialogs).toHaveSize(0);
 
 			webSocket.dispatchEvent(new Event('open'));
+			
 			expect(await promise).toBeTrue();
 			expect(dialog.openDialogs).toHaveSize(0);
 			expect(window.WebSocket).toHaveBeenCalledTimes(1);
@@ -55,6 +56,8 @@ describe('CommunicationService', () => {
 			expect(dialog.openDialogs[0].id).toBe('connection');
 			
 			webSocket.dispatchEvent(new Event('open'));
+			jasmine.clock().tick(10);
+
 			expect(await promise).toBeTrue();
 			expect(dialog.openDialogs).toHaveSize(0);
 			expect(window.WebSocket).toHaveBeenCalledTimes(1);
