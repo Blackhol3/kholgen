@@ -34,7 +34,7 @@ describe('State', () => {
 
 			expect(state.subjects).toEqual([subjects[0], subjects[1]]);
 			expect(state.teachers).toEqual(teachers);
-			expect(result.hadAssociatedTeachers).toBeFalse();
+			expect(result.hadAssociatedTeachers).toBe(false);
 		});
 
 		it('if the subject have associated teachers', () => {
@@ -42,7 +42,7 @@ describe('State', () => {
 
 			expect(state.subjects).toEqual([subjects[0], subjects[2]]);
 			expect(state.teachers).toEqual([teachers[0]]);
-			expect(result.hadAssociatedTeachers).toBeTrue();
+			expect(result.hadAssociatedTeachers).toBe(true);
 		});
 
 		it('if the subject does not exist', () => {
@@ -50,7 +50,7 @@ describe('State', () => {
 
 			expect(state.subjects).toEqual(subjects);
 			expect(state.teachers).toEqual(teachers);
-			expect(result.hadAssociatedTeachers).toBeFalse();
+			expect(result.hadAssociatedTeachers).toBe(false);
 		});
 
 		it('if the subject was in the forbidden combination', () => {
@@ -58,7 +58,7 @@ describe('State', () => {
 			const result = state.removeSubject(subjects[1]);
 
 			expect(state.forbiddenSubjectIdsCombination).toEqual(new Set());
-			expect(result.wasInForbiddenCombination).toBeTrue();
+			expect(result.wasInForbiddenCombination).toBe(true);
 		});
 
 		it('if the subject was not in the forbidden combination', () => {
@@ -66,7 +66,7 @@ describe('State', () => {
 			const result = state.removeSubject(subjects[0]);
 
 			expect(state.forbiddenSubjectIdsCombination).toEqual(forbiddenSubjectIdsCombination);
-			expect(result.wasInForbiddenCombination).toBeFalse();
+			expect(result.wasInForbiddenCombination).toBe(false);
 		});
 	});
 });

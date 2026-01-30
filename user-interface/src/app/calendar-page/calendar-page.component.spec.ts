@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { castDraft } from 'immer';
 import { Interval } from 'luxon';
 
+import { CalendarService } from '../calendar.service';
 import { Interruption } from '../interruption';
 import { StoreService } from '../store.service';
 
@@ -16,6 +17,14 @@ describe('CalendarPageComponent', () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [CalendarPageComponent],
+			providers: [
+				{
+					provide: CalendarService, useValue: {
+						getAcademies: vi.fn().mockResolvedValue([]),
+						getSchoolHolidays: vi.fn().mockResolvedValue([]),
+						getPublicHolidays: vi.fn().mockResolvedValue([]),
+					}
+				}],
 		}).compileComponents();
 
 		fixture = TestBed.createComponent(CalendarPageComponent);
@@ -27,7 +36,7 @@ describe('CalendarPageComponent', () => {
 	describe('should add a new interruption', () => {
 		it('when there are none yet', () => {
 			component.addNewInterruption();
-			expect(store.state().calendar.interruptions).toHaveSize(1);
+			expect(store.state().calendar.interruptions).toHaveLength(1);
 			expect(store.state().calendar.interruptions[0].name).toBe('Interruption 1');
 			expect(store.state().calendar.interruptions[0].interval.start).toHaveSameDay(store.state().calendar.interval.start.plus({day: 1}));
 			expect(store.state().calendar.interruptions[0].interval.toDuration().as('day')).toBe(1);
@@ -41,7 +50,7 @@ describe('CalendarPageComponent', () => {
 			);
 
 			component.addNewInterruption();
-			expect(store.state().calendar.interruptions).toHaveSize(3);
+			expect(store.state().calendar.interruptions).toHaveLength(3);
 			expect(store.state().calendar.interruptions[2].name).toBe('Interruption 2');
 			expect(store.state().calendar.interruptions[2].interval.start).toHaveSameDay(calendarStart.plus({weeks: 4}));
 			expect(store.state().calendar.interruptions[2].interval.toDuration().as('day')).toBe(1);

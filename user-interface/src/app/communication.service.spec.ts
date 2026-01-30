@@ -19,79 +19,81 @@ describe('CommunicationService', () => {
 		let webSocket: WebSocket;
 
 		beforeEach(() => {
-			jasmine.clock().install();
-
+			vi.useFakeTimers();
+			
 			webSocket = new EventTarget() as WebSocket;
 			Object.defineProperty(webSocket, 'readyState', {get: () => WebSocket.CLOSED, configurable: true});
-			webSocket.close = jasmine.createSpy().and.callFake(() => webSocket.dispatchEvent(new CloseEvent('close')));
+			webSocket.close = vi.fn(() => webSocket.dispatchEvent(new CloseEvent('close')));
 
-			spyOn(window, 'WebSocket').and.returnValue(webSocket);
-			spyOn(qwebchannel, 'QWebChannel').and.callFake(function (_, callback) {
+			vi.stubGlobal('WebSocket', vi.fn(function () { return webSocket; }));
+			vi.mock('qwebchannel', { spy: true });
+			vi.mocked(qwebchannel.QWebChannel).mockImplementation(function (_, callback) {
 				callback({objects: {communication: {}}});
 				return {};
 			});
 		});
 
 		afterEach(() => {
-			jasmine.clock().uninstall();
+			vi.useRealTimers();
+			vi.unstubAllGlobals();
 		});
 
 		it('and resolve positively without dialog if it can connect quickly', async () => {
 			const promise = service.connect();
-			await expectAsync(promise).toBePending();
-			expect(dialog.openDialogs).toHaveSize(0);
+			await expect(promise).toBePending();
+			expect(dialog.openDialogs).toHaveLength(0);
 
 			webSocket.dispatchEvent(new Event('open'));
 			
-			expect(await promise).toBeTrue();
-			expect(dialog.openDialogs).toHaveSize(0);
+			expect(await promise).toBe(true);
+			expect(dialog.openDialogs).toHaveLength(0);
 			expect(window.WebSocket).toHaveBeenCalledTimes(1);
 		});
 
 		it('and resolve positively and close the dialog if it can connect after a long time', async () => {
 			const promise = service.connect();
-			jasmine.clock().tick(300);
-			await expectAsync(promise).toBePending();
-			expect(dialog.openDialogs).toHaveSize(1);
+			vi.advanceTimersByTime(300);
+			await expect(promise).toBePending();
+			expect(dialog.openDialogs).toHaveLength(1);
 			expect(dialog.openDialogs[0].id).toBe('connection');
 			
 			webSocket.dispatchEvent(new Event('open'));
-			jasmine.clock().tick(10);
+			vi.advanceTimersByTime(10);
 
-			expect(await promise).toBeTrue();
-			expect(dialog.openDialogs).toHaveSize(0);
+			expect(await promise).toBe(true);
+			expect(dialog.openDialogs).toHaveLength(0);
 			expect(window.WebSocket).toHaveBeenCalledTimes(1);
 		});
 
 		it('and resolve negatively if the user closes the dialog', async () => {
 			const promise = service.connect();
-			jasmine.clock().tick(300);
-			await expectAsync(promise).toBePending();
-			expect(dialog.openDialogs).toHaveSize(1);
+			vi.advanceTimersByTime(300);
+			await expect(promise).toBePending();
+			expect(dialog.openDialogs).toHaveLength(1);
 			expect(dialog.openDialogs[0].id).toBe('connection');
 			
 			dialog.closeAll();
-			jasmine.clock().tick(10);
+			vi.advanceTimersByTime(10);
 
-			expect(await promise).toBeFalse();
-			expect(dialog.openDialogs).toHaveSize(0);
+			expect(await promise).toBe(false);
+			expect(dialog.openDialogs).toHaveLength(0);
 			expect(window.WebSocket).toHaveBeenCalledTimes(1);
 		});
 
 		it('and try to connect again if the socket timed out', async () => {
 			const promise = service.connect();
 			webSocket.dispatchEvent(new CloseEvent('close'));
-			await expectAsync(promise).toBePending();
+			await expect(promise).toBePending();
 			expect(window.WebSocket).toHaveBeenCalledTimes(2);
 		});
 
 		it('and resolve positively if it is already connected', async () => {
 			const promise = service.connect();
 			webSocket.dispatchEvent(new Event('open'));
-			spyOnProperty(webSocket, 'readyState', 'get').and.returnValue(WebSocket.OPEN);
+			vi.spyOn(webSocket, 'readyState', 'get').mockReturnValue(WebSocket.OPEN);
 			await promise;
 
-			expect(await service.connect()).toBeTrue();
+			expect(await service.connect()).toBe(true);
 		});
 	});
 });

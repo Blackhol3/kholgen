@@ -16,11 +16,12 @@ describe('Colle', () => {
 		const colle3 = new Colle('teacher', new Timeslot(Day.Friday, 13), 42, 35);
 
 		const today = DateTime.now().startOf('week');
-		const calendar = jasmine.createSpyObj<Calendar>('calendar', ['getWeeks']);
-		calendar.getWeeks.and.returnValue([
-			new Week(1337, 9, today),
-			new Week(35, 9, today.plus({week: 1})),
-		]);
+		const calendar = {
+			getWeeks: vi.fn().mockName('getWeeks').mockReturnValue([
+				new Week(1337, 9, today),
+				new Week(35, 9, today.plus({week: 1})),
+			]),
+		} as unknown as Calendar;
 
 		expect(colle1.getStartDate(calendar)).toHaveSameDay(today.plus({days: 1}));
 		expect(colle2.getStartDate(calendar)).toHaveSameDay(today.plus({days: 2}));

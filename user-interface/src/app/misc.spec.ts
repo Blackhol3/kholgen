@@ -5,7 +5,7 @@ import { trimValidator } from './misc';
 describe('trimValidator', () => {
 	it('should trim value when necessary', () => {
 		const control = new FormControl(' untrimmed ', {nonNullable: true});
-		spyOn(control, 'setValue').and.callThrough();
+		vi.spyOn(control, 'setValue');
 
 		trimValidator(control);
 		expect(control.value).toBe('untrimmed');
@@ -14,7 +14,7 @@ describe('trimValidator', () => {
 
 	it('should not trim value when not necessary', () => {
 		const control = new FormControl('trimmed', {nonNullable: true});
-		spyOn(control, 'setValue').and.callThrough();
+		vi.spyOn(control, 'setValue');
 
 		trimValidator(control);
 		expect(control.value).toBe('trimmed');

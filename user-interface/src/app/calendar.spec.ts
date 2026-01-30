@@ -52,15 +52,16 @@ describe('Calendar', () => {
 				new Interruption('', Interval.after(firstMonday.plus({weeks: 7         }), {weeks: 1}).toFullDay(), true, false),
 			],
 		);
-		//
-		const calendarService = jasmine.createSpyObj<CalendarService>('calendarService', ['getSchoolHolidays', 'getPublicHolidays']);
-		calendarService.getSchoolHolidays.and.resolveTo([
-			Interval.after(firstMonday.plus({weeks: 1, days: 2}), {weeks: 1}).toFullDay(),
-		]);
-		calendarService.getPublicHolidays.and.resolveTo([
-			firstMonday.plus({days: 3}),
-			firstMonday.plus({days: 4}),
-		]);
+		
+		const calendarService = {
+			getSchoolHolidays: vi.fn().mockName('getSchoolHolidays').mockResolvedValue([
+				Interval.after(firstMonday.plus({weeks: 1, days: 2}), {weeks: 1}).toFullDay(),
+			]),
+			getPublicHolidays: vi.fn().mockName('getPublicHolidays').mockResolvedValue([
+				firstMonday.plus({days: 3}),
+				firstMonday.plus({days: 4}),
+			]),
+		} as unknown as CalendarService;
 
 		await calendar.updateWeeksAndHolidays(calendarService);
 		

@@ -13,7 +13,7 @@ describe('DialogComponent', () => {
 			imports: [DialogComponent],
 			providers: [{
 				provide: MatDialogRef,
-				useValue: jasmine.createSpyObj<MatDialogRef<DialogComponent>>,
+				useValue: vi.fn(MatDialogRef<DialogComponent>),
 			}, {
 				provide: MAT_DIALOG_DATA,
 				useValue: {},

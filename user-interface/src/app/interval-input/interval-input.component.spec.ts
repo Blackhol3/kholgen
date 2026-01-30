@@ -1,6 +1,7 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, ComponentFixtureAutoDetect, TestBed } from '@angular/core/testing';
 import { MatDateRangeInputHarness } from '@angular/material/datepicker/testing';
+import { type Mock } from 'vitest';
 
 import { DateTime, Interval, Settings } from 'luxon';
 
@@ -13,7 +14,7 @@ describe('IntervalInputComponent', () => {
 
 	const today = DateTime.local(2024, 12, 1);
 	const start = DateTime.local(2024, 12, 25);
-	let onChange: jasmine.Spy;
+	let onChange: Mock;
 
 	beforeEach(async () => {
 		Settings.now = () => today.valueOf();
@@ -28,7 +29,7 @@ describe('IntervalInputComponent', () => {
 		dateRangeInput = await loader.getHarness(MatDateRangeInputHarness);
 		component = fixture.componentInstance;
 
-		onChange = jasmine.createSpy();
+		onChange = vi.fn().mockName('onChange');
 		component.registerOnChange(onChange);
 		component.writeValue(Interval.after(start, {days: 3}).toFullDay());
 	});
@@ -48,9 +49,9 @@ describe('IntervalInputComponent', () => {
 		await (await calendar.getCells({text: '10'}))[0].select();
 		await (await calendar.getCells({text: '20'}))[0].select();
 
-		expect(onChange).toHaveBeenCalledOnceWith(jasmine.any(Interval));
+		expect(onChange).toHaveBeenCalledExactlyOnceWith(expect.any(Interval));
 
-		const calledInterval = onChange.calls.mostRecent().args[0] as Interval;
+		const calledInterval = onChange.mock.lastCall![0] as Interval;
 		expect(calledInterval.start.toMillis()).toBe(DateTime.local(2024, 12, 10).toMillis());
 		expect(calledInterval.end  .toMillis()).toBe(DateTime.local(2024, 12, 21).toMillis());
 	});
@@ -59,6 +60,6 @@ describe('IntervalInputComponent', () => {
 		component.setDisabledState(true);
 
 		await dateRangeInput.openCalendar();
-		expect(await dateRangeInput.isCalendarOpen()).toBeFalse();
+		expect(await dateRangeInput.isCalendarOpen()).toBe(false);
 	})
 });

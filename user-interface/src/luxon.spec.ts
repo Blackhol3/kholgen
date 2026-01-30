@@ -40,6 +40,6 @@ describe('fromFullDayISO', () => {
 	});
 
 	it('should throws with an invalid interval', () => {
-		expect(() => Interval.fromFullDayISO('2024-99-25/P3D')).toThrowMatching(e => e instanceof SyntaxError);
+		expect(() => Interval.fromFullDayISO('2024-99-25/P3D')).toThrow(SyntaxError);
 	});
 });

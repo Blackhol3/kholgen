@@ -18,6 +18,6 @@ describe('EnterLeaveAnimationDirective', () => {
 	});
 
 	it('should add the appropriate class', () => {
-		expect(fixture.debugElement.children[0].classes['name-animation']).toBeTrue();
+		expect(fixture.debugElement.children[0].classes['name-animation']).toBe(true);
 	});
 });

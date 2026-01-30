@@ -7,9 +7,9 @@ describe('Timeslot', () => {
 
 	it('should check equality', () => {
 		const timeslot = new Timeslot(Day.Wednesday, 13);
-		expect(timeslot.isEqual(new Timeslot(Day.Monday, 13))).toBeFalse();
-		expect(timeslot.isEqual(new Timeslot(Day.Wednesday, 8))).toBeFalse();
-		expect(timeslot.isEqual(new Timeslot(Day.Wednesday, 13))).toBeTrue();
+		expect(timeslot.isEqual(new Timeslot(Day.Monday, 13))).toBe(false);
+		expect(timeslot.isEqual(new Timeslot(Day.Wednesday, 8))).toBe(false);
+		expect(timeslot.isEqual(new Timeslot(Day.Wednesday, 13))).toBe(true);
 	});
 
 	it('should compare', () => {

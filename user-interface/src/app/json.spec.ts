@@ -21,13 +21,13 @@ describe('toHumanString', () => {
 			}),
 		} as unknown as State;
 
-		spyOn(child, 'toHumanJson').and.callThrough();
-		spyOn(state, 'toHumanJson').and.callThrough();
+		vi.spyOn(child, 'toHumanJson');
+		vi.spyOn(state, 'toHumanJson');
 
 		const result = toHumanString(state);
 		
 		expect(state.toHumanJson).toHaveBeenCalledTimes(1);
-		expect(child.toHumanJson).toHaveBeenCalledOnceWith(state);
+		expect(child.toHumanJson).toHaveBeenCalledExactlyOnceWith(state);
 
 		expect(typeof result).toBe('string');
 		expect(JSON.parse(result)).toEqual({

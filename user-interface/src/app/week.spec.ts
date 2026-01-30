@@ -7,7 +7,7 @@ describe('Week', () => {
 		const week1 = new Week(1, 42, DateTime.now());
 		const week2 = new Week(2, null, DateTime.now());
 
-		expect(week1.isWorking()).toBeTrue();
-		expect(week2.isWorking()).toBeFalse();
+		expect(week1.isWorking()).toBe(true);
+		expect(week2.isWorking()).toBe(false);
 	});
 });

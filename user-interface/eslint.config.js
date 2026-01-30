@@ -1,5 +1,6 @@
 import pluginJs from '@eslint/js';
-import stylistic from '@stylistic/eslint-plugin'
+import stylistic from '@stylistic/eslint-plugin';
+import vitest from '@vitest/eslint-plugin';
 import tseslint from 'typescript-eslint';
 import angular from 'angular-eslint';
 
@@ -46,6 +47,15 @@ export default tseslint.config(
 			'@typescript-eslint/unbound-method': 'off',
 			'no-promise-executor-return': 'error',
 			'no-irregular-whitespace': 'off',
+		},
+	},
+	{
+		files: ['**/*.spec.ts'],
+		extends: [
+			vitest.configs.recommended,
+		],
+		plugins: {
+			vitest,
 		},
 	},
 	{
